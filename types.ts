@@ -7,9 +7,9 @@ export interface Product {
   image?: string;
   // NEW: Individual layout controls
   layout?: {
-    image: { y: number; scale: number };
-    name: { y: number; scale: number };
-    price: { y: number; scale: number };
+    image: { x: number; y: number; scale: number };
+    name: { x: number; y: number; scale: number };
+    price: { x: number; y: number; scale: number };
   }
 }
 
@@ -34,10 +34,6 @@ export interface PosterTheme {
   backgroundImage?: string;
   layoutCols: number;
   format: PosterFormat;
-  // REMOVED: Obsolete global controls
-  // productNameSize?: number;
-  // priceCardSize?: number;
-  // imageRatio?: number;
 }
 
 export interface AIGeneratedImage {

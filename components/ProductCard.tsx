@@ -7,9 +7,9 @@ interface ProductCardProps {
 }
 
 const defaultLayout = {
-  image: { y: 0, scale: 1 },
-  name: { y: 0, scale: 1 },
-  price: { y: 0, scale: 1 },
+  image: { x: 0, y: 0, scale: 1 },
+  name: { x: 0, y: 0, scale: 1 },
+  price: { x: 0, y: 0, scale: 1 },
 };
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
@@ -31,14 +31,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
       {/* Product Image */}
       <div 
         className="absolute top-0 left-0 right-0 h-[60%] flex items-center justify-center p-2 transition-transform duration-100"
-        style={{ transform: `translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
+        style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
       >
         <div className="w-full h-full bg-white rounded-lg overflow-hidden relative">
           {product.image ? (
             <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300">
-               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 20 0 0-2.828 0L6 21"/></svg>
             </div>
           )}
           {product.oldPrice && (
@@ -52,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
       {/* Product Name */}
       <div 
         className="absolute bottom-[30%] left-0 right-0 text-center px-2 transition-transform duration-100"
-        style={{ transform: `translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
+        style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}
       >
         <h3 className="font-bold leading-tight text-gray-800 line-clamp-2" style={{ color: theme.textColor, fontSize: '1rem' }}>
           {product.name}
@@ -62,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
       {/* Price Block */}
       <div 
         className="absolute bottom-[5%] left-0 right-0 flex justify-center transition-transform duration-100"
-        style={{ transform: `translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
+        style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
       >
         <div className="flex items-end justify-center gap-2">
           {/* Old Price (Left) */}

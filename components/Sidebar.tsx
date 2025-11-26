@@ -12,9 +12,9 @@ interface SidebarProps {
 }
 
 const defaultLayout = {
-  image: { y: 0, scale: 1 },
-  name: { y: 0, scale: 1 },
-  price: { y: 0, scale: 1 },
+  image: { x: 0, y: 0, scale: 1 },
+  name: { x: 0, y: 0, scale: 1 },
+  price: { x: 0, y: 0, scale: 1 },
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats }) => {
@@ -110,9 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         
         {activeTab === 'products' && (
           <div className="space-y-4">
-            <div className="text-xs text-blue-800 bg-blue-50 p-2 rounded border border-blue-100 mb-2">
-                <strong>Dica:</strong> Layout "Destaque" é ativado automaticamente quando há apenas 1 produto.
-            </div>
             {products.map((product) => (
               <details key={product.id} className="bg-gray-50 border rounded-lg shadow-sm hover:shadow-md transition-shadow group" open>
                 <summary className="p-3 flex gap-3 items-start cursor-pointer">
@@ -180,33 +177,24 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                   <h4 className="text-xs font-bold uppercase text-gray-500 flex items-center gap-2"><SlidersHorizontal size={14}/> Layout Individual</h4>
                   
                   {/* Image Controls */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Imagem Posição Y</label><span className="font-mono text-gray-500">{product.layout?.image.y || 0}px</span></div>
-                    <input type="range" min="-50" max="50" value={product.layout?.image.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), image: {...(product.layout?.image || defaultLayout.image), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Imagem Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.image.scale || 1).toFixed(1)}x</span></div>
-                    <input type="range" min="0.5" max="1.5" step="0.1" value={product.layout?.image.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), image: {...(product.layout?.image || defaultLayout.image), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Imagem Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.image.scale || 1).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={product.layout?.image.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), image: {...(product.layout?.image || defaultLayout.image), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{product.layout?.image.x || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.image.x || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), image: {...(product.layout?.image || defaultLayout.image), x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{product.layout?.image.y || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.image.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), image: {...(product.layout?.image || defaultLayout.image), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                   </div>
 
                   {/* Name Controls */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Nome Posição Y</label><span className="font-mono text-gray-500">{product.layout?.name.y || 0}px</span></div>
-                    <input type="range" min="-50" max="50" value={product.layout?.name.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Nome Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.name.scale || 1).toFixed(1)}x</span></div>
-                    <input type="range" min="0.8" max="1.5" step="0.1" value={product.layout?.name.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t pt-2">
+                    <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Nome Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.name.scale || 1).toFixed(1)}x</span></div><input type="range" min="0.8" max="2" step="0.1" value={product.layout?.name.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{product.layout?.name.x || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.name.x || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{product.layout?.name.y || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.name.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), name: {...(product.layout?.name || defaultLayout.name), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                   </div>
 
                   {/* Price Controls */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Preço Posição Y</label><span className="font-mono text-gray-500">{product.layout?.price.y || 0}px</span></div>
-                    <input type="range" min="-50" max="50" value={product.layout?.price.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), price: {...(product.layout?.price || defaultLayout.price), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Preço Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.price.scale || 1).toFixed(1)}x</span></div>
-                    <input type="range" min="0.7" max="1.3" step="0.1" value={product.layout?.price.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), price: {...(product.layout?.price || defaultLayout.price), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t pt-2">
+                    <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Preço Tamanho</label><span className="font-mono text-gray-500">{(product.layout?.price.scale || 1).toFixed(1)}x</span></div><input type="range" min="0.7" max="2" step="0.1" value={product.layout?.price.scale || 1} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), price: {...(product.layout?.price || defaultLayout.price), scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{product.layout?.price.x || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.price.x || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), price: {...(product.layout?.price || defaultLayout.price), x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{product.layout?.price.y || 0}px</span></div><input type="range" min="-100" max="100" value={product.layout?.price.y || 0} onChange={(e) => handleProductChange(product.id, 'layout', {...(product.layout || defaultLayout), price: {...(product.layout?.price || defaultLayout.price), y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                   </div>
                 </div>
               </details>

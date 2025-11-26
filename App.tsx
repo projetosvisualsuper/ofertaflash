@@ -23,9 +23,9 @@ const INITIAL_THEME: PosterTheme = {
 };
 
 const defaultLayout = {
-  image: { y: 0, scale: 1 },
-  name: { y: 0, scale: 1 },
-  price: { y: 0, scale: 1 },
+  image: { x: 0, y: 0, scale: 1 },
+  name: { x: 0, y: 0, scale: 1 },
+  price: { x: 0, y: 0, scale: 1 },
 };
 
 const INITIAL_PRODUCTS: Product[] = [
