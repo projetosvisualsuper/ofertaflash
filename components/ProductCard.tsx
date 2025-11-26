@@ -22,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
       }}
     >
       {/* Product Image - Increased flex-1 to take more space */}
-      <div className="w-full flex-[2] min-h-0 mb-2 flex items-center justify-center bg-white rounded-lg overflow-hidden relative p-2">
+      <div className="w-full flex-[3] min-h-0 mb-2 flex items-center justify-center bg-white rounded-lg overflow-hidden relative p-2">
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
         ) : (
@@ -44,12 +44,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
           {product.name}
         </h3>
         
-        {/* NEW PRICE BLOCK - Styled like Hero mode */}
+        {/* NEW PRICE BLOCK - Styled like Hero mode, but more compact */}
         <div 
-          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto p-1"
+          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto p-2"
           style={{
              background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)`,
-             minHeight: '5rem' // Reduced minHeight to save vertical space
           }}
         >
           {/* Old Price */}
@@ -64,13 +63,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
              <span className="font-bold mt-[0.2em] mr-1 opacity-80 text-lg">R$</span>
              
              {/* Integer Price */}
-             <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={{ fontSize: '3.5rem' }}>
+             <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={{ fontSize: '3rem' }}>
                {priceInt}
              </span>
              
              <div className="flex flex-col items-start mt-[0.3em]">
                 {/* Decimal Price */}
-                <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: '1.75rem' }}>,{priceDec}</span>
+                <span className="font-black tracking-tighter leading-[0.8]" style={{ fontSize: '1.5rem' }}>,{priceDec}</span>
                 {/* Unit */}
                 <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider text-xs">{product.unit}</span>
              </div>
