@@ -22,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
       }}
     >
       {/* Product Image - Increased flex-1 to take more space */}
-      <div className="w-full flex-[3] min-h-0 mb-2 flex items-center justify-center bg-white rounded-lg overflow-hidden relative p-2">
+      <div className="w-full flex-[4] min-h-0 mb-2 flex items-center justify-center bg-white rounded-lg overflow-hidden relative p-2">
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
         ) : (
@@ -46,7 +46,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
         
         {/* NEW PRICE BLOCK - Styled like Hero mode, but more compact */}
         <div 
-          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto p-2"
+          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto p-1"
           style={{
              background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)`,
           }}
