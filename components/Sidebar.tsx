@@ -288,20 +288,74 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
 
             {/* Grid options - Only show if > 1 product */}
             {products.length > 1 && (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Layout da Grade</label>
-                <div className="flex gap-2">
-                  {[1, 2, 3].map(cols => (
-                    <button
-                      key={cols}
-                      onClick={() => setTheme({ ...theme, layoutCols: cols })}
-                      className={`flex-1 py-2 border rounded text-sm font-medium transition-colors ${theme.layoutCols === cols ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                    >
-                      {cols} Col
-                    </button>
-                  ))}
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Layout da Grade</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3].map(cols => (
+                      <button
+                        key={cols}
+                        onClick={() => setTheme({ ...theme, layoutCols: cols })}
+                        className={`flex-1 py-2 border rounded text-sm font-medium transition-colors ${theme.layoutCols === cols ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        {cols} Col
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+
+                <div className="space-y-4 border-t pt-4 mt-4">
+                  <label className="text-sm font-semibold text-gray-700">Ajustes Finos (Grade)</label>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <label className="font-medium text-gray-600">Proporção da Imagem</label>
+                      <span className="font-mono text-gray-500">{theme.imageRatio || 65}%</span>
+                    </div>
+                    <input 
+                      type="range"
+                      min="40"
+                      max="80"
+                      step="1"
+                      value={theme.imageRatio || 65}
+                      onChange={(e) => setTheme({ ...theme, imageRatio: Number(e.target.value) })}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <label className="font-medium text-gray-600">Tamanho Nome Produto</label>
+                      <span className="font-mono text-gray-500">{(theme.productNameSize || 1).toFixed(1)}x</span>
+                    </div>
+                    <input 
+                      type="range"
+                      min="0.8"
+                      max="1.5"
+                      step="0.1"
+                      value={theme.productNameSize || 1}
+                      onChange={(e) => setTheme({ ...theme, productNameSize: Number(e.target.value) })}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <label className="font-medium text-gray-600">Tamanho Card Preço</label>
+                      <span className="font-mono text-gray-500">{(theme.priceCardSize || 1).toFixed(1)}x</span>
+                    </div>
+                    <input 
+                      type="range"
+                      min="0.7"
+                      max="1.3"
+                      step="0.1"
+                      value={theme.priceCardSize || 1}
+                      onChange={(e) => setTheme({ ...theme, priceCardSize: Number(e.target.value) })}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
              <div className="space-y-2">

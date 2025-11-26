@@ -13,16 +13,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
   const [priceInt, priceDec] = priceFormatted.split('.');
   const oldPriceFormatted = product.oldPrice ? parseFloat(product.oldPrice).toFixed(2).replace('.', ',') : null;
 
+  // Define defaults for new theme properties
+  const imageRatio = theme.imageRatio || 65;
+  const productNameSize = theme.productNameSize || 1;
+  const priceCardSize = theme.priceCardSize || 1;
+
   return (
     <div 
-      className="relative flex flex-col items-center justify-between p-3 rounded-xl shadow-sm border overflow-hidden h-full bg-white/95 backdrop-blur-sm transition-all"
+      className="relative flex flex-col items-center justify-start p-3 rounded-xl shadow-sm border overflow-hidden h-full bg-white/95 backdrop-blur-sm transition-all"
       style={{ 
         borderColor: theme.secondaryColor,
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}
     >
-      {/* Product Image - Increased flex-1 to take more space */}
-      <div className="w-full flex-[5] min-h-0 mb-2 flex items-center justify-center bg-white rounded-lg overflow-hidden relative p-2">
+      {/* Product Image - Now controlled by height percentage */}
+      <div 
+        className="w-full min-h-0 mb-2 flex items-center justify-center bg-white rounded-lg overflow-hidden relative p-2"
+        style={{ height: `${imageRatio}%` }}
+      >
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply" />
         ) : (
@@ -39,16 +47,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme }) => {
         )}
       </div>
 
-      <div className="text-center w-full z-10 flex-shrink-0">
-        <h3 className="text-sm md:text-base font-bold leading-tight mb-2 text-gray-800 line-clamp-2 min-h-[2.5em]" style={{ color: theme.textColor }}>
+      {/* Text and Price container - Takes remaining height */}
+      <div 
+        className="text-center w-full z-10 flex flex-col justify-center items-center"
+        style={{ height: `${100 - imageRatio}%` }}
+      >
+        <h3 
+          className="font-bold leading-tight mb-2 text-gray-800 line-clamp-2" 
+          style={{ 
+            color: theme.textColor,
+            fontSize: `${productNameSize}rem`,
+            maxHeight: '3.5em' 
+          }}
+        >
           {product.name}
         </h3>
         
-        {/* NEW PRICE BLOCK - Compacted */}
+        {/* Price Block - Now controlled by scale transform */}
         <div 
-          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto py-0.5 px-1"
+          className="relative rounded-xl shadow-lg border-2 border-gray-100 flex flex-col items-center justify-center overflow-hidden mx-auto py-0.5 px-1 transition-transform"
           style={{
              background: `linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)`,
+             transform: `scale(${priceCardSize})`
           }}
         >
           {/* Old Price */}

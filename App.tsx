@@ -19,7 +19,10 @@ const INITIAL_THEME: PosterTheme = {
   headerSubtitle: 'SÓ HOJE',
   footerText: 'Ofertas válidas enquanto durarem os estoques',
   layoutCols: 2,
-  format: POSTER_FORMATS[2] // Default to A4
+  format: POSTER_FORMATS[2], // Default to A4
+  productNameSize: 1, // Default font size multiplier (1rem)
+  priceCardSize: 1, // Default scale (100%)
+  imageRatio: 65, // Default image height percentage (65%)
 };
 
 const INITIAL_PRODUCTS: Product[] = [

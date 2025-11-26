@@ -28,6 +28,10 @@ export interface PosterTheme {
   backgroundImage?: string;
   layoutCols: number;
   format: PosterFormat;
+  // New properties for fine-tuning
+  productNameSize?: number;
+  priceCardSize?: number;
+  imageRatio?: number; // Percentage of card height for the image
 }
 
 export interface AIGeneratedImage {
