@@ -39,7 +39,7 @@ export interface PosterTheme {
   textColor: string;
   headerTitle: HeaderElement;
   headerSubtitle: HeaderElement;
-  footerText: string;
+  footerText: HeaderElement;
   backgroundImage?: string;
   layoutCols: number;
   format: PosterFormat;

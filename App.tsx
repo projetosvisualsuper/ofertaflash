@@ -17,7 +17,7 @@ const INITIAL_THEME: PosterTheme = {
   textColor: '#1a1a1a',
   headerTitle: { text: 'SUPER OFERTAS', x: 0, y: 0, scale: 1 },
   headerSubtitle: { text: 'SÓ HOJE', x: 0, y: 0, scale: 1 },
-  footerText: 'Ofertas válidas enquanto durarem os estoques',
+  footerText: { text: 'Ofertas válidas enquanto durarem os estoques', x: 0, y: 0, scale: 1 },
   layoutCols: 2,
   format: POSTER_FORMATS[2], // Default to A4
   priceCardStyle: 'default',

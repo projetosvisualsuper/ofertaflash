@@ -304,9 +304,12 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               <p 
                  ref={footerRef}
                  className="text-white font-bold uppercase tracking-wider opacity-95"
-                 style={{ fontSize: isStory ? '1.1rem' : '1rem' }}
+                 style={{ 
+                   fontSize: isStory ? '1.1rem' : '1rem',
+                   transform: `translateX(${theme.footerText.x}px) translateY(${theme.footerText.y}px) scale(${theme.footerText.scale})`
+                 }}
               >
-                {theme.footerText}
+                {theme.footerText.text}
               </p>
             </footer>
          </div>
