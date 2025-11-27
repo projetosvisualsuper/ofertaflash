@@ -145,7 +145,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
             >
                <div className={`flex flex-col ${theme.logo ? 'w-3/4' : 'items-center w-full'}`}>
                  <h1 
-                    className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'}`}
+                    className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'} whitespace-nowrap`}
                     style={{ 
                       textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
                       fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem',
@@ -156,7 +156,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                    {theme.headerTitle.text}
                  </h1>
                  <div 
-                   className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 ${theme.logo ? 'self-center' : ''}`}
+                   className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 ${theme.logo ? 'self-center' : ''} whitespace-nowrap`}
                    style={{ 
                      backgroundColor: theme.secondaryColor, 
                      color: theme.primaryColor,
