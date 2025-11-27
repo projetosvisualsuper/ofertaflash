@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import PosterPreview from '../components/PosterPreview';
+import React, { useState, useEffect, useRef } from 'react';
+import SocialMediaSidebar from '../components/SocialMediaSidebar';
+import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat } from '../../types';
 import { Image } from 'lucide-react';
 
@@ -14,6 +14,7 @@ interface SocialMediaPageProps {
 
 export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats }: SocialMediaPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const posterRef = useRef<PosterPreviewRef>(null);
   
   // Filter formats locally to ensure only social media formats are used
   const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
@@ -32,14 +33,19 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
     }
   }, [theme.format.id, socialFormats, setTheme]);
 
+  const handleDownload = () => {
+    if (posterRef.current) {
+      posterRef.current.triggerDownload();
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
-      <Sidebar 
+      <SocialMediaSidebar 
         theme={theme} 
         setTheme={setTheme} 
-        products={products} 
-        setProducts={setProducts} 
         formats={socialFormats} // Pass the filtered list
+        handleDownload={handleDownload}
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
@@ -53,6 +59,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
          )}
          <div className="flex-1 relative overflow-hidden bg-gray-200/80">
             <PosterPreview 
+              ref={posterRef}
               theme={theme} 
               products={products} 
               onDownloadStart={() => setIsDownloading(true)}

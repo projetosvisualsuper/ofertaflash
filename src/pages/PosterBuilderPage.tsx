@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
-import PosterPreview from '../components/PosterPreview';
+import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat } from '../../types';
 import { POSTER_FORMATS } from '../state/initialState';
+import { Download } from 'lucide-react';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -14,6 +15,7 @@ interface PosterBuilderPageProps {
 
 export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats }: PosterBuilderPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const posterRef = useRef<PosterPreviewRef>(null);
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -29,6 +31,12 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
     };
     loadFonts();
   }, []);
+
+  const handleDownload = () => {
+    if (posterRef.current) {
+      posterRef.current.triggerDownload();
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
@@ -51,11 +59,22 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
          )}
          <div className="flex-1 relative overflow-hidden bg-gray-200/80">
             <PosterPreview 
+              ref={posterRef}
               theme={theme} 
               products={products} 
               onDownloadStart={() => setIsDownloading(true)}
               onDownloadEnd={() => setIsDownloading(false)}
             />
+         </div>
+         
+         <div className="mt-8 flex gap-4 justify-center p-4 flex-shrink-0">
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95"
+            >
+              <Download size={20} />
+              Baixar {theme.format.name}
+            </button>
          </div>
       </main>
     </div>

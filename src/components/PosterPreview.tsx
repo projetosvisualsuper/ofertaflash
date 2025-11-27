@@ -1,10 +1,14 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useImperativeHandle, forwardRef } from 'react';
 import { PosterTheme, Product } from '../types';
 import ProductCard from './ProductCard';
 import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 import PosterHeader from './PosterHeader';
 import PriceDisplay from './PriceDisplay';
+
+export interface PosterPreviewRef {
+  triggerDownload: () => Promise<void>;
+}
 
 interface PosterPreviewProps {
   theme: PosterTheme;
@@ -19,7 +23,7 @@ const defaultLayout = {
   price: { x: 0, y: 0, scale: 1 },
 };
 
-const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownloadStart, onDownloadEnd }) => {
+const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme, products, onDownloadStart, onDownloadEnd }, ref) => {
   const posterRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLParagraphElement>(null);
 
@@ -35,21 +39,19 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
         const scale = targetWidth / element.offsetWidth;
         
         // Calculate the source height that maintains the correct aspect ratio.
-        // This is crucial because element.offsetHeight can be miscalculated by the library in flex layouts.
         const sourceHeight = element.offsetWidth * (targetHeight / targetWidth);
 
         const dataUrl = await toPng(element, { 
           cacheBust: true, 
           quality: 1.0,
-          pixelRatio: 1, // We handle scaling manually via CSS transform.
+          pixelRatio: 1,
           width: targetWidth,
           height: targetHeight,
-          // Apply styles to the cloned node before capturing to ensure correct scaling and dimensions.
           style: {
              transform: `scale(${scale})`,
              transformOrigin: 'top left',
              width: `${element.offsetWidth}px`,
-             height: `${sourceHeight}px`, // Use the calculated height to enforce the correct aspect ratio.
+             height: `${sourceHeight}px`,
              maxWidth: 'none',
              maxHeight: 'none',
              margin: '0',
@@ -69,6 +71,10 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
       }
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    triggerDownload: handleDownload,
+  }));
 
   const isHeroMode = products.length === 1;
   const product = products[0];
@@ -270,18 +276,8 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
             </footer>
          </div>
       </div>
-
-      <div className="mt-8 flex gap-4">
-        <button
-          onClick={handleDownload}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95"
-        >
-          <Download size={20} />
-          Baixar {theme.format.name}
-        </button>
-      </div>
     </div>
   );
-};
+});
 
 export default PosterPreview;
