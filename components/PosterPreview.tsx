@@ -189,7 +189,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
-               <div className={`flex flex-col ${theme.logo ? 'items-start w-3/4' : 'items-center w-full'}`}>
+               <div className={`flex flex-col ${theme.logo ? 'w-3/4' : 'items-center w-full'}`}>
                  <h1 
                     ref={titleRef}
                     className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'}`}
@@ -202,7 +202,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                  </h1>
                  <div 
                    ref={subtitleRef}
-                   className="inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20"
+                   className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 ${theme.logo ? 'self-center' : ''}`}
                    style={{ 
                      backgroundColor: theme.secondaryColor, 
                      color: theme.primaryColor,
