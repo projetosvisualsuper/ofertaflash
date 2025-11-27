@@ -3,28 +3,34 @@ import Sidebar from '../components/Sidebar';
 import PosterPreview from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat } from '../../types';
 import { Image } from 'lucide-react';
+import { SOCIAL_MEDIA_FORMATS } from '../config/socialMediaFormats';
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
-  formats: PosterFormat[];
+  formats: PosterFormat[]; // Keeping for App.tsx consistency, but using SOCIAL_MEDIA_FORMATS internally
 }
 
-export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats }: SocialMediaPageProps) {
+export default function SocialMediaPage({ theme, setTheme, products, setProducts }: SocialMediaPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  const socialFormats = SOCIAL_MEDIA_FORMATS;
 
   // Effect to ensure a social media format is selected when entering this module
   useEffect(() => {
-    if (theme.format.id === 'a4' || theme.format.id === 'tv') {
-      const feedFormat = formats.find(f => f.id === 'feed');
-      if (feedFormat) {
+    const isSocialFormat = socialFormats.some(f => f.id === theme.format.id);
+    
+    if (!isSocialFormat) {
+      // Default to 'feed' (square) if the current format is not social media compatible
+      const defaultFormat = socialFormats.find(f => f.id === 'feed');
+      if (defaultFormat) {
         // This relies on the Sidebar's handleFormatChange logic to apply presets
-        setTheme(prev => ({ ...prev, format: feedFormat }));
+        setTheme(prev => ({ ...prev, format: defaultFormat }));
       }
     }
-  }, [theme.format.id, formats, setTheme]);
+  }, [theme.format.id, socialFormats, setTheme]);
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
@@ -33,7 +39,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         setTheme={setTheme} 
         products={products} 
         setProducts={setProducts} 
-        formats={formats}
+        formats={socialFormats} // Pass the filtered list
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
