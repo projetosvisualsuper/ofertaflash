@@ -15,8 +15,8 @@ const INITIAL_THEME: PosterTheme = {
   secondaryColor: '#fbbf24', // amber-400
   backgroundColor: '#ffffff',
   textColor: '#1a1a1a',
-  headerTitle: 'SUPER OFERTAS',
-  headerSubtitle: 'SÓ HOJE',
+  headerTitle: { text: 'SUPER OFERTAS', x: 0, y: 0, scale: 1 },
+  headerSubtitle: { text: 'SÓ HOJE', x: 0, y: 0, scale: 1 },
   footerText: 'Ofertas válidas enquanto durarem os estoques',
   layoutCols: 2,
   format: POSTER_FORMATS[2], // Default to A4

@@ -69,8 +69,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
 
   const handleGenerateHeadline = async () => {
     setIsGenerating(true);
-    const headline = await generateMarketingCopy(theme.headerSubtitle || "ofertas");
-    setTheme(prev => ({ ...prev, headerTitle: headline }));
+    const headline = await generateMarketingCopy(theme.headerSubtitle.text || "ofertas");
+    setTheme(prev => ({ ...prev, headerTitle: { ...prev.headerTitle, text: headline } }));
     setIsGenerating(false);
   };
 
@@ -249,10 +249,22 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                   ))}
                </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label>
-              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerTitle} onChange={(e) => setTheme({ ...theme, headerTitle: e.target.value })} placeholder="Título Principal"/>
-              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerSubtitle} onChange={(e) => setTheme({ ...theme, headerSubtitle: e.target.value })} placeholder="Subtítulo"/>
+              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerTitle.text} onChange={(e) => setTheme({ ...theme, headerTitle: {...theme.headerTitle, text: e.target.value} })} placeholder="Título Principal"/>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
+                <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Título</label><span className="font-mono text-gray-500">{(theme.headerTitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={theme.headerTitle.scale} onChange={(e) => setTheme({...theme, headerTitle: {...theme.headerTitle, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{theme.headerTitle.x}px</span></div><input type="range" min="-100" max="100" value={theme.headerTitle.x} onChange={(e) => setTheme({...theme, headerTitle: {...theme.headerTitle, x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{theme.headerTitle.y}px</span></div><input type="range" min="-100" max="100" value={theme.headerTitle.y} onChange={(e) => setTheme({...theme, headerTitle: {...theme.headerTitle, y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+              </div>
+              <hr className="my-3"/>
+              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerSubtitle.text} onChange={(e) => setTheme({ ...theme, headerSubtitle: {...theme.headerSubtitle, text: e.target.value} })} placeholder="Subtítulo"/>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
+                <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Subtítulo</label><span className="font-mono text-gray-500">{(theme.headerSubtitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={theme.headerSubtitle.scale} onChange={(e) => setTheme({...theme, headerSubtitle: {...theme.headerSubtitle, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{theme.headerSubtitle.x}px</span></div><input type="range" min="-100" max="100" value={theme.headerSubtitle.x} onChange={(e) => setTheme({...theme, headerSubtitle: {...theme.headerSubtitle, x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{theme.headerSubtitle.y}px</span></div><input type="range" min="-100" max="100" value={theme.headerSubtitle.y} onChange={(e) => setTheme({...theme, headerSubtitle: {...theme.headerSubtitle, y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+              </div>
+              <hr className="my-3"/>
               <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.footerText} onChange={(e) => setTheme({ ...theme, footerText: e.target.value })} placeholder="Texto do Rodapé"/>
             </div>
             <div className="space-y-2">

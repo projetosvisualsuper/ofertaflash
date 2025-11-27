@@ -19,8 +19,6 @@ const defaultLayout = {
 
 const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownloadStart, onDownloadEnd }) => {
   const posterRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLParagraphElement>(null);
 
   const handleDownload = async () => {
@@ -79,51 +77,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const totalRows = Math.max(1, Math.ceil(products.length / theme.layoutCols));
 
   useLayoutEffect(() => {
-    const titleElement = titleRef.current;
-    const subtitleElement = subtitleRef.current;
     const footerElement = footerRef.current;
-
-    // Scale Title
-    if (titleElement && titleElement.parentElement) {
-        titleElement.style.transform = 'scale(1)';
-        titleElement.style.whiteSpace = 'nowrap';
-
-        const parentWidth = titleElement.parentElement.clientWidth;
-        const titleWidth = titleElement.scrollWidth;
-        const availableWidth = parentWidth * 0.98;
-
-        if (titleWidth > availableWidth) {
-            const scale = availableWidth / titleWidth;
-            const transformOrigin = theme.logo ? 'left center' : 'center';
-            titleElement.style.transformOrigin = transformOrigin;
-            titleElement.style.transform = `scale(${scale})`;
-        } else {
-            const transformOrigin = theme.logo ? 'left center' : 'center';
-            titleElement.style.transformOrigin = transformOrigin;
-            titleElement.style.transform = 'scale(1)';
-        }
-    }
-
-    // Scale Subtitle
-    if (subtitleElement && subtitleElement.parentElement) {
-        subtitleElement.style.transform = 'rotate(-1deg)';
-        subtitleElement.style.whiteSpace = 'nowrap';
-
-        const parentWidth = subtitleElement.parentElement.clientWidth;
-        const subtitleWidth = subtitleElement.scrollWidth;
-        const availableWidth = parentWidth * 0.98;
-
-        if (subtitleWidth > availableWidth) {
-            const scale = availableWidth / subtitleWidth;
-            const transformOrigin = theme.logo ? 'left center' : 'center';
-            subtitleElement.style.transformOrigin = transformOrigin;
-            subtitleElement.style.transform = `scale(${scale}) rotate(-1deg)`;
-        } else {
-            const transformOrigin = theme.logo ? 'left center' : 'center';
-            subtitleElement.style.transformOrigin = transformOrigin;
-            subtitleElement.style.transform = 'rotate(-1deg)';
-        }
-    }
 
     // Scale Footer Text
     if (footerElement) {
@@ -147,7 +101,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
             footerElement.style.fontSize = `${currentFontSize}px`;
         }
     }
-  }, [theme.headerTitle, theme.headerSubtitle, theme.footerText, theme.logo, theme.format, fontScale]);
+  }, [theme.footerText, theme.format, fontScale]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -191,25 +145,27 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
             >
                <div className={`flex flex-col ${theme.logo ? 'w-3/4' : 'items-center w-full'}`}>
                  <h1 
-                    ref={titleRef}
                     className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'}`}
                     style={{ 
                       textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
-                      fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem'
+                      fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem',
+                      transform: `translateX(${theme.headerTitle.x}px) translateY(${theme.headerTitle.y}px) scale(${theme.headerTitle.scale})`,
+                      transformOrigin: theme.logo ? 'left center' : 'center',
                     }}
                  >
-                   {theme.headerTitle}
+                   {theme.headerTitle.text}
                  </h1>
                  <div 
-                   ref={subtitleRef}
                    className={`inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg border-2 border-white/20 relative z-20 ${theme.logo ? 'self-center' : ''}`}
                    style={{ 
                      backgroundColor: theme.secondaryColor, 
                      color: theme.primaryColor,
-                     fontSize: 1.25 * fontScale * (theme.logo ? 0.9 : 1) + 'rem'
+                     fontSize: 1.25 * fontScale * (theme.logo ? 0.9 : 1) + 'rem',
+                     transform: `translateX(${theme.headerSubtitle.x}px) translateY(${theme.headerSubtitle.y}px) scale(${theme.headerSubtitle.scale}) rotate(-1deg)`,
+                     transformOrigin: theme.logo ? 'left center' : 'center',
                    }}
                  >
-                   {theme.headerSubtitle}
+                   {theme.headerSubtitle.text}
                  </div>
                </div>
                {theme.logo && (

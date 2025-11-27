@@ -25,13 +25,20 @@ export interface PosterFormat {
   icon: string;
 }
 
+export interface HeaderElement {
+  text: string;
+  x: number;
+  y: number;
+  scale: number;
+}
+
 export interface PosterTheme {
   primaryColor: string;
   secondaryColor: string;
   backgroundColor: string;
   textColor: string;
-  headerTitle: string;
-  headerSubtitle: string;
+  headerTitle: HeaderElement;
+  headerSubtitle: HeaderElement;
   footerText: string;
   backgroundImage?: string;
   layoutCols: number;
