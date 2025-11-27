@@ -47,8 +47,15 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, them
         <span className="font-black tracking-tighter leading-[0.8]" style={priceDecStyle}>,{priceDec}</span>
         {isHero ? (
           <span 
-            className="font-bold text-gray-400 uppercase tracking-wider absolute bottom-0 right-[-1.5em]" 
-            style={{ ...unitStyle, color: theme.textColor, opacity: 0.8 }}
+            className="font-bold text-gray-400 uppercase tracking-wider absolute" 
+            style={{ 
+              ...unitStyle, 
+              color: theme.textColor, 
+              opacity: 0.8,
+              // Ajuste de posição: bottom-0.5em e right-1.5em
+              bottom: '-0.5em', 
+              right: '-1.5em' 
+            }}
           >
             {unit}
           </span>
