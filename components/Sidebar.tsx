@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
-import { LAYOUT_PRESETS } from '../config/layoutPresets';
+import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
 
 interface SidebarProps {
   theme: PosterTheme;
