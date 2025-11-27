@@ -36,8 +36,6 @@ export interface PosterTheme {
   format: PosterFormat;
   logo?: {
     src: string;
-    x: number;
-    y: number;
     scale: number;
   }
 }

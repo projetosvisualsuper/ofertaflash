@@ -58,8 +58,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
           ...prev,
           logo: {
             src: reader.result as string,
-            x: 0,
-            y: 0,
             scale: 1,
           }
         }));
@@ -255,10 +253,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                     <img src={theme.logo.src} className="w-12 h-12 object-contain rounded bg-white border p-1" />
                     <button onClick={() => setTheme({...theme, logo: undefined})} className="ml-auto text-xs text-red-500 hover:underline">Remover</button>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho</label><span className="font-mono text-gray-500">{(theme.logo.scale).toFixed(1)}x</span></div><input type="range" min="0.2" max="3" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
-                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{theme.logo.x}px</span></div><input type="range" min="-200" max="200" value={theme.logo.x} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
-                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{theme.logo.y}px</span></div><input type="range" min="-100" max="100" value={theme.logo.y} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, y: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
+                  <div className="grid grid-cols-1 gap-x-4 gap-y-2">
+                    <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho</label><span className="font-mono text-gray-500">{(theme.logo.scale).toFixed(1)}x</span></div><input type="range" min="0.2" max="3" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({...theme, logo: {...theme.logo!, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                   </div>
                 </div>
               )}

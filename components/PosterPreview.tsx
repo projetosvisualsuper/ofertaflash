@@ -108,40 +108,43 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               />
 
             <header 
-              className="relative z-10 w-full flex-shrink-0 transition-all flex flex-col items-center justify-center"
+              className={`relative z-10 w-full flex-shrink-0 transition-all ${theme.logo ? 'flex-row justify-between items-center' : 'flex flex-col items-center justify-center'}`}
               style={{ 
                 background: `linear-gradient(to bottom, ${theme.primaryColor}, ${theme.primaryColor}CC, transparent)`,
-                padding: isLandscape ? '1.5rem' : '2rem 1.5rem 0.5rem',
+                padding: isLandscape ? '1.5rem 2rem' : '2rem 1.5rem 0.5rem',
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
                {theme.logo && (
                  <div 
-                   className="absolute top-1/2 left-1/2 w-32 h-16 z-30"
+                   className="w-1/4 h-full flex items-center"
                    style={{
-                     transform: `translateX(calc(-50% + ${theme.logo.x}px)) translateY(calc(-50% + ${theme.logo.y}px)) scale(${theme.logo.scale})`
+                     transform: `scale(${theme.logo.scale})`,
+                     transformOrigin: 'left center'
                    }}
                  >
-                   <img src={theme.logo.src} className="w-full h-full object-contain drop-shadow-lg" />
+                   <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
                  </div>
                )}
-               <h1 className="font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white text-center"
-                  style={{ 
-                    textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
-                    fontSize: (isLandscape ? 4 : 3.5) * fontScale + 'rem'
-                  }}
-               >
-                 {theme.headerTitle}
-               </h1>
-               <div 
-                 className="inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg transform -rotate-1 border-2 border-white/20 relative z-20"
-                 style={{ 
-                   backgroundColor: theme.secondaryColor, 
-                   color: theme.primaryColor,
-                   fontSize: 1.25 * fontScale + 'rem'
-                 }}
-               >
-                 {theme.headerSubtitle}
+               <div className={`flex flex-col ${theme.logo ? 'items-end w-3/4' : 'items-center'}`}>
+                 <h1 className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-right' : 'text-center'}`}
+                    style={{ 
+                      textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
+                      fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem'
+                    }}
+                 >
+                   {theme.headerTitle}
+                 </h1>
+                 <div 
+                   className="inline-block px-8 py-1.5 font-bold uppercase tracking-widest rounded-full shadow-lg transform -rotate-1 border-2 border-white/20 relative z-20"
+                   style={{ 
+                     backgroundColor: theme.secondaryColor, 
+                     color: theme.primaryColor,
+                     fontSize: 1.25 * fontScale * (theme.logo ? 0.9 : 1) + 'rem'
+                   }}
+                 >
+                   {theme.headerSubtitle}
+                 </div>
                </div>
             </header>
 
