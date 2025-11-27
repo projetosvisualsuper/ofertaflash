@@ -31,13 +31,30 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
         const targetWidth = theme.format.width;
         const targetHeight = theme.format.height;
 
+        // Calculate the scale factor based on the element's current screen width.
+        const scale = targetWidth / element.offsetWidth;
+        
+        // Calculate the source height that maintains the correct aspect ratio.
+        // This is crucial because element.offsetHeight can be miscalculated by the library in flex layouts.
+        const sourceHeight = element.offsetWidth * (targetHeight / targetWidth);
+
         const dataUrl = await toPng(element, { 
           cacheBust: true, 
           quality: 1.0,
-          pixelRatio: 1,
+          pixelRatio: 1, // We handle scaling manually via CSS transform.
           width: targetWidth,
           height: targetHeight,
-          backgroundColor: theme.backgroundColor,
+          // Apply styles to the cloned node before capturing to ensure correct scaling and dimensions.
+          style: {
+             transform: `scale(${scale})`,
+             transformOrigin: 'top left',
+             width: `${element.offsetWidth}px`,
+             height: `${sourceHeight}px`, // Use the calculated height to enforce the correct aspect ratio.
+             maxWidth: 'none',
+             maxHeight: 'none',
+             margin: '0',
+             boxShadow: 'none',
+          }
         });
 
         const link = document.createElement('a');
