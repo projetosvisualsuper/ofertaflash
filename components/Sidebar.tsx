@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
 import { THEME_PRESETS } from '../src/config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../src/config/headerLayoutPresets';
+import { FONT_PRESETS } from '../src/config/fontPresets';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -310,6 +311,21 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                       </div>
                       <span className="text-xs font-semibold">{preset.name}</span>
                     </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Type size={16}/> Fonte do Título</label>
+              <div className="grid grid-cols-3 gap-2">
+                {FONT_PRESETS.map(preset => (
+                  <button 
+                    key={preset.id} 
+                    onClick={() => setTheme(prev => ({ ...prev, fontFamilyDisplay: preset.fontFamily }))}
+                    className={`py-2 border rounded text-sm font-medium transition-colors ${theme.fontFamilyDisplay === preset.fontFamily ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                    style={{ fontFamily: preset.fontFamily }}
+                  >
+                    {preset.name}
                   </button>
                 ))}
               </div>
