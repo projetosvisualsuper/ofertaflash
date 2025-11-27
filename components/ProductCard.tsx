@@ -87,9 +87,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
       </div>
 
       {/* Text Content Container */}
-      <div className="flex-shrink-0 w-full flex flex-col" style={{ height: isStory ? '38%' : '45%' }}>
-        {/* Title & Description Area */}
-        <div className="flex-1 w-full flex flex-col items-center justify-center text-center px-2 min-h-0">
+      <div className="flex-shrink-0 w-full flex flex-col justify-between p-3" style={{ height: isStory ? '42%' : '45%' }}>
+        {/* Top part: Title & Description */}
+        <div className="text-center">
           {/* Name Container */}
           <div
             className="w-full"
@@ -106,16 +106,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
               className="w-full"
               style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}
             >
-              <p className="text-xs text-gray-600 mt-1 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
+              <p className="text-xs text-gray-600 mt-2 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
                 {product.description}
               </p>
             </div>
           )}
         </div>
         
-        {/* Price Block */}
+        {/* Bottom part: Price Block */}
         <div 
-          className="flex-shrink-0 w-full flex items-start justify-center pt-1"
+          className="w-full flex items-start justify-center"
           style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
         >
           <div ref={priceContainerRef} className="flex items-end justify-center gap-1 origin-center">
