@@ -4,6 +4,7 @@ import ProductCard from './ProductCard';
 import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 import PosterHeader from './PosterHeader';
+import PriceDisplay from './PriceDisplay';
 
 interface PosterPreviewProps {
   theme: PosterTheme;
