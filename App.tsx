@@ -7,11 +7,15 @@ import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat } from './types';
+import { useLocalStorageState } from './src/hooks/useLocalStorageState';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState('poster');
-  const [theme, setTheme] = useState<PosterTheme>(INITIAL_THEME);
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  
+  // Use o hook para persistir o estado
+  const [theme, setTheme] = useLocalStorageState<PosterTheme>('ofertaflash_theme', INITIAL_THEME);
+  const [products, setProducts] = useLocalStorageState<Product[]>('ofertaflash_products', INITIAL_PRODUCTS);
+  
   const formats: PosterFormat[] = POSTER_FORMATS;
 
   const renderModule = () => {

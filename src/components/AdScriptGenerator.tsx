@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Product, PosterTheme } from '../../types';
-import { Wand2, Loader2, Zap, Clipboard, Check } from 'lucide-react';
+import { Wand2, Loader2, Zap, Clipboard, Check, Download } from 'lucide-react';
 import { generateAdScript } from '../../services/geminiService';
 
 interface AdScriptGeneratorProps {
@@ -35,6 +35,18 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       navigator.clipboard.writeText(script);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+  
+  const handleDownload = () => {
+    if (script && selectedProduct) {
+      const element = document.createElement("a");
+      const file = new Blob([script], { type: 'text/plain' });
+      element.href = URL.createObjectURL(file);
+      element.download = `roteiro-anuncio-${selectedProduct.name.replace(/\s+/g, '-').toLowerCase()}.txt`;
+      document.body.appendChild(element); // Required for Firefox
+      element.click();
+      document.body.removeChild(element);
     }
   };
 
@@ -100,15 +112,25 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       <div className="lg:w-2/3 w-full flex flex-col bg-white p-6 rounded-xl shadow-md">
         <div className="flex justify-between items-center mb-4 border-b pb-2">
           <h3 className="text-xl font-bold text-gray-800">Roteiro Gerado</h3>
-          <button 
-            onClick={handleCopy}
-            disabled={!script}
-            className="flex items-center gap-1 text-sm px-3 py-1 rounded transition-colors disabled:opacity-50"
-            style={{ backgroundColor: isCopied ? '#10b981' : '#e0e7ff', color: isCopied ? 'white' : '#4f46e5' }}
-          >
-            {isCopied ? <Check size={16} /> : <Clipboard size={16} />}
-            {isCopied ? 'Copiado!' : 'Copiar'}
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleDownload}
+              disabled={!script}
+              className="flex items-center gap-1 text-sm px-3 py-1 rounded transition-colors disabled:opacity-50 bg-gray-200 hover:bg-gray-300 text-gray-700"
+            >
+              <Download size={16} />
+              Baixar
+            </button>
+            <button 
+              onClick={handleCopy}
+              disabled={!script}
+              className="flex items-center gap-1 text-sm px-3 py-1 rounded transition-colors disabled:opacity-50"
+              style={{ backgroundColor: isCopied ? '#10b981' : '#e0e7ff', color: isCopied ? 'white' : '#4f46e5' }}
+            >
+              {isCopied ? <Check size={16} /> : <Clipboard size={16} />}
+              {isCopied ? 'Copiado!' : 'Copiar'}
+            </button>
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto whitespace-pre-wrap text-sm text-gray-700 font-mono bg-gray-50 p-4 rounded border">

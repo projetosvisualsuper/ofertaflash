@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { LAYOUT_PRESETS } from '../config/layoutPresets';
-import { THEME_PRESETS } from '../config/themePresets';
-import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
-import { FONT_PRESETS } from '../config/fontPresets';
-import { HEADER_ART_PRESETS } from '../config/headerArtPresets';
+import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
+
+// Importando o hook useLocalStorageState para gerenciar temas personalizados
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -14,6 +14,7 @@ interface SidebarProps {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[];
+  handleFormatChange: (newFormat: PosterFormat) => void;
 }
 
 const defaultLayout = {
@@ -23,11 +24,13 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats }) => {
+const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
+  const [customThemes, setCustomThemes] = useLocalStorageState<ThemePreset[]>('ofertaflash_custom_themes', []);
+  const [newThemeName, setNewThemeName] = useState('');
 
   const handleProductChange = (id: string, field: keyof Product, value: any) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
@@ -118,23 +121,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
-  const handleFormatChange = (newFormat: PosterFormat) => {
-    const preset = LAYOUT_PRESETS[newFormat.id] || {};
-    setTheme(prevTheme => {
-      // Preserve existing text when applying presets
-      const updatedPreset = { ...preset };
-      if (updatedPreset.headerTitle) updatedPreset.headerTitle.text = prevTheme.headerTitle.text;
-      if (updatedPreset.headerSubtitle) updatedPreset.headerSubtitle.text = prevTheme.headerSubtitle.text;
-      if (updatedPreset.footerText) updatedPreset.footerText.text = prevTheme.footerText.text;
-
-      return {
-        ...prevTheme,
-        ...updatedPreset,
-        format: newFormat,
-      };
-    });
-  };
-
   const handleThemePresetChange = (presetTheme: Partial<PosterTheme>) => {
     setTheme(prev => {
       // A helper to merge preset elements while preserving user's text and layout
@@ -165,6 +151,55 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     });
   };
 
+  const handleSaveCustomTheme = () => {
+    if (!newThemeName.trim()) return;
+
+    // Cria um objeto de tema parcial para salvar (excluindo dados de produto e formato)
+    const themeToSave: Partial<PosterTheme> = {
+      primaryColor: theme.primaryColor,
+      secondaryColor: theme.secondaryColor,
+      backgroundColor: theme.backgroundColor,
+      textColor: theme.textColor,
+      headerTextColor: theme.headerTextColor,
+      priceCardStyle: theme.priceCardStyle,
+      priceCardBackgroundColor: theme.priceCardBackgroundColor,
+      priceCardTextColor: theme.priceCardTextColor,
+      fontFamilyDisplay: theme.fontFamilyDisplay,
+      fontFamilyBody: theme.fontFamilyBody,
+      headerLayoutId: theme.headerLayoutId,
+      headerArtStyleId: theme.headerArtStyleId,
+      headerTitleCase: theme.headerTitleCase,
+      hasFrame: theme.hasFrame,
+      frameColor: theme.frameColor,
+      frameThickness: theme.frameThickness,
+      unitBottomEm: theme.unitBottomEm,
+      unitRightEm: theme.unitRightEm,
+      headerImage: theme.headerImage,
+      headerImageMode: theme.headerImageMode,
+      headerImageOpacity: theme.headerImageOpacity,
+      // Salva apenas o texto e escala dos elementos, não a posição (x, y) que é muito específica do formato
+      headerTitle: { text: theme.headerTitle.text, scale: theme.headerTitle.scale, x: 0, y: 0 },
+      headerSubtitle: { text: theme.headerSubtitle.text, scale: theme.headerSubtitle.scale, x: 0, y: 0 },
+      footerText: { text: theme.footerText.text, scale: theme.footerText.scale, x: 0, y: 0 },
+      logo: theme.logo,
+      backgroundImage: theme.backgroundImage,
+      layoutCols: theme.layoutCols,
+    };
+
+    const newPreset: ThemePreset = {
+      id: crypto.randomUUID(),
+      name: newThemeName.trim(),
+      theme: themeToSave,
+    };
+
+    setCustomThemes(prev => [...prev, newPreset]);
+    setNewThemeName('');
+  };
+
+  const handleDeleteCustomTheme = (id: string) => {
+    setCustomThemes(prev => prev.filter(t => t.id !== id));
+  };
+
   const handleGenerateHeadline = async () => {
     setIsGenerating(true);
     const headline = await generateMarketingCopy(theme.headerSubtitle.text || "ofertas");
@@ -191,6 +226,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
     setIsGenerating(false);
   }
+
+  const allThemes = [...THEME_PRESETS, ...customThemes];
 
   return (
     <div className="w-full md:w-[400px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative">
@@ -360,6 +397,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                   ))}
                </div>
             </div>
+            
+            {/* Temas Salvos */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Temas Rápidos</label>
               <div className="grid grid-cols-2 gap-2">
@@ -376,7 +415,53 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 ))}
               </div>
             </div>
-            
+
+            {/* Temas Personalizados */}
+            <div className="space-y-2 border-t pt-4">
+              <label className="text-sm font-semibold text-gray-700">Meus Temas Salvos ({customThemes.length})</label>
+              <div className="grid grid-cols-2 gap-2">
+                {customThemes.map(preset => (
+                  <div key={preset.id} className="relative group">
+                    <button 
+                      onClick={() => handleThemePresetChange(preset.theme)} 
+                      className="w-full p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors flex items-center gap-2"
+                    >
+                      <div className="flex -space-x-1">
+                        <span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span>
+                        <span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span>
+                      </div>
+                      <span className="text-xs font-semibold truncate">{preset.name}</span>
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteCustomTheme(preset.id)}
+                      className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md"
+                      title="Excluir Tema"
+                    >
+                      <XCircle size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex gap-2 pt-2">
+                <input 
+                  type="text"
+                  placeholder="Nome do novo tema"
+                  value={newThemeName}
+                  onChange={(e) => setNewThemeName(e.target.value)}
+                  className="flex-1 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                <button 
+                  onClick={handleSaveCustomTheme}
+                  disabled={!newThemeName.trim()}
+                  className="py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
+                >
+                  <Save size={16} /> Salvar
+                </button>
+              </div>
+            </div>
+            {/* FIM Temas Personalizados */}
+
             {/* NOVO: Imagem do Cabeçalho */}
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><ImageIcon size={16}/> Imagem do Cabeçalho</label>
