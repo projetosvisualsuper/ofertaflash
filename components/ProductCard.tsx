@@ -87,7 +87,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
       </div>
 
       {/* Text Content Container */}
-      <div className="flex-shrink-0 w-full flex flex-col justify-between p-2 pt-3 pb-4" style={{ height: isStory ? '40%' : '45%' }}>
+      <div className="flex-shrink-0 w-full flex flex-col justify-between p-3" style={{ height: isStory ? '48%' : '45%' }}>
         {/* Top part: Title & Description */}
         <div className="text-center">
           {/* Name Container */}
@@ -106,7 +106,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols, i
               className="w-full"
               style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}
             >
-              <p className="text-xs text-gray-600 mt-3 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
+              <p className="text-xs text-gray-600 mt-2 line-clamp-2" style={{ color: theme.textColor, opacity: 0.8 }}>
                 {product.description}
               </p>
             </div>
