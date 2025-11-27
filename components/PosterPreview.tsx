@@ -21,6 +21,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const posterRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLParagraphElement>(null);
 
   const handleDownload = async () => {
     if (posterRef.current) {
@@ -80,6 +81,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   useLayoutEffect(() => {
     const titleElement = titleRef.current;
     const subtitleElement = subtitleRef.current;
+    const footerElement = footerRef.current;
 
     // Scale Title
     if (titleElement && titleElement.parentElement) {
@@ -122,7 +124,30 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
             subtitleElement.style.transform = 'rotate(-1deg)';
         }
     }
-  }, [theme.headerTitle, theme.headerSubtitle, theme.logo, theme.format, fontScale]);
+
+    // Scale Footer Text
+    if (footerElement) {
+        // Reset styles to get natural dimensions
+        footerElement.style.fontSize = '';
+        footerElement.style.lineHeight = '';
+        footerElement.style.whiteSpace = 'nowrap'; // Force single line to measure
+        
+        const computedStyle = window.getComputedStyle(footerElement);
+        let currentFontSize = parseFloat(computedStyle.fontSize);
+        const singleLineHeight = footerElement.clientHeight;
+        const maxAllowedHeight = singleLineHeight * 2.2; // Allow for 2 lines with a small buffer
+
+        // Allow text to wrap again
+        footerElement.style.whiteSpace = 'normal';
+
+        // Check if the wrapped text overflows the 2-line height limit
+        // Use a while loop to decrement font size until it fits
+        while (footerElement.scrollHeight > maxAllowedHeight && currentFontSize > 8) { // Minimum font size of 8px
+            currentFontSize -= 0.5; // Decrement by 0.5px for smoother scaling
+            footerElement.style.fontSize = `${currentFontSize}px`;
+        }
+    }
+  }, [theme.headerTitle, theme.headerSubtitle, theme.footerText, theme.logo, theme.format, fontScale]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -320,7 +345,9 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               }}
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
-              <p className="text-white font-bold uppercase tracking-wider opacity-95"
+              <p 
+                 ref={footerRef}
+                 className="text-white font-bold uppercase tracking-wider opacity-95"
                  style={{ fontSize: isStory ? '1.1rem' : '1rem' }}
               >
                 {theme.footerText}
