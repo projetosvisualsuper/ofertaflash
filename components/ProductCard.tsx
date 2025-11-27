@@ -69,6 +69,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}
     >
+      {/* Discount Tag - Now independent of the image */}
+      {product.oldPrice && (
+         <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 rounded-bl-lg shadow-sm z-10">
+           -{Math.round(((parseFloat(product.oldPrice) - parseFloat(product.price)) / parseFloat(product.oldPrice)) * 100)}%
+         </div>
+      )}
+
       {/* Image Container */}
       <div className="relative flex-1 w-full min-h-0">
         <div 
@@ -82,11 +89,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme, layoutCols })
               <div className="w-full h-full flex items-center justify-center text-gray-300">
                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 20 0 0-2.828 0L6 21"/></svg>
               </div>
-            )}
-            {product.oldPrice && (
-               <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 rounded-bl-lg shadow-sm z-10">
-                 -{Math.round(((parseFloat(product.oldPrice) - parseFloat(product.price)) / parseFloat(product.oldPrice)) * 100)}%
-               </div>
             )}
           </div>
         </div>
