@@ -34,6 +34,8 @@ export interface HeaderElement {
   scale: number;
 }
 
+export type HeaderImageMode = 'none' | 'background' | 'hero';
+
 export interface PosterTheme {
   primaryColor: string;
   secondaryColor: string;
@@ -63,6 +65,10 @@ export interface PosterTheme {
   frameThickness: number; // Nova propriedade (em vmin)
   unitBottomEm: number;
   unitRightEm: number;
+  // Novas propriedades para imagem do cabeçalho
+  headerImage?: string;
+  headerImageMode: HeaderImageMode;
+  headerImageOpacity: number;
 }
 
 export interface AIGeneratedImage {

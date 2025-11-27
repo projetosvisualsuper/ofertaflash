@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PosterTheme, Product, PosterFormat, HeaderElement } from '../types';
+import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
@@ -103,6 +103,21 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
+  const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTheme(prev => ({
+          ...prev,
+          headerImage: reader.result as string,
+          headerImageMode: 'background', // Define o modo padrão como 'background'
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleFormatChange = (newFormat: PosterFormat) => {
     const preset = LAYOUT_PRESETS[newFormat.id] || {};
     setTheme(prevTheme => {
@@ -140,6 +155,9 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         logo: prev.logo,
         backgroundImage: prev.backgroundImage,
         headerLayoutId: prev.headerLayoutId,
+        headerImage: prev.headerImage, // Preserve header image
+        headerImageMode: prev.headerImageMode, // Preserve header image mode
+        headerImageOpacity: prev.headerImageOpacity, // Preserve header image opacity
         headerTitle: mergeElement(prev.headerTitle, presetTheme.headerTitle),
         headerSubtitle: mergeElement(prev.headerSubtitle, presetTheme.headerSubtitle),
         footerText: mergeElement(prev.footerText, presetTheme.footerText),
@@ -358,6 +376,61 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 ))}
               </div>
             </div>
+            
+            {/* NOVO: Imagem do Cabeçalho */}
+            <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><ImageIcon size={16}/> Imagem do Cabeçalho</label>
+              
+              {!theme.headerImage ? (
+                <div className="relative border-2 border-dashed rounded-lg p-4 bg-gray-50 hover:bg-white transition-colors cursor-pointer text-center">
+                   <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleHeaderImageUpload}/>
+                   <span className="text-xs text-gray-500 flex items-center justify-center gap-2"><ImageIcon size={14}/> Enviar Imagem</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <img src={theme.headerImage} className="w-16 h-10 object-cover rounded border" alt="Header Preview" />
+                    <button onClick={() => setTheme({...theme, headerImage: undefined, headerImageMode: 'none'})} className="ml-auto text-xs text-red-500 hover:underline">Remover Imagem</button>
+                  </div>
+                  
+                  <label className="text-xs font-semibold text-gray-700 block">Modo de Exibição</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => setTheme(prev => ({ ...prev, headerImageMode: 'background' as HeaderImageMode }))} 
+                      className={`py-2 border rounded text-xs font-medium transition-colors ${theme.headerImageMode === 'background' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                    >
+                      Fundo (Com Texto)
+                    </button>
+                    <button 
+                      onClick={() => setTheme(prev => ({ ...prev, headerImageMode: 'hero' as HeaderImageMode }))} 
+                      className={`py-2 border rounded text-xs font-medium transition-colors ${theme.headerImageMode === 'hero' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                    >
+                      Principal (Sem Texto)
+                    </button>
+                  </div>
+
+                  {theme.headerImageMode === 'background' && (
+                    <div className="space-y-1 pt-2 border-t">
+                      <div className="flex justify-between text-xs">
+                        <label className="font-medium text-gray-600">Opacidade</label>
+                        <span className="font-mono text-gray-500">{(theme.headerImageOpacity * 100).toFixed(0)}%</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0.1" 
+                        max="1" 
+                        step="0.05" 
+                        value={theme.headerImageOpacity} 
+                        onChange={(e) => setTheme({ ...theme, headerImageOpacity: Number(e.target.value) })} 
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* FIM NOVO: Imagem do Cabeçalho */}
+
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Brush size={16}/> Estilo da Arte do Cabeçalho</label>
               <div className="grid grid-cols-4 gap-2">

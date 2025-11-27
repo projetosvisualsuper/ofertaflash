@@ -33,7 +33,11 @@ const INITIAL_THEME: PosterTheme = {
   frameColor: '#fbbf24', // Cor inicial da moldura (secundária)
   frameThickness: 1.5, // Espessura inicial em vmin
   unitBottomEm: -0.5, 
-  unitRightEm: -1.5, 
+  unitRightEm: -1.5,
+  // Novas propriedades
+  headerImage: undefined,
+  headerImageMode: 'none',
+  headerImageOpacity: 0.3,
 };
 
 const defaultLayout = {

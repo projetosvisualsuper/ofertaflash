@@ -13,6 +13,9 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     ? theme.headerLayoutId 
     : 'text-only';
 
+  const isHeroImageMode = theme.headerImage && theme.headerImageMode === 'hero';
+  const isBackgroundMode = theme.headerImage && theme.headerImageMode === 'background';
+
   const HeaderText = () => (
     <div className={`flex flex-col ${
       effectiveHeaderLayout === 'logo-left' ? 'items-start' : 
@@ -65,6 +68,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
   );
 
   const HeaderContent = () => {
+    if (isHeroImageMode) return null; // Oculta conteúdo se for modo Hero Image
+
     switch (effectiveHeaderLayout) {
       case 'logo-left':
         return <div className="flex flex-row items-center w-full h-full"><div className="w-1/4"><HeaderLogo /></div><div className="w-3/4"><HeaderText /></div></div>;
@@ -79,6 +84,25 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
   };
 
   const renderHeaderArt = () => {
+    // Se estiver no modo Background, a arte é renderizada por cima da imagem de fundo
+    if (isBackgroundMode) {
+      return (
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          {/* Renderiza a arte do cabeçalho (formas geométricas) */}
+          {renderGeometricArt()}
+        </div>
+      );
+    }
+    
+    // Se não houver imagem de fundo, renderiza a arte geométrica como fundo principal
+    if (!theme.headerImage) {
+      return renderGeometricArt();
+    }
+
+    return null; // Se for modo Hero, não renderiza arte geométrica
+  };
+
+  const renderGeometricArt = () => {
     switch (theme.headerArtStyleId) {
       case 'slash':
         return (
@@ -122,7 +146,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       default:
         return (
           <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor }}>
-            <div className="absolute bottom-0 left-0 w-full h-2" style={{backgroundColor: theme.secondaryColor}}></div>
+            <div className="absolute bottom-0 left-0 w-full h-1" style={{backgroundColor: theme.secondaryColor}}></div>
             <div className="flex items-center justify-center h-full p-8">
               <HeaderContent />
             </div>
@@ -131,14 +155,56 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     }
   };
 
+  const renderHeaderImage = () => {
+    if (!theme.headerImage) return null;
+
+    const opacity = theme.headerImageMode === 'background' ? theme.headerImageOpacity : 1;
+    const zIndex = theme.headerImageMode === 'background' ? 0 : 10;
+
+    return (
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(${theme.headerImage})`,
+          opacity: opacity,
+          zIndex: zIndex,
+        }}
+      >
+        {/* Se for modo Hero, o conteúdo do cabeçalho é renderizado por cima da imagem */}
+        {isHeroImageMode && (
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <HeaderContent />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <header 
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: isLandscape ? '25%' : '20%',
+        // Define a cor primária como fallback se não houver imagem de fundo
+        backgroundColor: theme.headerImage ? 'transparent' : theme.primaryColor,
       }}
     >
+      {renderHeaderImage()}
       {renderHeaderArt()}
+      
+      {/* Se for modo Background, o conteúdo do cabeçalho é renderizado por cima da arte geométrica */}
+      {isBackgroundMode && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-8">
+          <HeaderContent />
+        </div>
+      )}
+      
+      {/* Se não houver imagem, o conteúdo é renderizado dentro da arte geométrica (já tratado em renderGeometricArt) */}
+      {!theme.headerImage && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-8">
+          <HeaderContent />
+        </div>
+      )}
     </header>
   );
 };
