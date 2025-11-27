@@ -3,20 +3,20 @@ import Sidebar from '../components/Sidebar';
 import PosterPreview from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat } from '../../types';
 import { Image } from 'lucide-react';
-import { SOCIAL_MEDIA_FORMATS } from '../config/socialMediaFormats';
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
-  formats: PosterFormat[]; // Keeping for App.tsx consistency, but using SOCIAL_MEDIA_FORMATS internally
+  formats: PosterFormat[]; // Full list from App.tsx
 }
 
-export default function SocialMediaPage({ theme, setTheme, products, setProducts }: SocialMediaPageProps) {
+export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats }: SocialMediaPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   
-  const socialFormats = SOCIAL_MEDIA_FORMATS;
+  // Filter formats locally to ensure only social media formats are used
+  const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
 
   // Effect to ensure a social media format is selected when entering this module
   useEffect(() => {
