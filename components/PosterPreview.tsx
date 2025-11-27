@@ -239,7 +239,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                       style={{ 
                         gridTemplateColumns: `repeat(${theme.layoutCols}, minmax(0, 1fr))`,
                         gridTemplateRows: `repeat(${totalRows}, minmax(0, 1fr))`,
-                        gap: isStory ? '1.5rem' : '1rem'
+                        gap: isStory ? '2rem' : '1rem'
                       }}
                     >
                       {products.map(p => (

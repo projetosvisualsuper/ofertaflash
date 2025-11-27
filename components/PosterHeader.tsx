@@ -135,7 +135,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
     <header 
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
-        minHeight: isStory ? '24%' : (isLandscape ? '25%' : '20%'),
+        minHeight: isStory ? '25%' : (isLandscape ? '25%' : '20%'),
       }}
     >
       {renderHeaderArt()}
