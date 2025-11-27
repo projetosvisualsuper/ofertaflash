@@ -72,32 +72,23 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
   const totalRows = Math.max(1, Math.ceil(products.length / theme.layoutCols));
 
-  // Determine effective header layout. If a layout requiring a logo is selected but no logo exists, fall back to 'text-only'.
   const effectiveHeaderLayout = (theme.logo || theme.headerLayoutId === 'text-only') 
     ? theme.headerLayoutId 
     : 'text-only';
 
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
-
-    // Auto-fit footer text to a single line by scaling its font size.
     if (footerElement && footerElement.parentElement) {
-        // Reset styles to begin measurement from a known state
         footerElement.style.fontSize = isStory ? '1.1rem' : '1rem';
-        footerElement.style.whiteSpace = 'nowrap'; // Force single line to measure its true width
-
+        footerElement.style.whiteSpace = 'nowrap';
         const parentElement = footerElement.parentElement;
         const parentStyle = window.getComputedStyle(parentElement);
         const parentPaddingX = parseFloat(parentStyle.paddingLeft) + parseFloat(parentStyle.paddingRight);
         const availableWidth = parentElement.clientWidth - parentPaddingX;
-        
         const currentScrollWidth = footerElement.scrollWidth;
-
-        // If the text overflows, calculate and apply the new font size
         if (currentScrollWidth > availableWidth) {
             const scaleFactor = availableWidth / currentScrollWidth;
             const currentFontSize = parseFloat(window.getComputedStyle(footerElement).fontSize);
-            // Apply a small buffer (98%) to avoid floating point inaccuracies
             const newFontSize = Math.max(8, currentFontSize * scaleFactor * 0.98); 
             footerElement.style.fontSize = `${newFontSize}px`;
         }
@@ -111,12 +102,14 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
       'items-center'
     }`}>
       <h1 
-        className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white whitespace-nowrap ${
+        className={`font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none whitespace-nowrap ${
           effectiveHeaderLayout === 'logo-left' ? 'text-left' : 
           effectiveHeaderLayout === 'logo-right' ? 'text-right' : 
           'text-center'
         }`}
         style={{ 
+          fontFamily: theme.fontFamilyDisplay,
+          color: theme.headerTextColor,
           textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
           fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo && effectiveHeaderLayout !== 'logo-top' ? 0.8 : 1) + 'rem',
           transform: `translateX(${theme.headerTitle.x}px) translateY(${theme.headerTitle.y}px) scale(${theme.headerTitle.scale})`,
@@ -156,7 +149,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
       <div className="relative flex-shrink-0 origin-center transition-all duration-300">
-         
          <div 
             ref={posterRef}
             id="poster-canvas"
@@ -167,7 +159,8 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               aspectRatio: theme.format.aspectRatio,
               width: isLandscape ? '800px' : '500px', 
               maxWidth: '90vw',
-              maxHeight: '90vh'
+              maxHeight: '90vh',
+              fontFamily: theme.fontFamilyBody,
             }}
           >
             {theme.backgroundImage && (
@@ -194,13 +187,13 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               }}
             >
               {effectiveHeaderLayout === 'logo-left' && (
-                <div className="flex flex-row items-center justify-start w-full h-full">
+                <div className="flex flex-row items-center justify-between w-full h-full">
                   <div className="w-1/4"><HeaderLogo /></div>
                   <div className="w-3/4"><HeaderText /></div>
                 </div>
               )}
               {effectiveHeaderLayout === 'logo-right' && (
-                <div className="flex flex-row items-center justify-end w-full h-full">
+                <div className="flex flex-row items-center justify-between w-full h-full">
                   <div className="w-3/4"><HeaderText /></div>
                   <div className="w-1/4"><HeaderLogo /></div>
                 </div>
@@ -218,10 +211,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
 
             <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col">
               {isHeroMode && product ? (
-                // === HERO MODE (Single Product) - NOW WITH ABSOLUTE POSITIONING ===
                 <div className="w-full h-full relative">
-                   
-                   {/* IMAGE CONTAINER */}
                    <div 
                      className="absolute top-1/2 left-1/2 w-3/5 h-1/2 transition-transform duration-100"
                      style={{
@@ -241,8 +231,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                         </div>
                       )}
                    </div>
-
-                   {/* NAME CONTAINER */}
                    <div 
                      className="absolute top-1/2 left-1/2 w-full text-center px-4 transition-transform duration-100"
                      style={{
@@ -250,8 +238,9 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                      }}
                    >
                       <h2 
-                        className="font-bold text-gray-800 leading-tight uppercase tracking-tight line-clamp-2 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" 
+                        className="font-bold leading-tight uppercase tracking-tight line-clamp-2 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" 
                         style={{ 
+                          fontFamily: theme.fontFamilyDisplay,
                           color: theme.textColor,
                           fontSize: (isLandscape ? 2.5 : 2) * fontScale + 'rem',
                           padding: '0.25rem 1rem'
@@ -260,8 +249,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                         {product.name}
                       </h2>
                    </div>
-
-                   {/* DESCRIPTION CONTAINER */}
                    {product.description && (
                       <div
                           className="absolute top-1/2 left-1/2 w-4/5 text-center px-4 transition-transform duration-100"
@@ -270,7 +257,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                           }}
                       >
                           <p
-                              className="text-gray-600 leading-tight drop-shadow-sm line-clamp-3"
+                              className="leading-tight drop-shadow-sm line-clamp-3"
                               style={{
                                   color: theme.textColor,
                                   opacity: 0.8,
@@ -281,8 +268,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                           </p>
                       </div>
                    )}
-                      
-                   {/* PRICE CONTAINER */}
                    <div 
                      className="absolute top-1/2 left-1/2 transition-transform duration-100"
                      style={{
@@ -302,7 +287,6 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                    </div>
                 </div>
               ) : (
-                // === GRID MODE (Multiple Products) ===
                 <div 
                   className="w-full h-full overflow-hidden"
                   style={{ padding: isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem') }}
@@ -342,8 +326,9 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
               <p 
                  ref={footerRef}
-                 className="text-white font-bold uppercase tracking-wider opacity-95"
+                 className="font-bold uppercase tracking-wider opacity-95"
                  style={{ 
+                   color: theme.headerTextColor,
                    fontSize: isStory ? '1.1rem' : '1rem',
                    transform: `translateX(${theme.footerText.x}px) translateY(${theme.footerText.y}px) scale(${theme.footerText.scale})`
                  }}

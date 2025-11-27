@@ -8,7 +8,6 @@ export interface Product {
   oldPrice?: string;
   unit: string;
   image?: string;
-  // NEW: Individual layout controls
   layout?: {
     image: { x: number; y: number; scale: number };
     name: { x: number; y: number; scale: number };
@@ -20,8 +19,8 @@ export interface Product {
 export interface PosterFormat {
   id: string;
   name: string;
-  aspectRatio: string; // Tailwind class or CSS value
-  width: number; // For download resolution reference
+  aspectRatio: string;
+  width: number;
   height: number;
   label: string;
   icon: string;
@@ -49,12 +48,14 @@ export interface PosterTheme {
     src: string;
     scale: number;
   }
-  // NEW: Price card styling
   priceCardStyle: 'default' | 'pill' | 'minimal';
   priceCardBackgroundColor: string;
   priceCardTextColor: string;
-  // NEW: Header layout selection
   headerLayoutId: HeaderLayoutId;
+  // NEW: More theme options for deeper customization
+  fontFamilyDisplay: string;
+  fontFamilyBody: string;
+  headerTextColor: string;
 }
 
 export interface AIGeneratedImage {

@@ -11,19 +11,22 @@ export const POSTER_FORMATS: PosterFormat[] = [
 ];
 
 const INITIAL_THEME: PosterTheme = {
-  primaryColor: '#dc2626', // red-600
-  secondaryColor: '#fbbf24', // amber-400
+  primaryColor: '#dc2626',
+  secondaryColor: '#fbbf24',
   backgroundColor: '#ffffff',
   textColor: '#1a1a1a',
+  headerTextColor: '#ffffff',
   headerTitle: { text: 'SUPER OFERTAS', x: 0, y: 0, scale: 1 },
   headerSubtitle: { text: 'SÓ HOJE', x: 0, y: 0, scale: 1 },
   footerText: { text: 'Ofertas válidas enquanto durarem os estoques', x: 0, y: 0, scale: 1 },
   layoutCols: 2,
-  format: POSTER_FORMATS[2], // Default to A4
+  format: POSTER_FORMATS[2],
   priceCardStyle: 'default',
   priceCardBackgroundColor: '#ffffff',
   priceCardTextColor: '#dc2626',
-  headerLayoutId: 'text-only', // Default header layout
+  headerLayoutId: 'text-only',
+  fontFamilyDisplay: 'Oswald, sans-serif',
+  fontFamilyBody: 'Inter, sans-serif',
 };
 
 const defaultLayout = {
@@ -44,11 +47,10 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // FIX FOR HTML-TO-IMAGE CORS ERROR
   useEffect(() => {
     const loadFonts = async () => {
       try {
-        const response = await fetch('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Oswald:wght@500;700&display=swap');
+        const response = await fetch('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;700;900&family=Oswald:wght@700&family=Roboto+Condensed:wght@700&display=swap');
         const css = await response.text();
         const style = document.createElement('style');
         style.innerHTML = css;
