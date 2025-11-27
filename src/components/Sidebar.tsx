@@ -4,6 +4,9 @@ import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIc
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { LAYOUT_PRESETS } from '../config/layoutPresets';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
+import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
+import { FONT_PRESETS } from '../config/fontPresets';
+import { HEADER_ART_PRESETS } from '../config/headerArtPresets';
 
 // Importando o hook useLocalStorageState para gerenciar temas personalizados
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
@@ -410,9 +413,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                         <span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span>
                       </div>
                       <span className="text-xs font-semibold">{preset.name}</span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
               </div>
             </div>
 
