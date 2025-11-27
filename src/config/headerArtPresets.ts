@@ -1,4 +1,4 @@
-import { Square, Scissors, Waves, Award } from 'lucide-react';
+import { Square, Scissors, Waves, Mountain } from 'lucide-react';
 
 export const HEADER_ART_PRESETS = [
   {
@@ -17,9 +17,9 @@ export const HEADER_ART_PRESETS = [
     icon: Waves,
   },
   {
-    id: 'badge',
-    name: 'Selo Central',
-    icon: Award,
+    id: 'peak',
+    name: 'Pico Geométrico',
+    icon: Mountain,
   },
 ] as const;
 

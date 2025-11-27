@@ -109,6 +109,17 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               fontFamily: theme.fontFamilyBody,
             }}
           >
+            {theme.hasFrame && (
+              <div 
+                className="absolute inset-0 z-20 pointer-events-none"
+                style={{
+                  borderStyle: 'solid',
+                  borderWidth: isStory ? '2.5vmin' : '1.5vmin',
+                  borderColor: theme.secondaryColor,
+                  boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)',
+                }}
+              />
+            )}
             {theme.backgroundImage && (
               <div 
                 className="absolute inset-0 z-0 opacity-40 bg-cover bg-center"

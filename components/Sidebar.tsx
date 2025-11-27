@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
 import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
 import { THEME_PRESETS } from '../src/config/themePresets';
@@ -364,8 +364,14 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               </div>
             </div>
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
-              <label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label>
-              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={theme.headerTitle.text} onChange={(e) => setTheme({ ...theme, headerTitle: {...theme.headerTitle, text: e.target.value} })} placeholder="Título Principal"/>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label>
+                <div className="flex border rounded-md overflow-hidden">
+                  <button onClick={() => setTheme({...theme, headerTitleCase: 'uppercase'})} className={`p-1 ${theme.headerTitleCase === 'uppercase' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Caixa Alta"><CaseUpper size={16}/></button>
+                  <button onClick={() => setTheme({...theme, headerTitleCase: 'capitalize'})} className={`p-1 ${theme.headerTitleCase === 'capitalize' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Capitalizado"><CaseLower size={16}/></button>
+                </div>
+              </div>
+              <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none mt-2" value={theme.headerTitle.text} onChange={(e) => setTheme({ ...theme, headerTitle: {...theme.headerTitle, text: e.target.value} })} placeholder="Título Principal"/>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
                 <div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Título</label><span className="font-mono text-gray-500">{(theme.headerTitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={theme.headerTitle.scale} onChange={(e) => setTheme({...theme, headerTitle: {...theme.headerTitle, scale: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
                 <div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{theme.headerTitle.x}px</span></div><input type="range" min="-200" max="200" value={theme.headerTitle.x} onChange={(e) => setTheme({...theme, headerTitle: {...theme.headerTitle, x: Number(e.target.value)}})} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div>
@@ -424,6 +430,12 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div><label className="text-xs text-gray-500 mb-1 block">Fundo Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardBackgroundColor}</span></div></div>
                 <div><label className="text-xs text-gray-500 mb-1 block">Cor Preço</label><div className="flex items-center gap-2 border rounded p-1"><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-none"/><span className="text-xs font-mono">{theme.priceCardTextColor}</span></div></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Opções de Layout</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => setTheme({ ...theme, hasFrame: !theme.hasFrame })} className={`py-2 border rounded text-sm font-medium transition-colors flex items-center justify-center gap-2 ${theme.hasFrame ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}><Frame size={16}/> {theme.hasFrame ? 'Remover Moldura' : 'Adicionar Moldura'}</button>
               </div>
             </div>
             {products.length > 1 && (

@@ -19,11 +19,11 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       'items-center'
     }`}>
       <h1 
-        className={`font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none whitespace-nowrap ${
+        className={`font-black tracking-wide drop-shadow-lg mb-2 leading-none whitespace-nowrap ${
           effectiveHeaderLayout === 'logo-left' ? 'text-left' : 
           effectiveHeaderLayout === 'logo-right' ? 'text-right' : 
           'text-center'
-        }`}
+        } ${theme.headerTitleCase === 'capitalize' ? 'capitalize' : 'uppercase'}`}
         style={{ 
           fontFamily: theme.fontFamilyDisplay,
           color: theme.headerTextColor,
@@ -82,7 +82,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       case 'slash':
         return (
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-1/4 -bottom-1/4 -left-4 -right-4" style={{ transform: 'rotate(-10deg)' }}>
+            <div className="absolute -top-1/2 -bottom-1/4 -left-8 -right-8" style={{ transform: 'rotate(-15deg)' }}>
               <div className="w-full h-full" style={{ backgroundColor: theme.primaryColor }}></div>
             </div>
             <div className="absolute inset-0 flex items-center justify-center p-8">
@@ -93,24 +93,26 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       case 'wave':
         return (
           <div className="absolute inset-0">
-            <svg viewBox="0 0 500 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-              <path d="M0,50 C150,120 350,-20 500,50 L500,0 L0,0 Z" style={{ stroke: 'none', fill: theme.primaryColor }}></path>
-            </svg>
+            <div className="absolute inset-0 w-full h-full opacity-50">
+              <svg viewBox="0 0 500 100" preserveAspectRatio="none" className="w-full h-full">
+                <path d="M0,60 C150,130 350,-30 500,60 L500,0 L0,0 Z" style={{ stroke: 'none', fill: theme.secondaryColor }}></path>
+              </svg>
+            </div>
+            <div className="absolute inset-0 w-full h-full">
+              <svg viewBox="0 0 500 100" preserveAspectRatio="none" className="w-full h-full">
+                <path d="M0,50 C150,120 350,-20 500,50 L500,0 L0,0 Z" style={{ stroke: 'none', fill: theme.primaryColor }}></path>
+              </svg>
+            </div>
             <div className="absolute inset-0 flex items-center justify-center p-8 pt-0">
               <HeaderContent />
             </div>
           </div>
         );
-      case 'badge':
+      case 'peak':
         return (
-          <div className="absolute inset-0 flex items-center justify-center p-8">
-            <div className="absolute">
-              <svg viewBox="0 0 100 100" className="w-64 h-64 drop-shadow-2xl">
-                <polygon points="50,0 61.8,38.2 100,38.2 69.1,61.8 80.9,100 50,76.4 19.1,100 30.9,61.8 0,38.2 38.2,38.2" fill={theme.primaryColor}/>
-                <polygon points="50,5 60,38.2 95,38.2 67,60 78,95 50,75 22,95 33,60 5,38.2 40,38.2" fill={theme.secondaryColor}/>
-              </svg>
-            </div>
-            <div className="relative z-10">
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor, clipPath: 'polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)' }}>
+             <div className="absolute inset-0 opacity-20" style={{ backgroundColor: theme.secondaryColor, clipPath: 'polygon(100% 0, 100% 75%, 50% 100%, 75% 50%)' }}></div>
+            <div className="flex items-center justify-center h-full p-8 pb-16">
               <HeaderContent />
             </div>
           </div>
@@ -118,7 +120,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, isLandscape, fontSca
       case 'block':
       default:
         return (
-          <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${theme.primaryColor}, ${theme.primaryColor}CC, transparent)` }}>
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor }}>
+            <div className="absolute bottom-0 left-0 w-full h-2" style={{backgroundColor: theme.secondaryColor}}></div>
             <div className="flex items-center justify-center h-full p-8">
               <HeaderContent />
             </div>

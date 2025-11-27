@@ -57,6 +57,8 @@ export interface PosterTheme {
   fontFamilyDisplay: string;
   fontFamilyBody: string;
   headerTextColor: string;
+  headerTitleCase: 'uppercase' | 'capitalize';
+  hasFrame: boolean;
 }
 
 export interface AIGeneratedImage {

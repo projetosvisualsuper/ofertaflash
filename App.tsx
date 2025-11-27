@@ -28,6 +28,8 @@ const INITIAL_THEME: PosterTheme = {
   headerArtStyleId: 'block',
   fontFamilyDisplay: 'Oswald, sans-serif',
   fontFamilyBody: 'Inter, sans-serif',
+  headerTitleCase: 'uppercase',
+  hasFrame: false,
 };
 
 const defaultLayout = {
