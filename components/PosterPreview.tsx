@@ -108,26 +108,15 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               />
 
             <header 
-              className={`relative z-10 w-full flex-shrink-0 transition-all ${theme.logo ? 'flex-row justify-between items-center' : 'flex flex-col items-center justify-center'}`}
+              className={`relative z-10 w-full flex-shrink-0 transition-all flex ${theme.logo ? 'flex-row justify-between items-center' : 'flex-col items-center justify-center'}`}
               style={{ 
                 background: `linear-gradient(to bottom, ${theme.primaryColor}, ${theme.primaryColor}CC, transparent)`,
                 padding: isLandscape ? '1.5rem 2rem' : '2rem 1.5rem 0.5rem',
                 minHeight: isStory ? '15%' : 'auto' 
               }}
             >
-               {theme.logo && (
-                 <div 
-                   className="w-1/4 h-full flex items-center"
-                   style={{
-                     transform: `scale(${theme.logo.scale})`,
-                     transformOrigin: 'left center'
-                   }}
-                 >
-                   <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
-                 </div>
-               )}
-               <div className={`flex flex-col ${theme.logo ? 'items-end w-3/4' : 'items-center'}`}>
-                 <h1 className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-right' : 'text-center'}`}
+               <div className={`flex flex-col ${theme.logo ? 'items-start w-3/4' : 'items-center'}`}>
+                 <h1 className={`font-display font-black uppercase tracking-wide drop-shadow-lg mb-2 leading-none text-white ${theme.logo ? 'text-left' : 'text-center'}`}
                     style={{ 
                       textShadow: '4px 4px 0px rgba(0,0,0,0.2)',
                       fontSize: (isLandscape ? 4 : 3.5) * fontScale * (theme.logo ? 0.8 : 1) + 'rem'
@@ -146,6 +135,17 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                    {theme.headerSubtitle}
                  </div>
                </div>
+               {theme.logo && (
+                 <div 
+                   className="w-1/4 h-full flex items-center justify-end"
+                   style={{
+                     transform: `scale(${theme.logo.scale})`,
+                     transformOrigin: 'right center'
+                   }}
+                 >
+                   <img src={theme.logo.src} className="max-w-full max-h-16 object-contain drop-shadow-lg" />
+                 </div>
+               )}
             </header>
 
             <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col">
