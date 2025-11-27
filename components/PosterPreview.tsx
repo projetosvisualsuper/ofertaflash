@@ -144,7 +144,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               }}
             >
               {isHeroMode && product ? (
-                <div className="w-full h-full relative">
+                <div className="w-full flex-1 relative">
                    <div 
                      className="absolute top-1/2 left-1/2 w-3/5 h-1/2 transition-transform duration-100"
                      style={{
@@ -221,7 +221,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                 </div>
               ) : (
                 products.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
+                    <div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
                         <div className="p-6">
                             <p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p>
                             <p className="text-sm text-gray-500">Adicione produtos no menu lateral</p>
@@ -229,7 +229,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                     </div>
                 ) : (
                     <div 
-                      className="grid h-full"
+                      className="grid flex-1"
                       style={{ 
                         gridTemplateColumns: `repeat(${theme.layoutCols}, minmax(0, 1fr))`,
                         gridTemplateRows: `repeat(${totalRows}, minmax(0, 1fr))`,
