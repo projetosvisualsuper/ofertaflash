@@ -552,8 +552,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Layout da Grade</label>
                 <div className="flex gap-2">
-                  {[1, 2, 3].map(cols => (
-                    <button key={cols} onClick={() => setTheme({ ...theme, layoutCols: cols })} className={`flex-1 py-2 border rounded text-sm font-medium transition-colors ${theme.layoutCols === cols ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>{cols} Col</button>
+                  {[1, 2, 3, 4, 5].map(cols => (
+                    <button key={cols} onClick={() => setTheme({ ...theme, layoutCols: cols })} className={`flex-1 py-2 border rounded text-xs font-medium transition-colors ${theme.layoutCols === cols ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>{cols} Col</button>
                   ))}
                 </div>
               </div>
