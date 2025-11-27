@@ -41,9 +41,9 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, them
       <span className="font-display font-black tracking-tighter mx-0 drop-shadow-sm leading-[0.85]" style={priceIntStyle}>
         {priceInt}
       </span>
-      <div className="flex flex-col items-start mt-[0.3em]">
+      <div className="flex flex-col items-start mt-[0.3em] ml-2">
         <span className="font-black tracking-tighter leading-[0.8]" style={priceDecStyle}>,{priceDec}</span>
-        <span className="font-bold text-gray-400 uppercase mt-1 ml-0.5 tracking-wider" style={unitStyle}>{unit}</span>
+        <span className="font-bold text-gray-400 uppercase mt-1 tracking-wider" style={unitStyle}>{unit}</span>
       </div>
     </div>
   );

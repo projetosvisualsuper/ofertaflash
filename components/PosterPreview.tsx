@@ -221,6 +221,27 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                         {product.name}
                       </h2>
                    </div>
+
+                   {/* DESCRIPTION CONTAINER */}
+                   {product.description && (
+                      <div
+                          className="absolute top-1/2 left-1/2 w-4/5 text-center px-4 transition-transform duration-100"
+                          style={{
+                              transform: `translateX(calc(-50% + ${product.layout?.description?.x || 0}px)) translateY(calc(25% + ${product.layout?.description?.y || 0}px)) scale(${product.layout?.description?.scale || 1})`
+                          }}
+                      >
+                          <p
+                              className="text-gray-600 leading-tight drop-shadow-sm line-clamp-3"
+                              style={{
+                                  color: theme.textColor,
+                                  opacity: 0.8,
+                                  fontSize: (isLandscape ? 1.2 : 1) * fontScale + 'rem',
+                              }}
+                          >
+                              {product.description}
+                          </p>
+                      </div>
+                   )}
                       
                    {/* PRICE CONTAINER */}
                    <div 
