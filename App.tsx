@@ -5,16 +5,23 @@ import DigitalSignagePage from './src/pages/DigitalSignagePage';
 import SocialMediaPage from './src/pages/SocialMediaPage';
 import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
+import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
+import { PosterTheme, Product, PosterFormat } from './types';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState('poster');
+  const [theme, setTheme] = useState<PosterTheme>(INITIAL_THEME);
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const formats: PosterFormat[] = POSTER_FORMATS;
 
   const renderModule = () => {
+    const commonProps = { theme, setTheme, products, setProducts, formats };
+
     switch (activeModule) {
       case 'poster':
-        return <PosterBuilderPage />;
+        return <PosterBuilderPage {...commonProps} />;
       case 'signage':
-        return <DigitalSignagePage />;
+        return <DigitalSignagePage {...commonProps} />;
       case 'social':
         return <SocialMediaPage />;
       case 'ads':
@@ -22,7 +29,7 @@ export default function App() {
       case 'settings':
         return <SettingsPage />;
       default:
-        return <PosterBuilderPage />;
+        return <PosterBuilderPage {...commonProps} />;
     }
   };
 
