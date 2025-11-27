@@ -187,15 +187,15 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
               }}
             >
               {effectiveHeaderLayout === 'logo-left' && (
-                <div className="flex flex-row items-center justify-between w-full h-full">
+                <div className="flex flex-row items-center w-full h-full">
                   <div className="w-1/4"><HeaderLogo /></div>
                   <div className="w-3/4"><HeaderText /></div>
                 </div>
               )}
               {effectiveHeaderLayout === 'logo-right' && (
-                <div className="flex flex-row items-center justify-between w-full h-full">
+                <div className="flex flex-row items-center w-full h-full">
                   <div className="w-3/4"><HeaderText /></div>
-                  <div className="w-1/4"><HeaderLogo /></div>
+                  <div className="w-1/4 flex justify-end"><HeaderLogo /></div>
                 </div>
               )}
               {effectiveHeaderLayout === 'logo-top' && (
