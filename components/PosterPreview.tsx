@@ -137,7 +137,12 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
 
             <PosterHeader theme={theme} isLandscape={isLandscape} fontScale={fontScale} />
 
-            <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col">
+            <div 
+              className="flex-1 w-full min-h-0 relative z-10 flex flex-col"
+              style={{
+                padding: isHeroMode ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')),
+              }}
+            >
               {isHeroMode && product ? (
                 <div className="w-full h-full relative">
                    <div 
@@ -215,20 +220,14 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                    </div>
                 </div>
               ) : (
-                <div 
-                  className="flex-1"
-                  style={{ 
-                    padding: isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem'),
-                  }}
-                >
-                  {products.length === 0 ? (
+                products.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
                         <div className="p-6">
                             <p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p>
                             <p className="text-sm text-gray-500">Adicione produtos no menu lateral</p>
                         </div>
                     </div>
-                  ) : (
+                ) : (
                     <div 
                       className="grid h-full"
                       style={{ 
@@ -241,8 +240,7 @@ const PosterPreview: React.FC<PosterPreviewProps> = ({ theme, products, onDownlo
                         <ProductCard key={p.id} product={p} theme={theme} layoutCols={theme.layoutCols} />
                       ))}
                     </div>
-                  )}
-                </div>
+                )
               )}
             </div>
 
