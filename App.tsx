@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SidebarNav from './components/SidebarNav';
+import SidebarNav from './src/components/SidebarNav';
 import PosterBuilderPage from './pages/PosterBuilderPage';
 import DigitalSignagePage from './pages/DigitalSignagePage';
 import SocialMediaPage from './pages/SocialMediaPage';
