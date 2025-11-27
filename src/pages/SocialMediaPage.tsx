@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SocialMediaSidebar from '../components/SocialMediaSidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
-import { Product, PosterTheme, PosterFormat } from '../../types';
+import { Product, PosterTheme, PosterFormat, HeaderElement } from '../../types';
 import { Image } from 'lucide-react';
+import { LAYOUT_PRESETS } from '../config/layoutPresets';
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
@@ -19,7 +20,34 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   // Filter formats locally to ensure only social media formats are used
   const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
 
-  // Effect to ensure a social media format is selected when entering this module
+  const applyFormatPreset = (newFormat: PosterFormat) => {
+    const preset = LAYOUT_PRESETS[newFormat.id] || {};
+    setTheme(prevTheme => {
+      // Preserve existing text when applying presets
+      const updatedPreset = { ...preset };
+      
+      // Helper to merge preset elements while preserving user's text
+      const mergeElement = (
+        prevElement: HeaderElement, 
+        presetElement: Partial<HeaderElement> | undefined
+      ): HeaderElement => ({
+        ...prevElement,
+        ...presetElement,
+        text: prevElement.text, // Always keep user's text
+      });
+
+      return {
+        ...prevTheme,
+        ...updatedPreset,
+        format: newFormat,
+        headerTitle: mergeElement(prevTheme.headerTitle, updatedPreset.headerTitle),
+        headerSubtitle: mergeElement(prevTheme.headerSubtitle, updatedPreset.headerSubtitle),
+        footerText: mergeElement(prevTheme.footerText, updatedPreset.footerText),
+      };
+    });
+  };
+
+  // Effect to ensure a social media format is selected and preset applied when entering this module
   useEffect(() => {
     const isSocialFormat = socialFormats.some(f => f.id === theme.format.id);
     
@@ -27,11 +55,10 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       // Default to 'feed' (square) if the current format is not social media compatible
       const defaultFormat = socialFormats.find(f => f.id === 'feed');
       if (defaultFormat) {
-        // This relies on the Sidebar's handleFormatChange logic to apply presets
-        setTheme(prev => ({ ...prev, format: defaultFormat }));
+        applyFormatPreset(defaultFormat);
       }
     }
-  }, [theme.format.id, socialFormats, setTheme]);
+  }, [theme.format.id, socialFormats]); // Removed setTheme from dependency array as it's handled by applyFormatPreset
 
   const handleDownload = () => {
     if (posterRef.current) {
@@ -46,6 +73,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         setTheme={setTheme} 
         formats={socialFormats} // Pass the filtered list
         handleDownload={handleDownload}
+        handleFormatChange={applyFormatPreset} // Pass the new function
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">

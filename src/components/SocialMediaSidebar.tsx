@@ -7,18 +7,10 @@ interface SocialMediaSidebarProps {
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
   formats: PosterFormat[];
   handleDownload: () => void;
+  handleFormatChange: (newFormat: PosterFormat) => void; // New prop for format change
 }
 
-const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload }) => {
-
-  const handleFormatChange = (newFormat: PosterFormat) => {
-    // We rely on the parent component (SocialMediaPage) to handle applying layout presets 
-    // when the format changes, but we must update the theme's format here.
-    setTheme(prevTheme => ({
-      ...prevTheme,
-      format: newFormat,
-    }));
-  };
+const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange }) => {
 
   return (
     <div className="w-full md:w-[300px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative flex-shrink-0">

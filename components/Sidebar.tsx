@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower } from 'lucide-react';
-import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../services/geminiService';
-import { LAYOUT_PRESETS } from '../src/config/layoutPresets';
-import { THEME_PRESETS } from '../src/config/themePresets';
-import { HEADER_LAYOUT_PRESETS } from '../src/config/headerLayoutPresets';
-import { FONT_PRESETS } from '../src/config/fontPresets';
-import { HEADER_ART_PRESETS } from '../src/config/headerArtPresets';
+import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
+import { LAYOUT_PRESETS } from '../config/layoutPresets';
+import { THEME_PRESETS } from '../config/themePresets';
+import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
+import { FONT_PRESETS } from '../config/fontPresets';
+import { HEADER_ART_PRESETS } from '../config/headerArtPresets';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -14,6 +14,7 @@ interface SidebarProps {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[];
+  handleFormatChange: (newFormat: PosterFormat) => void; // New prop
 }
 
 const defaultLayout = {
@@ -23,7 +24,7 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats }) => {
+const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
@@ -118,22 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
-  const handleFormatChange = (newFormat: PosterFormat) => {
-    const preset = LAYOUT_PRESETS[newFormat.id] || {};
-    setTheme(prevTheme => {
-      // Preserve existing text when applying presets
-      const updatedPreset = { ...preset };
-      if (updatedPreset.headerTitle) updatedPreset.headerTitle.text = prevTheme.headerTitle.text;
-      if (updatedPreset.headerSubtitle) updatedPreset.headerSubtitle.text = prevTheme.headerSubtitle.text;
-      if (updatedPreset.footerText) updatedPreset.footerText.text = prevTheme.footerText.text;
-
-      return {
-        ...prevTheme,
-        ...updatedPreset,
-        format: newFormat,
-      };
-    });
-  };
+  // Removed handleFormatChange from here, now it's passed as a prop
 
   const handleThemePresetChange = (presetTheme: Partial<PosterTheme>) => {
     setTheme(prev => {

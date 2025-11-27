@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
-import { Product, PosterTheme, PosterFormat } from '../../types';
+import { Product, PosterTheme, PosterFormat, HeaderElement } from '../../types';
 import { POSTER_FORMATS } from '../state/initialState';
 import { Download } from 'lucide-react';
+import { LAYOUT_PRESETS } from '../config/layoutPresets';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -38,6 +39,33 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
     }
   };
 
+  const handleFormatChange = (newFormat: PosterFormat) => {
+    const preset = LAYOUT_PRESETS[newFormat.id] || {};
+    setTheme(prevTheme => {
+      // Preserve existing text when applying presets
+      const updatedPreset = { ...preset };
+      
+      // Helper to merge preset elements while preserving user's text
+      const mergeElement = (
+        prevElement: HeaderElement, 
+        presetElement: Partial<HeaderElement> | undefined
+      ): HeaderElement => ({
+        ...prevElement,
+        ...presetElement,
+        text: prevElement.text, // Always keep user's text
+      });
+
+      return {
+        ...prevTheme,
+        ...updatedPreset,
+        format: newFormat,
+        headerTitle: mergeElement(prevTheme.headerTitle, updatedPreset.headerTitle),
+        headerSubtitle: mergeElement(prevTheme.headerSubtitle, updatedPreset.headerSubtitle),
+        footerText: mergeElement(prevTheme.footerText, updatedPreset.footerText),
+      };
+    });
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
       <Sidebar 
@@ -46,6 +74,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         products={products} 
         setProducts={setProducts} 
         formats={formats}
+        handleFormatChange={handleFormatChange} // Pass the new function
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
