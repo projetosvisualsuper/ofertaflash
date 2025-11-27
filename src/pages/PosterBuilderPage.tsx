@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, HeaderElement } from '../../types';
@@ -39,7 +39,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
     }
   };
 
-  const handleFormatChange = (newFormat: PosterFormat) => {
+  const handleFormatChange = useCallback((newFormat: PosterFormat) => {
     const preset = LAYOUT_PRESETS[newFormat.id] || {};
     setTheme(prevTheme => {
       // Preserve existing text when applying presets
@@ -64,7 +64,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         footerText: mergeElement(prevTheme.footerText, updatedPreset.footerText),
       };
     });
-  };
+  }, [setTheme]);
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
@@ -74,7 +74,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         products={products} 
         setProducts={setProducts} 
         formats={formats}
-        handleFormatChange={handleFormatChange} // Pass the new function
+        handleFormatChange={handleFormatChange} // Pass the stable function
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">

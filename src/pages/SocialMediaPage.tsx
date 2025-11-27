@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import SocialMediaSidebar from '../components/SocialMediaSidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, HeaderElement } from '../../types';
@@ -20,7 +20,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   // Filter formats locally to ensure only social media formats are used
   const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
 
-  const applyFormatPreset = (newFormat: PosterFormat) => {
+  const applyFormatPreset = useCallback((newFormat: PosterFormat) => {
     const preset = LAYOUT_PRESETS[newFormat.id] || {};
     setTheme(prevTheme => {
       // Preserve existing text when applying presets
@@ -40,12 +40,13 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         ...prevTheme,
         ...updatedPreset,
         format: newFormat,
+        // Apply layout presets while preserving user text
         headerTitle: mergeElement(prevTheme.headerTitle, updatedPreset.headerTitle),
         headerSubtitle: mergeElement(prevTheme.headerSubtitle, updatedPreset.headerSubtitle),
         footerText: mergeElement(prevTheme.footerText, updatedPreset.footerText),
       };
     });
-  };
+  }, [setTheme]); // setTheme is stable, so this function is stable
 
   // Effect to ensure a social media format is selected and preset applied when entering this module
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         applyFormatPreset(defaultFormat);
       }
     }
-  }, [theme.format.id, socialFormats]); // Removed setTheme from dependency array as it's handled by applyFormatPreset
+  }, [theme.format.id, socialFormats, applyFormatPreset]);
 
   const handleDownload = () => {
     if (posterRef.current) {
@@ -73,7 +74,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         setTheme={setTheme} 
         formats={socialFormats} // Pass the filtered list
         handleDownload={handleDownload}
-        handleFormatChange={applyFormatPreset} // Pass the new function
+        handleFormatChange={applyFormatPreset} // Pass the stable function
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
