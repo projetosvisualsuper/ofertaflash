@@ -42,10 +42,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         if (p.id === productId) {
           // Safeguard: Ensure layouts object exists before updating
           const baseLayouts = p.layouts || {
-            'a4': defaultLayout,
-            'story': defaultLayout,
-            'feed': defaultLayout,
-            'tv': defaultLayout,
+            'a4': JSON.parse(JSON.stringify(defaultLayout)),
+            'story': JSON.parse(JSON.stringify(defaultLayout)),
+            'feed': JSON.parse(JSON.stringify(defaultLayout)),
+            'tv': JSON.parse(JSON.stringify(defaultLayout)),
           };
           const newLayouts = {
             ...baseLayouts,
@@ -65,10 +65,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     price: '0.00', 
     unit: 'un', 
     layouts: {
-      'a4': defaultLayout,
-      'story': defaultLayout,
-      'feed': defaultLayout,
-      'tv': defaultLayout,
+      'a4': JSON.parse(JSON.stringify(defaultLayout)),
+      'story': JSON.parse(JSON.stringify(defaultLayout)),
+      'feed': JSON.parse(JSON.stringify(defaultLayout)),
+      'tv': JSON.parse(JSON.stringify(defaultLayout)),
     }
   });
 

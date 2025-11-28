@@ -14,12 +14,12 @@ const defaultLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-// Helper para criar layouts para todos os formatos
+// Helper para criar layouts para todos os formatos, garantindo que sejam cópias independentes
 const createInitialLayouts = () => ({
-  'story': defaultLayout,
-  'feed': defaultLayout,
-  'a4': defaultLayout,
-  'tv': defaultLayout,
+  'story': JSON.parse(JSON.stringify(defaultLayout)),
+  'feed': JSON.parse(JSON.stringify(defaultLayout)),
+  'a4': JSON.parse(JSON.stringify(defaultLayout)),
+  'tv': JSON.parse(JSON.stringify(defaultLayout)),
 });
 
 export const INITIAL_THEME: PosterTheme = {
