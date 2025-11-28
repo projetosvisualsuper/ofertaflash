@@ -29,6 +29,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   const footerRef = useRef<HTMLParagraphElement>(null);
 
   const currentHeaderElements = theme.headerElements[theme.format.id];
+  const currentLayoutCols = theme.layoutCols[theme.format.id] || 2;
 
   const handleDownload = async () => {
     if (posterRef.current) {
@@ -144,7 +145,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
                    </div>
                 </div>
               ) : (
-                products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${theme.layoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={theme.layoutCols} isStory={isStory} />))}</div>)
+                products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${currentLayoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={currentLayoutCols} isStory={isStory} />))}</div>)
               )}
             </div>
             <footer className="relative z-10 w-full flex-shrink-0 text-center" style={{ backgroundColor: theme.primaryColor, padding: isStory ? '1rem' : '1rem 1.5rem' }}>

@@ -50,7 +50,7 @@ export interface PosterTheme {
   backgroundColor: string;
   textColor: string;
   backgroundImage?: string;
-  layoutCols: number;
+  layoutCols: Record<string, number>;
   format: PosterFormat;
   logo?: {
     src: string;

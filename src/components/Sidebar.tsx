@@ -211,7 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       headerImageOpacity: theme.headerImageOpacity,
       logo: theme.logo,
       backgroundImage: theme.backgroundImage,
-      layoutCols: theme.layoutCols,
+      layoutCols: theme.layoutCols, // Save all format-specific elements
       headerElements: theme.headerElements, // Save all format-specific elements
     };
     const newPreset: ThemePreset = {
@@ -334,8 +334,17 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                     id="layoutCols"
                     min="1" 
                     max="4" 
-                    value={theme.layoutCols} 
-                    onChange={(e) => setTheme(prev => ({ ...prev, layoutCols: parseInt(e.target.value, 10) || 1 }))} 
+                    value={theme.layoutCols[theme.format.id] || 2} 
+                    onChange={(e) => {
+                        const newCols = parseInt(e.target.value, 10) || 1;
+                        setTheme(prev => ({
+                            ...prev,
+                            layoutCols: {
+                                ...prev.layoutCols,
+                                [prev.format.id]: newCols,
+                            }
+                        }));
+                    }} 
                     className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                     disabled={products.length <= 1}
                 />

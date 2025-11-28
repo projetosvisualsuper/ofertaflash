@@ -3,7 +3,6 @@ import SocialMediaSidebar from '../components/SocialMediaSidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, HeaderElement, HeaderAndFooterElements } from '../../types';
 import { Image } from 'lucide-react';
-import { LAYOUT_PRESETS } from '../config/layoutPresets';
 import { INITIAL_THEME } from '../state/initialState';
 
 interface SocialMediaPageProps {
@@ -21,14 +20,10 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
 
   const applyFormatPreset = useCallback((newFormat: PosterFormat) => {
-    setTheme(prevTheme => {
-      const preset = LAYOUT_PRESETS[newFormat.id] || {};
-      return {
-        ...prevTheme,
-        format: newFormat,
-        layoutCols: preset.layoutCols ?? prevTheme.layoutCols,
-      };
-    });
+    setTheme(prevTheme => ({
+      ...prevTheme,
+      format: newFormat,
+    }));
   }, [setTheme]);
 
   useEffect(() => {

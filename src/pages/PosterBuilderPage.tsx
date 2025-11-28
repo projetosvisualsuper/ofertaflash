@@ -4,7 +4,6 @@ import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, HeaderElement, HeaderAndFooterElements } from '../../types';
 import { INITIAL_THEME } from '../state/initialState';
 import { Download } from 'lucide-react';
-import { LAYOUT_PRESETS } from '../config/layoutPresets';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -40,14 +39,10 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
   };
 
   const handleFormatChange = useCallback((newFormat: PosterFormat) => {
-    setTheme(prevTheme => {
-      const preset = LAYOUT_PRESETS[newFormat.id] || {};
-      return {
-        ...prevTheme,
-        format: newFormat,
-        layoutCols: preset.layoutCols ?? prevTheme.layoutCols,
-      };
-    });
+    setTheme(prevTheme => ({
+      ...prevTheme,
+      format: newFormat,
+    }));
   }, [setTheme]);
 
   return (

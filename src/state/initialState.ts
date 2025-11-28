@@ -40,7 +40,12 @@ export const INITIAL_THEME: PosterTheme = {
   backgroundColor: '#ffffff',
   textColor: '#1a1a1a',
   headerTextColor: '#ffffff',
-  layoutCols: 2,
+  layoutCols: {
+    'story': 2,
+    'feed': 2,
+    'a4': 2,
+    'tv': 3,
+  },
   format: POSTER_FORMATS[2],
   priceCardStyle: 'default',
   priceCardBackgroundColor: '#ffffff',

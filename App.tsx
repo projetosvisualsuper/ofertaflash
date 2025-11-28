@@ -35,18 +35,19 @@ export default function App() {
     let themeUpdated = false;
     let productsUpdated = false;
 
-    // Check and migrate theme
-    if (!theme.headerElements) {
+    // Check and migrate theme state
+    if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null) {
       console.log("Migrating theme state from localStorage to new structure...");
       themeUpdated = true;
       setTheme(prevTheme => ({
         ...INITIAL_THEME,
         ...prevTheme,
-        headerElements: INITIAL_THEME.headerElements,
+        headerElements: prevTheme.headerElements || INITIAL_THEME.headerElements,
+        layoutCols: INITIAL_THEME.layoutCols, // Reset layoutCols to the new structure with defaults
       }));
     }
 
-    // Check and migrate products
+    // Check and migrate products state
     if (products.some(p => !p.layouts)) {
       console.log("Migrating products state from localStorage to new structure...");
       productsUpdated = true;
@@ -57,17 +58,14 @@ export default function App() {
       );
     }
 
-    // If no updates were needed, we are ready immediately.
     if (!themeUpdated && !productsUpdated) {
       setIsReady(true);
     }
-    // If updates were triggered, the effect will re-run when state updates,
-    // and on the next run, this condition will be met.
   }, [theme, products, setTheme, setProducts]);
 
   // This effect marks the app as ready once the data structures are confirmed to be valid.
   useEffect(() => {
-      if (theme.headerElements && !products.some(p => !p.layouts)) {
+      if (theme.headerElements && typeof theme.layoutCols === 'object' && theme.layoutCols !== null && !products.some(p => !p.layouts)) {
           setIsReady(true);
       }
   }, [theme, products]);
