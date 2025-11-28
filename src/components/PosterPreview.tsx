@@ -32,6 +32,15 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   const currentHeaderElements = theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id];
   const currentLayoutCols = theme.layoutCols[theme.format.id] || 2;
 
+  // Lógica atualizada: Modo Herói/Slide é ativado se for formato 'tv' OU se houver apenas 1 produto.
+  const isHeroMode = theme.format.id === 'tv' || products.length === 1;
+  const product = products[0];
+  const layout = product?.layouts?.[theme.format.id] || defaultLayout;
+
+  const isLandscape = theme.format.width > theme.format.height;
+  const isStory = theme.format.aspectRatio === '1080 / 1920';
+  const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
+
   const handleDownload = async () => {
     if (posterRef.current) {
       onDownloadStart();
@@ -76,14 +85,6 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   useImperativeHandle(ref, () => ({
     triggerDownload: handleDownload,
   }));
-
-  const isHeroMode = products.length === 1;
-  const product = products[0];
-  const layout = product?.layouts?.[theme.format.id] || defaultLayout;
-
-  const isLandscape = theme.format.width > theme.format.height;
-  const isStory = theme.format.aspectRatio === '1080 / 1920';
-  const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
 
   useLayoutEffect(() => {
     const footerElement = footerRef.current;
@@ -133,17 +134,22 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
             />
             <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col" style={{ padding: isHeroMode ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')) }}>
               {isHeroMode && product ? (
-                <div className="w-full flex-1 relative">
-                   <div className="absolute top-1/2 left-1/2 w-3/5 h-1/2 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.image.x}px)) translateY(calc(-75% + ${layout.image.y}px)) scale(${layout.image.scale})` }}>
+                // Novo layout de duas colunas para o modo Hero/Slide
+                <div className="w-full flex-1 relative flex p-8">
+                  <div className="w-1/2 h-full relative flex items-center justify-center">
+                    <div className="w-full h-full transition-transform duration-100 p-4" style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}>
                       {product.image ? (<img src={product.image} alt={product.name} className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.3))' }}/>) : (<div className="w-full h-full text-gray-300 opacity-50 border-4 border-dashed rounded-3xl flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>)}
-                   </div>
-                   <div className="absolute top-1/2 left-1/2 w-full text-center px-4 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.name.x}px)) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
-                      <h2 className="font-bold leading-tight uppercase tracking-tight line-clamp-2 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" style={{ fontFamily: theme.fontFamilyDisplay, color: theme.textColor, fontSize: (isLandscape ? 2.5 : 2) * fontScale + 'rem', padding: '0.25rem 1rem' }}>{product.name}</h2>
-                   </div>
-                   {product.description && (<div className="absolute top-1/2 left-1/2 w-4/5 text-center px-4 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.description?.x || 0}px)) translateY(calc(25% + ${layout.description?.y || 0}px)) scale(${layout.description?.scale || 1})` }}><p className="leading-tight drop-shadow-sm line-clamp-3" style={{ color: theme.textColor, opacity: 0.8, fontSize: (isLandscape ? 1.2 : 1) * fontScale + 'rem' }}>{product.description}</p></div>)}
-                   <div className="absolute top-1/2 left-1/2 transition-transform duration-100" style={{ transform: `translateX(calc(-50% + ${layout.price.x}px)) translateY(calc(75% + ${layout.price.y}px)) scale(${layout.price.scale})` }}>
-                      <PriceDisplay price={product.price} oldPrice={product.oldPrice} unit={product.unit} theme={theme} isCompact={false} isHero={true} fontScale={fontScale} isLandscape={isLandscape}/>
-                   </div>
+                    </div>
+                  </div>
+                  <div className="w-1/2 h-full relative flex flex-col items-center justify-center text-center p-4">
+                    <div className="w-full transition-transform duration-100 mb-4" style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
+                      <h2 className="font-bold leading-tight uppercase tracking-tight line-clamp-3 drop-shadow-lg px-2 bg-white/80 backdrop-blur-sm rounded-lg inline-block shadow-sm" style={{ fontFamily: theme.fontFamilyDisplay, color: theme.textColor, fontSize: 2 * fontScale + 'rem', padding: '0.25rem 1rem' }}>{product.name}</h2>
+                    </div>
+                    {product.description && (<div className="w-full px-4 transition-transform duration-100 mb-8" style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}><p className="leading-tight drop-shadow-sm line-clamp-3" style={{ color: theme.textColor, opacity: 0.8, fontSize: 1 * fontScale + 'rem' }}>{product.description}</p></div>)}
+                    <div className="transition-transform duration-100 mt-8" style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}>
+                      <PriceDisplay price={product.price} oldPrice={product.oldPrice} unit={product.unit} theme={theme} isCompact={false} isHero={true} fontScale={fontScale * 1.0} isLandscape={isLandscape}/>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${currentLayoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={currentLayoutCols} isStory={isStory} />))}</div>)
