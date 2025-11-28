@@ -55,6 +55,8 @@ export interface PosterTheme {
   logo?: {
     src: string;
     scale: number;
+    x: number;
+    y: number;
   }
   priceCardStyle: 'default' | 'pill' | 'minimal';
   priceCardBackgroundColor: string;

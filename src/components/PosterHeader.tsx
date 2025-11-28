@@ -60,7 +60,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
     theme.logo ? (
       <div 
         style={{
-          transform: `scale(${theme.logo.scale})`,
+          transform: `translateX(${theme.logo.x}px) translateY(${theme.logo.y}px) scale(${theme.logo.scale})`,
           transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center'
         }}
       >

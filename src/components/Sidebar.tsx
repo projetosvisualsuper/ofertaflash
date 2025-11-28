@@ -138,6 +138,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
           logo: {
             src: reader.result as string,
             scale: 1,
+            x: 0,
+            y: 0,
           },
           headerLayoutId: 'logo-left',
         }));
@@ -414,7 +416,32 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             <details className="space-y-2 border-t pt-4">
                 <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><ImageIcon size={16}/> Imagens e Fundos</summary>
                 <div className="p-2 space-y-4">
-                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Logo da Empresa</label><div className="flex items-center gap-2"><input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={handleLogoUpload} /><label htmlFor="logo-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.logo ? 'Trocar Logo' : 'Enviar Logo'}</label>{theme.logo && <button onClick={() => setTheme({ ...theme, logo: undefined, headerLayoutId: 'text-only' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>{theme.logo && (<div><label className="text-xs font-medium text-gray-600">Tamanho do Logo</label><input type="range" min="0.5" max="2" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, scale: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /></div>)}</div>
+                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Logo da Empresa</label><div className="flex items-center gap-2"><input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={handleLogoUpload} /><label htmlFor="logo-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.logo ? 'Trocar Logo' : 'Enviar Logo'}</label>{theme.logo && <button onClick={() => setTheme({ ...theme, logo: undefined, headerLayoutId: 'text-only' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
+                      {theme.logo && (
+                        <div className="space-y-2 pt-2 border-t mt-2">
+                            <div>
+                                <label className="text-xs font-medium text-gray-600">Tamanho do Logo</label>
+                                <input type="range" min="0.5" max="2" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, scale: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-4">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-xs">
+                                        <label className="font-medium text-gray-600">Posição X</label>
+                                        <span className="font-mono text-gray-500">{theme.logo.x}px</span>
+                                    </div>
+                                    <input type="range" min="-200" max="200" value={theme.logo.x} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, x: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-xs">
+                                        <label className="font-medium text-gray-600">Posição Y</label>
+                                        <span className="font-mono text-gray-500">{theme.logo.y}px</span>
+                                    </div>
+                                    <input type="range" min="-200" max="200" value={theme.logo.y} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, y: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                                </div>
+                            </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label><div className="flex items-center gap-2"><input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} /><label htmlFor="header-img-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}</label>{theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
                       {theme.headerImage && (
                         <div className="space-y-2">
