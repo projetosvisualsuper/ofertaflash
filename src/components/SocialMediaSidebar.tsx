@@ -25,6 +25,12 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
       handleSelectImageForPreview(null);
     }
   };
+  
+  const handleFormatButtonClick = (newFormat: PosterFormat) => {
+    handleFormatChange(newFormat); // Atualiza o formato no tema
+    handleSelectImageForPreview(null); // Limpa o preview estático
+    setActiveTab('gallery'); // Muda para a aba de galeria para ver as imagens filtradas
+  };
 
   return (
     <div className="w-full md:w-[300px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative flex-shrink-0">
@@ -47,12 +53,12 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
           <>
             <div className="space-y-3 p-3 bg-gray-50 rounded-lg border">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><LayoutTemplate size={16}/> Escolha o Formato</label>
-              <p className="text-xs text-gray-500">Selecione o formato ideal para sua publicação. A arte será ajustada automaticamente.</p>
+              <p className="text-xs text-gray-500">Selecione o formato ideal para sua publicação. A galeria será filtrada.</p>
               <div className="grid grid-cols-2 gap-2">
                   {formats.map(fmt => (
                     <button 
                       key={fmt.id} 
-                      onClick={() => handleFormatChange(fmt)}
+                      onClick={() => handleFormatButtonClick(fmt)} // Usando a nova função
                       className={`flex flex-col items-center justify-center p-3 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}
                     >
                       <span className="text-2xl mb-1">{fmt.icon}</span>
@@ -90,6 +96,7 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
               setTheme={setTheme} 
               handleSelectImageForPreview={handleSelectImageForPreview}
               previewImage={previewImage}
+              activeFormatName={theme.format.name} // Passando o nome do formato ativo para filtro
             />
           </>
         )}

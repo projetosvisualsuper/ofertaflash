@@ -6,11 +6,12 @@ interface SocialMediaGalleryProps {
   savedImages: SavedImage[];
   deleteImage: (id: string) => void;
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
-  handleSelectImageForPreview: (image: SavedImage | null) => void; // Nova prop
-  previewImage: SavedImage | null; // Nova prop
+  handleSelectImageForPreview: (image: SavedImage | null) => void;
+  previewImage: SavedImage | null;
+  activeFormatName: string; // Nova prop para filtro
 }
 
-const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage, setTheme, handleSelectImageForPreview, previewImage }) => {
+const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage, setTheme, handleSelectImageForPreview, previewImage, activeFormatName }) => {
 
   const handleDownload = (image: SavedImage) => {
     const link = document.createElement('a');
@@ -32,14 +33,17 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
       handleSelectImageForPreview(image); // Selecionar para visualização estática
     }
   };
+  
+  // Filtrar imagens salvas pelo nome do formato ativo
+  const filteredImages = savedImages.filter(image => image.formatName === activeFormatName);
 
-  if (savedImages.length === 0) {
+  if (filteredImages.length === 0) {
     return (
       <div className="p-6 text-center bg-white rounded-xl shadow-md border border-dashed border-gray-300">
         <Image size={32} className="text-indigo-500 mx-auto mb-4" />
         <p className="text-lg font-semibold text-gray-700">Galeria Vazia</p>
         <p className="text-gray-500 mt-2 text-sm">
-          Suas artes salvas aparecerão aqui. Crie e salve artes na aba "OfertaFlash Builder".
+          Nenhuma arte salva para o formato <span className="font-semibold">{activeFormatName}</span>.
         </p>
       </div>
     );
@@ -47,9 +51,9 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-gray-800 border-b pb-2">Minhas Artes Salvas ({savedImages.length})</h3>
+      <h3 className="text-lg font-bold text-gray-800 border-b pb-2">Artes Salvas ({activeFormatName}) - {filteredImages.length}</h3>
       <div className="grid grid-cols-2 gap-4">
-        {savedImages.map((image) => {
+        {filteredImages.map((image) => {
           const isSelected = previewImage && previewImage.id === image.id;
           return (
             <div key={image.id} className={`relative group bg-white rounded-lg shadow-md overflow-hidden border ${isSelected ? 'border-4 border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200'}`}>
