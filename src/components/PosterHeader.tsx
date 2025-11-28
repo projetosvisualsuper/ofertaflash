@@ -93,11 +93,14 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
     switch (theme.headerArtStyleId) {
       case 'slash':
         return (
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-1/2 -bottom-1/4 -left-8 -right-8" style={{ transform: 'rotate(-15deg)' }}>
-              <div className="w-full h-full" style={{ backgroundColor: theme.primaryColor }}></div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center p-8">
+          <div 
+            className="absolute inset-0" 
+            style={{ 
+              backgroundColor: theme.primaryColor, 
+              clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)' 
+            }}
+          >
+            <div className="flex items-center justify-center h-full p-8 pb-8">
               <HeaderContent />
             </div>
           </div>
@@ -192,7 +195,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       {renderGeometricArt()}
       {renderHeaderImage()}
       {renderPrimaryColorOverlay()}
-      {!isHeroImageMode && (
+      {/* This is the fix: only render this content block if there's a header image in background mode */}
+      {theme.headerImage && !isHeroImageMode && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
         </div>
