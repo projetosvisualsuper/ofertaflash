@@ -1,19 +1,26 @@
 import React from 'react';
-import { SavedImage } from '../../types';
-import { Trash2, Download, Image, Clock } from 'lucide-react';
+import { SavedImage, PosterTheme } from '../../types';
+import { Trash2, Download, Image, Clock, RefreshCw } from 'lucide-react';
 
 interface SocialMediaGalleryProps {
   savedImages: SavedImage[];
   deleteImage: (id: string) => void;
+  setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>; // Nova prop
 }
 
-const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage }) => {
+const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage, setTheme }) => {
 
   const handleDownload = (image: SavedImage) => {
     const link = document.createElement('a');
     link.download = `ofertaflash-${image.formatName.replace(/\s+/g, '-').toLowerCase()}-${image.id}.png`;
     link.href = image.dataUrl;
     link.click();
+  };
+  
+  const handleLoadTheme = (image: SavedImage) => {
+    // Restaura o tema completo, incluindo o formato
+    setTheme(image.theme);
+    alert(`Tema e formato (${image.formatName}) restaurados no preview!`);
   };
 
   if (savedImages.length === 0) {
@@ -46,21 +53,30 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
                 {new Date(image.timestamp).toLocaleDateString()} {new Date(image.timestamp).toLocaleTimeString()}
               </p>
             </div>
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
+            <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-y-2">
               <button
-                onClick={() => handleDownload(image)}
-                className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
-                title="Baixar Imagem"
+                onClick={() => handleLoadTheme(image)}
+                className="flex items-center gap-1 p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors shadow-lg text-xs font-bold"
+                title="Carregar Tema e Formato"
               >
-                <Download size={18} />
+                <RefreshCw size={14} /> Carregar Tema
               </button>
-              <button
-                onClick={() => deleteImage(image.id)}
-                className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
-                title="Excluir Imagem"
-              >
-                <Trash2 size={18} />
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleDownload(image)}
+                  className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
+                  title="Baixar Imagem"
+                >
+                  <Download size={18} />
+                </button>
+                <button
+                  onClick={() => deleteImage(image.id)}
+                  className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                  title="Excluir Imagem"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
           </div>
         ))}

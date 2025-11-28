@@ -62,7 +62,7 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
         )}
         
         {activeTab === 'gallery' && (
-          <SocialMediaGallery savedImages={savedImages} deleteImage={deleteImage} />
+          <SocialMediaGallery savedImages={savedImages} deleteImage={deleteImage} setTheme={setTheme} />
         )}
 
       </div>

@@ -88,6 +88,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         dataUrl: dataUrl,
         formatName: theme.format.name,
         timestamp: Date.now(),
+        theme: theme, // SALVANDO O TEMA COMPLETO
       };
       
       addSavedImage(newImage);

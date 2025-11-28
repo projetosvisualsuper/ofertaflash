@@ -3,7 +3,7 @@ import { HeaderArtStyleId } from "./src/config/headerArtPresets";
 import { SlideTransitionId } from "./src/config/slideTransitions"; // Novo Import
 
 export interface ProductLayout {
-  image: { x: number; y: number; scale: number };
+  image: { x: number; y: 0; scale: 1 };
   name: { x: 0, y: 0, scale: 1 };
   price: { x: 0, y: 0, scale: 1 };
   description: { x: 0, y: 0, scale: 1 };
@@ -56,6 +56,7 @@ export interface SavedImage {
   dataUrl: string;
   formatName: string;
   timestamp: number;
+  theme: PosterTheme; // Adicionando o tema completo
 }
 
 export interface PosterTheme {
