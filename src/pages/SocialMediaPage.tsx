@@ -21,29 +21,31 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   const socialFormats = formats.filter(f => f.id === 'story' || f.id === 'feed');
 
   const applyFormatPreset = useCallback((newFormat: PosterFormat) => {
-    const preset = LAYOUT_PRESETS[newFormat.id] || { layoutCols: 2 };
     setTheme(prevTheme => {
+      const preset = LAYOUT_PRESETS[newFormat.id] || {};
+      
       const safeHeaderElements = prevTheme.headerElements || INITIAL_THEME.headerElements;
-      const formatElements = safeHeaderElements[newFormat.id];
-
-      const mergeWithPreset = (
-        currentElement: HeaderElement, 
-        presetElement?: Partial<HeaderElement>
-      ): HeaderElement => ({
-        ...currentElement,
-        ...presetElement,
-      });
+      const targetFormatElements = safeHeaderElements[newFormat.id] || INITIAL_THEME.headerElements[newFormat.id];
 
       const newHeaderElementsForFormat: HeaderAndFooterElements = {
-        headerTitle: mergeWithPreset(formatElements.headerTitle, preset.headerTitle),
-        headerSubtitle: mergeWithPreset(formatElements.headerSubtitle, preset.headerSubtitle),
-        footerText: mergeWithPreset(formatElements.footerText, preset.footerText),
+        headerTitle: {
+          ...targetFormatElements.headerTitle,
+          ...(preset.headerTitle || {}),
+        },
+        headerSubtitle: {
+          ...targetFormatElements.headerSubtitle,
+          ...(preset.headerSubtitle || {}),
+        },
+        footerText: {
+          ...targetFormatElements.footerText,
+          ...(preset.footerText || {}),
+        },
       };
 
       return {
         ...prevTheme,
         format: newFormat,
-        layoutCols: preset.layoutCols,
+        layoutCols: preset.layoutCols ?? prevTheme.layoutCols,
         headerElements: {
           ...safeHeaderElements,
           [newFormat.id]: newHeaderElementsForFormat,
