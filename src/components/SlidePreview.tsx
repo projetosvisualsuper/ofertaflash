@@ -51,8 +51,14 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
         fontScale={fontScale} 
         isStory={false} 
       />
+      
+      {/* Main Content Area with Transition */}
       <div className="flex-1 w-full min-h-0 relative z-10 flex p-8">
-        <div className="w-full flex-1 flex">
+        <div 
+          className="w-full flex-1 flex transition-all duration-700 ease-out animate-slide-in"
+          // Adicionando keyframe animation para transição suave
+          style={{ animation: 'slideIn 0.7s ease-out forwards' }}
+        >
           <div className="w-1/2 h-full relative flex items-center justify-center">
             <div className="w-full h-full transition-transform duration-100 p-4" style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}>
               {product.image ? (<img src={product.image} alt={product.name} className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.3))' }}/>) : (<div className="w-full h-full text-gray-300 opacity-50 border-4 border-dashed rounded-3xl flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>)}

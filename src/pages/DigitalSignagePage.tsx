@@ -177,7 +177,12 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
             </div>
           ) : (
             <div className="w-full max-w-4xl aspect-[16/9] shadow-2xl rounded-xl overflow-hidden relative">
-              <SlidePreview ref={slideRef} product={currentProduct} theme={theme} />
+              <SlidePreview 
+                key={currentProduct.id} // Key forces re-render, triggering CSS animation
+                ref={slideRef} 
+                product={currentProduct} 
+                theme={theme} 
+              />
             </div>
           )}
         </div>
