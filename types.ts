@@ -20,6 +20,17 @@ export interface Product {
   layouts: Record<string, ProductLayout>; 
 }
 
+// Novo: Produto cadastrado no banco de dados local
+export interface RegisteredProduct {
+  id: string;
+  name: string;
+  description?: string;
+  defaultPrice: string;
+  defaultOldPrice?: string;
+  defaultUnit: string;
+  image?: string;
+}
+
 export interface PosterFormat {
   id: string;
   name: string;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails } from 'lucide-react';
+import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
@@ -9,6 +9,8 @@ import { HEADER_ART_PRESETS } from '../config/headerArtPresets';
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import HeaderTemplatesTab from './HeaderTemplatesTab';
 import { INITIAL_THEME } from '../state/initialState';
+import { useProductDatabase } from '../hooks/useProductDatabase';
+import { showSuccess, showError } from '../utils/toast';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -41,9 +43,40 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const [bgPrompt, setBgPrompt] = useState("");
   const [customThemes, setCustomThemes] = useLocalStorageState<ThemePreset[]>('ofertaflash_custom_themes', []);
   const [newThemeName, setNewThemeName] = useState('');
+  
+  // Novo estado para busca de produtos
+  const { registeredProducts } = useProductDatabase();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const currentHeaderElements = theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id];
   const currentLogoLayout = theme.logo?.layouts[theme.format.id];
+
+  const createNewProduct = (index: number, baseProduct?: RegisteredProduct): Product => ({
+    id: crypto.randomUUID(), 
+    name: baseProduct?.name || `Produto ${index + 1}`, 
+    description: baseProduct?.description || '', 
+    price: baseProduct?.defaultPrice || '0.00', 
+    oldPrice: baseProduct?.defaultOldPrice,
+    unit: baseProduct?.defaultUnit || 'un', 
+    image: baseProduct?.image,
+    layouts: {
+      'a4': JSON.parse(JSON.stringify(defaultLayout)),
+      'story': JSON.parse(JSON.stringify(defaultLayout)),
+      'feed': JSON.parse(JSON.stringify(defaultLayout)),
+      'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
+      'tv': JSON.parse(JSON.stringify(defaultLayout)),
+    }
+  });
+
+  const addProduct = (baseProduct?: RegisteredProduct) => {
+    setProducts(prev => [
+      ...prev,
+      createNewProduct(prev.length, baseProduct)
+    ]);
+    if (baseProduct) {
+        showSuccess(`Produto "${baseProduct.name}" adicionado ao cartaz.`);
+    }
+  };
 
   const handleLogoLayoutChange = (property: keyof LogoLayout, value: number) => {
     setTheme(prevTheme => {
@@ -101,28 +134,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         return p;
       })
     );
-  };
-
-  const createNewProduct = (index: number): Product => ({
-    id: crypto.randomUUID(), 
-    name: `Produto ${index + 1}`, 
-    description: '', 
-    price: '0.00', 
-    unit: 'un', 
-    layouts: {
-      'a4': JSON.parse(JSON.stringify(defaultLayout)),
-      'story': JSON.parse(JSON.stringify(defaultLayout)),
-      'feed': JSON.parse(JSON.stringify(defaultLayout)),
-      'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
-      'tv': JSON.parse(JSON.stringify(defaultLayout)),
-    }
-  });
-
-  const addProduct = () => {
-    setProducts(prev => [
-      ...prev,
-      createNewProduct(prev.length)
-    ]);
   };
 
   const removeProduct = (id: string) => {
@@ -252,38 +263,68 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     };
     setCustomThemes(prev => [...prev, newPreset]);
     setNewThemeName('');
+    showSuccess(`Tema "${newThemeName.trim()}" salvo com sucesso!`);
   };
 
   const handleDeleteCustomTheme = (id: string) => {
     setCustomThemes(prev => prev.filter(t => t.id !== id));
+    showSuccess("Tema excluído.");
   };
 
   const handleGenerateHeadline = async () => {
     setIsGenerating(true);
-    const headline = await generateMarketingCopy(currentHeaderElements.headerSubtitle.text || "ofertas");
-    handleHeaderElementChange('headerTitle', 'text', headline);
-    setIsGenerating(false);
+    const loadingToast = showSuccess('Gerando título com IA...');
+    try {
+        const headline = await generateMarketingCopy(currentHeaderElements.headerSubtitle.text || "ofertas");
+        handleHeaderElementChange('headerTitle', 'text', headline);
+        showSuccess('Título gerado com sucesso!');
+    } catch (error) {
+        showError('Erro ao gerar título. Verifique sua chave API.');
+    } finally {
+        setIsGenerating(false);
+    }
   };
 
   const handleBulkParse = async () => {
     if (!bulkText.trim()) return;
     setIsGenerating(true);
-    const newProducts = await parseProductsFromText(bulkText);
-    const productsWithLayout = newProducts.map(p => ({...p, layouts: createNewProduct(0).layouts}));
-    setProducts(prev => [...prev, ...productsWithLayout]);
-    setBulkText("");
-    setIsGenerating(false);
+    const loadingToast = showSuccess('Analisando texto e extraindo produtos...');
+    try {
+        const newProducts = await parseProductsFromText(bulkText);
+        const productsWithLayout = newProducts.map(p => ({...p, layouts: createNewProduct(0).layouts}));
+        setProducts(prev => [...prev, ...productsWithLayout]);
+        setBulkText("");
+        showSuccess(`${newProducts.length} produtos adicionados!`);
+    } catch (error) {
+        showError('Erro ao analisar texto. Verifique o formato ou a chave API.');
+    } finally {
+        setIsGenerating(false);
+    }
   };
 
   const handleGenerateBg = async () => {
     if(!bgPrompt.trim()) return;
     setIsGenerating(true);
-    const bgImage = await generateBackgroundImage(bgPrompt);
-    if(bgImage) {
-        setTheme(prev => ({ ...prev, backgroundImage: bgImage }));
+    const loadingToast = showSuccess('Criando imagem de fundo com IA...');
+    try {
+        const bgImage = await generateBackgroundImage(bgPrompt);
+        if(bgImage) {
+            setTheme(prev => ({ ...prev, backgroundImage: bgImage }));
+            showSuccess('Fundo gerado e aplicado!');
+        } else {
+            showError('A IA não conseguiu gerar a imagem. Tente um prompt diferente.');
+        }
+    } catch (error) {
+        showError('Erro ao gerar imagem. Verifique sua chave API.');
+    } finally {
+        setIsGenerating(false);
     }
-    setIsGenerating(false);
   }
+  
+  const filteredRegisteredProducts = registeredProducts.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="w-full md:w-[400px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative">
@@ -304,12 +345,61 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {activeTab === 'products' && (
           <div className="space-y-4">
+            
+            {/* Busca e Adição Rápida */}
+            <details className="p-3 bg-green-50 rounded-lg border border-green-200" open>
+                <summary className="text-sm font-semibold text-green-800 cursor-pointer flex items-center gap-2">
+                    <Database size={16} /> Adicionar do Banco de Produtos
+                </summary>
+                <div className="mt-3 space-y-3">
+                    <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Buscar produto cadastrado..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full border rounded-lg px-10 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
+                        />
+                    </div>
+                    <div className="max-h-40 overflow-y-auto space-y-2">
+                        {filteredRegisteredProducts.length > 0 ? (
+                            filteredRegisteredProducts.map(p => (
+                                <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
+                                    <div className="flex items-center gap-2">
+                                        {p.image && <img src={p.image} alt={p.name} className="w-8 h-8 object-contain rounded" />}
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-800 leading-tight">{p.name}</p>
+                                            <p className="text-xs text-gray-500 leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => addProduct(p)}
+                                        className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
+                                    >
+                                        <Plus size={12} /> Add
+                                    </button>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-xs text-gray-500 text-center">
+                                {searchTerm ? 'Nenhum resultado encontrado.' : 'Comece a digitar para buscar.'}
+                            </p>
+                        )}
+                    </div>
+                    <p className="text-xs text-gray-600 text-center border-t pt-2">
+                        Gerencie seus produtos na aba "Banco de Produtos".
+                    </p>
+                </div>
+            </details>
+            
+            {/* Controles de Quantidade */}
             <div className="flex items-end gap-2 p-3 bg-gray-50 rounded-lg border">
               <div className="flex-1">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Quantidade de Produtos</label>
                 <input type="number" min="0" value={products.length} onChange={handleProductCountChange} className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
               </div>
-              <button onClick={addProduct} className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors"><Plus size={16} /> Adicionar 1</button>
+              <button onClick={() => addProduct()} className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors"><Plus size={16} /> Adicionar 1</button>
             </div>
 
             {products.map((product) => {
