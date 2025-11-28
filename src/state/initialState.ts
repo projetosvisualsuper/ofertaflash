@@ -4,7 +4,8 @@ export const POSTER_FORMATS: PosterFormat[] = [
   { id: 'story', name: 'Story / TikTok', aspectRatio: '1080 / 1920', width: 1080, height: 1920, label: '9:16', icon: '📱' },
   { id: 'feed', name: 'Instagram / Quadrado', aspectRatio: '1080 / 1080', width: 1080, height: 1080, label: '1:1', icon: '🟦' },
   { id: 'a4', name: 'Folha A4 / Cartaz', aspectRatio: '2480 / 3508', width: 2480, height: 3508, label: 'A4', icon: '📄' },
-  { id: 'tv', name: 'TV / Paisagem', aspectRatio: '1920 / 1080', width: 1920, height: 1080, label: '16:9', icon: '📺' },
+  { id: 'landscape-poster', name: 'Cartaz Paisagem', aspectRatio: '1920 / 1080', width: 1920, height: 1080, label: '16:9', icon: '🖼️' },
+  { id: 'tv', name: 'TV / Slides', aspectRatio: '1920 / 1080', width: 1920, height: 1080, label: '16:9', icon: '📺' },
 ];
 
 const defaultLayout = {
@@ -24,6 +25,7 @@ const createInitialLayouts = () => ({
   'story': JSON.parse(JSON.stringify(defaultLayout)),
   'feed': JSON.parse(JSON.stringify(defaultLayout)),
   'a4': JSON.parse(JSON.stringify(defaultLayout)),
+  'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
   'tv': JSON.parse(JSON.stringify(defaultLayout)),
 });
 
@@ -31,6 +33,7 @@ const createInitialHeaderElements = (): Record<string, HeaderAndFooterElements> 
   'story': JSON.parse(JSON.stringify(defaultHeaderElements)),
   'feed': JSON.parse(JSON.stringify(defaultHeaderElements)),
   'a4': JSON.parse(JSON.stringify(defaultHeaderElements)),
+  'landscape-poster': JSON.parse(JSON.stringify(defaultHeaderElements)),
   'tv': JSON.parse(JSON.stringify(defaultHeaderElements)),
 });
 
@@ -44,6 +47,7 @@ export const INITIAL_THEME: PosterTheme = {
     'story': 2,
     'feed': 2,
     'a4': 2,
+    'landscape-poster': 3,
     'tv': 3,
   },
   format: POSTER_FORMATS[2],

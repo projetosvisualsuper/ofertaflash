@@ -21,6 +21,7 @@ const createInitialLayouts = () => ({
   'story': JSON.parse(JSON.stringify(defaultLayout)),
   'feed': JSON.parse(JSON.stringify(defaultLayout)),
   'a4': JSON.parse(JSON.stringify(defaultLayout)),
+  'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
   'tv': JSON.parse(JSON.stringify(defaultLayout)),
 });
 
@@ -28,6 +29,7 @@ const createInitialLogoLayouts = (base: any) => ({
     'story': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'feed': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'a4': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
+    'landscape-poster': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'tv': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
 });
 

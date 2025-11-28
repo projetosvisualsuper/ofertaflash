@@ -29,6 +29,7 @@ const createInitialLogoLayouts = (): Record<string, LogoLayout> => ({
     'story': { scale: 1, x: 0, y: 0 },
     'feed': { scale: 1, x: 0, y: 0 },
     'a4': { scale: 1, x: 0, y: 0 },
+    'landscape-poster': { scale: 1, x: 0, y: 0 },
     'tv': { scale: 1, x: 0, y: 0 },
 });
 
@@ -87,6 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             'a4': JSON.parse(JSON.stringify(defaultLayout)),
             'story': JSON.parse(JSON.stringify(defaultLayout)),
             'feed': JSON.parse(JSON.stringify(defaultLayout)),
+            'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
             'tv': JSON.parse(JSON.stringify(defaultLayout)),
           };
           const newLayouts = {
@@ -110,6 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       'a4': JSON.parse(JSON.stringify(defaultLayout)),
       'story': JSON.parse(JSON.stringify(defaultLayout)),
       'feed': JSON.parse(JSON.stringify(defaultLayout)),
+      'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
       'tv': JSON.parse(JSON.stringify(defaultLayout)),
     }
   });
