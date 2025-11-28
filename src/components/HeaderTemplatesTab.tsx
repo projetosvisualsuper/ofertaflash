@@ -14,13 +14,22 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
 
-  const applyTemplate = (template: HeaderTemplate) => {
+  // For applying default templates from the gallery
+  const applyPresetTemplate = (templateTheme: Partial<PosterTheme>) => {
+    setTheme(prevTheme => ({
+      ...prevTheme,
+      ...templateTheme,
+    }));
+  };
+
+  // For applying user-saved custom templates
+  const applyCustomTemplate = (template: HeaderTemplate) => {
     setTheme(prevTheme => ({
       ...prevTheme,
       ...template.theme,
-      headerImage: template.thumbnail, // Use the thumbnail as the header image
-      headerImageMode: 'hero',         // Set mode to 'hero'
-      useLogoOnHero: false,            // Default to showing only the image
+      headerImage: template.thumbnail, // Use the thumbnail as the hero image
+      headerImageMode: 'hero',
+      useLogoOnHero: false, // Default to not showing logo over image
     }));
   };
 
@@ -120,7 +129,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             {customTemplates.map(template => (
               <div key={template.id} className="relative group">
                 <button
-                  onClick={() => applyTemplate(template)}
+                  onClick={() => applyCustomTemplate(template)}
                   className="w-full border rounded-lg overflow-hidden bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
                 >
                   <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover" />
@@ -147,7 +156,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
           {HEADER_TEMPLATE_PRESETS.map(template => (
             <button
               key={template.id}
-              onClick={() => applyTemplate(template)}
+              onClick={() => applyPresetTemplate(template.theme)}
               className="border rounded-lg overflow-hidden group bg-white hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500 transition-all"
             >
               <img src={template.thumbnail} alt={template.name} className="w-full h-24 object-cover bg-gray-200" />
