@@ -4,9 +4,9 @@ import { SlideTransitionId } from "./src/config/slideTransitions"; // Novo Impor
 
 export interface ProductLayout {
   image: { x: number; y: number; scale: number };
-  name: { x: number; y: number; scale: number };
-  price: { x: number; y: number; scale: number };
-  description: { x: number; y: number; scale: number };
+  name: { x: 0, y: 0, scale: 1 };
+  price: { x: 0, y: 0, scale: 1 };
+  description: { x: 0, y: 0, scale: 1 };
 }
 
 export interface Product {
@@ -49,6 +49,13 @@ export interface LogoLayout {
   scale: number;
   x: number;
   y: number;
+}
+
+export interface SavedImage {
+  id: string;
+  dataUrl: string;
+  formatName: string;
+  timestamp: number;
 }
 
 export interface PosterTheme {

@@ -6,7 +6,7 @@ import SocialMediaPage from './src/pages/SocialMediaPage';
 import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
-import { PosterTheme, Product, PosterFormat } from './types';
+import { PosterTheme, Product, PosterFormat, SavedImage } from './types';
 import { useLocalStorageState } from './src/hooks/useLocalStorageState';
 import { Loader2 } from 'lucide-react';
 
@@ -38,6 +38,7 @@ export default function App() {
   
   const [theme, setTheme] = useLocalStorageState<PosterTheme>('ofertaflash_theme', INITIAL_THEME);
   const [products, setProducts] = useLocalStorageState<Product[]>('ofertaflash_products', INITIAL_PRODUCTS);
+  const [savedImages, setSavedImages] = useLocalStorageState<SavedImage[]>('ofertaflash_saved_images', []);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -97,6 +98,14 @@ export default function App() {
   }, [theme, products]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
+  
+  const addSavedImage = (image: SavedImage) => {
+    setSavedImages(prev => [image, ...prev]);
+  };
+
+  const deleteSavedImage = (id: string) => {
+    setSavedImages(prev => prev.filter(img => img.id !== id));
+  };
 
   if (!isReady) {
     return (
@@ -114,17 +123,21 @@ export default function App() {
 
     switch (activeModule) {
       case 'poster':
-        return <PosterBuilderPage {...commonProps} />;
+        return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
       case 'signage':
         return <DigitalSignagePage {...commonProps} />;
       case 'social':
-        return <SocialMediaPage {...commonProps} />;
+        return <SocialMediaPage 
+          {...commonProps} 
+          savedImages={savedImages} 
+          deleteImage={deleteSavedImage} 
+        />;
       case 'ads':
         return <AudioVideoAdPage theme={theme} products={products} />;
       case 'settings':
         return <SettingsPage />;
       default:
-        return <PosterBuilderPage {...commonProps} />;
+        return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
     }
   };
 

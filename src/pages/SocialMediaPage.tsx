@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import SocialMediaSidebar from '../components/SocialMediaSidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
-import { Product, PosterTheme, PosterFormat, HeaderElement, HeaderAndFooterElements } from '../../types';
+import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { Image } from 'lucide-react';
 import { INITIAL_THEME } from '../state/initialState';
 
@@ -11,9 +11,11 @@ interface SocialMediaPageProps {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[]; // Full list from App.tsx
+  savedImages: SavedImage[];
+  deleteImage: (id: string) => void;
 }
 
-export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats }: SocialMediaPageProps) {
+export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats, savedImages, deleteImage }: SocialMediaPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const posterRef = useRef<PosterPreviewRef>(null);
   
@@ -51,6 +53,8 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         formats={socialFormats}
         handleDownload={handleDownload}
         handleFormatChange={applyFormatPreset}
+        savedImages={savedImages}
+        deleteImage={deleteImage}
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">

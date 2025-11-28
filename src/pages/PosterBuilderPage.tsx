@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
-import { Product, PosterTheme, PosterFormat, HeaderElement, HeaderAndFooterElements } from '../../types';
+import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { INITIAL_THEME } from '../state/initialState';
-import { Download } from 'lucide-react';
+import { Download, Save } from 'lucide-react';
+import { toPng } from 'html-to-image';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -11,11 +12,14 @@ interface PosterBuilderPageProps {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[];
+  addSavedImage: (image: SavedImage) => void;
 }
 
-export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats }: PosterBuilderPageProps) {
+export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats, addSavedImage }: PosterBuilderPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const posterRef = useRef<PosterPreviewRef>(null);
+  const posterCanvasRef = useRef<HTMLDivElement>(null); // Ref para o elemento DOM do PosterPreview
 
   // Filtra o formato 'tv' para que ele não apareça no Poster Builder
   const builderFormats = formats.filter(f => f.id !== 'tv');
@@ -49,6 +53,53 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
       posterRef.current.triggerDownload();
     }
   };
+  
+  const handleSaveToGallery = async () => {
+    const posterElement = document.getElementById('poster-canvas');
+    if (!posterElement) return;
+
+    setIsSaving(true);
+    try {
+      const targetWidth = theme.format.width;
+      const targetHeight = theme.format.height;
+      const scale = targetWidth / posterElement.offsetWidth;
+      const sourceHeight = posterElement.offsetWidth * (targetHeight / targetWidth);
+
+      const dataUrl = await toPng(posterElement, { 
+        cacheBust: true, 
+        quality: 1.0,
+        pixelRatio: 1,
+        width: targetWidth,
+        height: targetHeight,
+        style: {
+           transform: `scale(${scale})`,
+           transformOrigin: 'top left',
+           width: `${posterElement.offsetWidth}px`,
+           height: `${sourceHeight}px`,
+           maxWidth: 'none',
+           maxHeight: 'none',
+           margin: '0',
+           boxShadow: 'none',
+        }
+      });
+
+      const newImage: SavedImage = {
+        id: crypto.randomUUID(),
+        dataUrl: dataUrl,
+        formatName: theme.format.name,
+        timestamp: Date.now(),
+      };
+      
+      addSavedImage(newImage);
+      alert(`Arte salva na galeria de Redes Sociais! (${theme.format.name})`);
+
+    } catch (err) {
+      console.error("Failed to save poster to gallery", err);
+      alert("Erro ao salvar a arte na galeria.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleFormatChange = useCallback((newFormat: PosterFormat) => {
     setTheme(prevTheme => ({
@@ -69,11 +120,11 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
-         {isDownloading && (
+         {(isDownloading || isSaving) && (
            <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm fixed">
              <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center animate-pulse">
                <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p className="font-semibold text-gray-800">Gerando Imagem em Alta Resolução...</p>
+               <p className="font-semibold text-gray-800">{isSaving ? 'Salvando Arte na Galeria...' : 'Gerando Imagem em Alta Resolução...'}</p>
              </div>
            </div>
          )}
@@ -89,8 +140,17 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
          
          <div className="mt-8 flex gap-4 justify-center p-4 flex-shrink-0">
             <button
+              onClick={handleSaveToGallery}
+              disabled={isSaving || isDownloading}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            >
+              <Save size={20} />
+              {isSaving ? 'Salvando...' : `Salvar Arte (${theme.format.name})`}
+            </button>
+            <button
               onClick={handleDownload}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95"
+              disabled={isSaving || isDownloading}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
             >
               <Download size={20} />
               Baixar {theme.format.name}
