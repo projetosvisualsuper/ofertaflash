@@ -5,6 +5,7 @@ import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { INITIAL_THEME } from '../state/initialState';
 import { Download, Save } from 'lucide-react';
 import { toPng } from 'html-to-image';
+import { showSuccess, showError } from '../utils/toast';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -92,11 +93,11 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
       };
       
       addSavedImage(newImage);
-      alert(`Arte salva na galeria de Redes Sociais! (${theme.format.name})`);
+      showSuccess(`Arte salva na galeria de Redes Sociais! (${theme.format.name})`);
 
     } catch (err) {
       console.error("Failed to save poster to gallery", err);
-      alert("Erro ao salvar a arte na galeria.");
+      showError("Erro ao salvar a arte na galeria.");
     } finally {
       setIsSaving(false);
     }

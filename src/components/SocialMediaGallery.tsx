@@ -1,6 +1,7 @@
 import React from 'react';
 import { SavedImage, PosterTheme } from '../../types';
 import { Trash2, Download, Image, Clock, RefreshCw, Eye } from 'lucide-react';
+import { showSuccess, showError } from '../utils/toast';
 
 interface SocialMediaGalleryProps {
   savedImages: SavedImage[];
@@ -18,12 +19,13 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
     link.download = `ofertaflash-${image.formatName.replace(/\s+/g, '-').toLowerCase()}-${image.id}.png`;
     link.href = image.dataUrl;
     link.click();
+    showSuccess(`Download de ${image.formatName} iniciado!`);
   };
   
   const handleLoadTheme = (image: SavedImage) => {
     // Restaura o tema completo, incluindo o formato
     setTheme(image.theme);
-    alert(`Tema e formato (${image.formatName}) restaurados no preview do Builder!`);
+    showSuccess(`Tema e formato (${image.formatName}) restaurados no preview do Builder!`);
   };
   
   const handlePreview = (image: SavedImage) => {
