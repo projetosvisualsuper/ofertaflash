@@ -377,10 +377,93 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <input className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" value={currentHeaderElements.footerText.text} onChange={(e) => handleHeaderElementChange('footerText', 'text', e.target.value)} placeholder="Texto do Rodapé"/>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Rodapé</label><span className="font-mono text-gray-500">{(currentHeaderElements.footerText.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.footerText.scale} onChange={(e) => handleHeaderElementChange('footerText', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.x} onChange={(e) => handleHeaderElementChange('footerText', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.y} onChange={(e) => handleHeaderElementChange('footerText', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
             </div>
-            {/* Other controls... */}
+            
+            <details className="space-y-2 border-t pt-4" open>
+              <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Brush size={16}/> Cores</summary>
+              <div className="grid grid-cols-2 gap-4 p-2">
+                <div><label className="text-xs font-medium text-gray-600">Cor Primária</label><input type="color" value={theme.primaryColor} onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+                <div><label className="text-xs font-medium text-gray-600">Cor Secundária</label><input type="color" value={theme.secondaryColor} onChange={(e) => setTheme({ ...theme, secondaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+                <div><label className="text-xs font-medium text-gray-600">Cor de Fundo</label><input type="color" value={theme.backgroundColor} onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+                <div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.textColor} onChange={(e) => setTheme({ ...theme, textColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+                <div><label className="text-xs font-medium text-gray-600">Texto Cabeçalho</label><input type="color" value={theme.headerTextColor} onChange={(e) => setTheme({ ...theme, headerTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+              </div>
+            </details>
+
+            <details className="space-y-2 border-t pt-4">
+                <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Type size={16}/> Fontes</summary>
+                <div className="p-2 space-y-3">
+                    <div><label className="text-xs font-medium text-gray-600">Fonte do Título</label><select value={theme.fontFamilyDisplay} onChange={(e) => setTheme({ ...theme, fontFamilyDisplay: e.target.value })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="" disabled>Selecione...</option>{FONT_PRESETS.map(font => <option key={font.id} value={font.fontFamily}>{font.name}</option>)}</select></div>
+                    <div><label className="text-xs font-medium text-gray-600">Fonte do Corpo</label><select value={theme.fontFamilyBody} onChange={(e) => setTheme({ ...theme, fontFamilyBody: e.target.value })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="Inter, sans-serif">Padrão</option><option value="Roboto Condensed, sans-serif">Condensada</option></select></div>
+                </div>
+            </details>
+
+            <details className="space-y-2 border-t pt-4">
+                <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Settings size={16}/> Estilo do Cabeçalho</summary>
+                <div className="p-2 space-y-3">
+                    <div><label className="text-xs font-medium text-gray-600">Layout do Logo</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_LAYOUT_PRESETS.map(preset => (<button key={preset.id} onClick={() => setTheme({ ...theme, headerLayoutId: preset.id })} className={`p-2 border rounded flex flex-col items-center ${theme.headerLayoutId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
+                    <div><label className="text-xs font-medium text-gray-600">Estilo de Arte (se não houver imagem)</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_ART_PRESETS.map(preset => (<button key={preset.id} onClick={() => setTheme({ ...theme, headerArtStyleId: preset.id })} className={`p-2 border rounded flex flex-col items-center ${theme.headerArtStyleId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
+                </div>
+            </details>
+
+            <details className="space-y-2 border-t pt-4">
+                <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><ImageIcon size={16}/> Imagens e Fundos</summary>
+                <div className="p-2 space-y-4">
+                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Logo da Empresa</label><div className="flex items-center gap-2"><input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={handleLogoUpload} /><label htmlFor="logo-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.logo ? 'Trocar Logo' : 'Enviar Logo'}</label>{theme.logo && <button onClick={() => setTheme({ ...theme, logo: undefined, headerLayoutId: 'text-only' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>{theme.logo && (<div><label className="text-xs font-medium text-gray-600">Tamanho do Logo</label><input type="range" min="0.5" max="2" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, scale: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /></div>)}</div>
+                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label><div className="flex items-center gap-2"><input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} /><label htmlFor="header-img-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}</label>{theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>{theme.headerImage && (<div className="space-y-2"><select value={theme.headerImageMode} onChange={(e) => setTheme({ ...theme, headerImageMode: e.target.value as HeaderImageMode })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="background">Fundo (com cor)</option><option value="hero">Herói (imagem pura)</option></select>{theme.headerImageMode === 'background' && (<div><label className="text-xs font-medium text-gray-600">Opacidade</label><input type="range" min="0.1" max="1" step="0.1" value={theme.headerImageOpacity} onChange={(e) => setTheme({ ...theme, headerImageOpacity: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /></div>)}</div>)}</div>
+                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Fundo (Geral)</label><div className="flex items-center gap-2"><input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} /><label htmlFor="bg-img-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}</label>{theme.backgroundImage && <button onClick={() => setTheme({ ...theme, backgroundImage: undefined })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div></div>
+                </div>
+            </details>
+
+            <details className="space-y-2 border-t pt-4">
+                <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Tag size={16}/> Estilo do Preço</summary>
+                <div className="p-2 space-y-3">
+                    <div><label className="text-xs font-medium text-gray-600">Formato do Card</label><select value={theme.priceCardStyle} onChange={(e) => setTheme({ ...theme, priceCardStyle: e.target.value as 'default' | 'pill' | 'minimal' })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="default">Padrão</option><option value="pill">Pílula</option><option value="minimal">Mínimo</option></select></div>
+                    {theme.priceCardStyle !== 'minimal' && (<div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div><div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div></div>)}
+                </div>
+            </details>
+
+            <details className="space-y-2 border-t pt-4">
+                <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Frame size={16}/> Bordas</summary>
+                <div className="p-2 space-y-3">
+                    <div className="flex items-center justify-between"><label className="text-xs font-medium text-gray-600">Adicionar Borda</label><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={theme.hasFrame} onChange={(e) => setTheme({ ...theme, hasFrame: e.target.checked })} className="sr-only peer" /><div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label></div>
+                    {theme.hasFrame && (<div className="space-y-2"><div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div><div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /></div></div>)}
+                </div>
+            </details>
           </div>
         )}
-        {/* AI Tab... */}
+        {activeTab === 'ai' && (
+          <div className="space-y-6">
+            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 space-y-3">
+              <h3 className="text-sm font-semibold text-purple-800 flex items-center gap-2"><Wand2 size={16}/> Assistentes de IA</h3>
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Gerar Título com IA</label>
+                <p className="text-xs text-gray-500 mb-2">Use o subtítulo como base para gerar um título principal criativo.</p>
+                <button onClick={handleGenerateHeadline} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
+                  {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
+                  {isGenerating ? 'Gerando...' : 'Gerar Título'}
+                </button>
+              </div>
+              <div className="border-t pt-3">
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Adicionar Produtos em Massa</label>
+                <p className="text-xs text-gray-500 mb-2">Cole uma lista de produtos (ex: "Arroz 5kg por 22,90") e a IA irá extrair os dados.</p>
+                <textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)} rows={4} className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ex: Picanha Friboi por 69,90/kg (de 89,90)&#10;Cerveja Heineken 350ml por 4,50/un"/>
+                <button onClick={handleBulkParse} disabled={isGenerating || !bulkText.trim()} className="w-full mt-2 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
+                  {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                  {isGenerating ? 'Analisando...' : 'Analisar e Adicionar'}
+                </button>
+              </div>
+               <div className="border-t pt-3">
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Gerar Fundo com IA</label>
+                <p className="text-xs text-gray-500 mb-2">Descreva o fundo que você quer (ex: "madeira rústica", "frutas e vegetais").</p>
+                <input value={bgPrompt} onChange={(e) => setBgPrompt(e.target.value)} className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ex: fundo de supermercado desfocado"/>
+                <button onClick={handleGenerateBg} disabled={isGenerating || !bgPrompt.trim()} className="w-full mt-2 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
+                  {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
+                  {isGenerating ? 'Criando Imagem...' : 'Gerar Fundo'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <div className="p-4 border-t bg-gray-50 text-xs text-gray-500 text-center flex-shrink-0">Powered by Google Gemini 2.5</div>
     </div>
