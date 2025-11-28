@@ -19,7 +19,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'black-friday',
     name: 'Black Friday',
-    thumbnail: 'https://i.imgur.com/2y2z8Jc.png',
+    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_blackfriday.png',
     theme: {
       primaryColor: '#000000',
       secondaryColor: '#fcee21',
@@ -33,7 +33,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'hortifruti',
     name: 'Feira Fresca',
-    thumbnail: 'https://i.imgur.com/O3c8a3a.png',
+    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_feira.png',
     theme: {
       primaryColor: '#166534',
       secondaryColor: '#f97316',
@@ -47,7 +47,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'butcher-shop',
     name: 'Açougue do Chefe',
-    thumbnail: 'https://i.imgur.com/sL6a3hH.png',
+    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_acougue.png',
     theme: {
       primaryColor: '#b91c1c',
       secondaryColor: '#f7f2e9',
@@ -64,7 +64,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'bakery',
     name: 'Padaria Delícia',
-    thumbnail: 'https://i.imgur.com/kR8d4fG.png',
+    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_padaria.png',
     theme: {
       primaryColor: '#78350f',
       secondaryColor: '#fde68a',
@@ -78,7 +78,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'pink-week',
     name: 'Pink Week',
-    thumbnail: 'https://i.imgur.com/5g7f8hJ.png',
+    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_pink.png',
     theme: {
       primaryColor: '#db2777',
       secondaryColor: '#fbcfe8',
@@ -92,7 +92,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'tech-deals',
     name: 'Ofertas Tech',
-    thumbnail: 'https://i.imgur.com/m9e9f9f.png',
+    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_tech.png',
     theme: {
       primaryColor: '#1e3a8a',
       secondaryColor: '#0ea5e9',

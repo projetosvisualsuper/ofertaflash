@@ -322,7 +322,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         )}
 
         {activeTab === 'templates' && (
-          <HeaderTemplatesTab setTheme={setTheme} />
+          <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
         )}
 
         {activeTab === 'design' && (
