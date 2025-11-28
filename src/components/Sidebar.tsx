@@ -8,6 +8,7 @@ import { FONT_PRESETS } from '../config/fontPresets';
 import { HEADER_ART_PRESETS } from '../config/headerArtPresets';
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import HeaderTemplatesTab from './HeaderTemplatesTab';
+import { INITIAL_THEME } from '../state/initialState';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -41,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const [customThemes, setCustomThemes] = useLocalStorageState<ThemePreset[]>('ofertaflash_custom_themes', []);
   const [newThemeName, setNewThemeName] = useState('');
 
-  const currentHeaderElements = theme.headerElements[theme.format.id];
+  const currentHeaderElements = theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id];
   const currentLogoLayout = theme.logo?.layouts[theme.format.id];
 
   const handleLogoLayoutChange = (property: keyof LogoLayout, value: number) => {

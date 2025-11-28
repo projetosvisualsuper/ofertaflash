@@ -5,6 +5,7 @@ import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 import PosterHeader from './PosterHeader';
 import PriceDisplay from './PriceDisplay';
+import { INITIAL_THEME } from '../state/initialState';
 
 export interface PosterPreviewRef {
   triggerDownload: () => Promise<void>;
@@ -28,7 +29,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   const posterRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLParagraphElement>(null);
 
-  const currentHeaderElements = theme.headerElements[theme.format.id];
+  const currentHeaderElements = theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id];
   const currentLayoutCols = theme.layoutCols[theme.format.id] || 2;
 
   const handleDownload = async () => {
