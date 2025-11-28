@@ -19,6 +19,10 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     setTheme(prevTheme => ({
       ...prevTheme,
       ...templateTheme,
+      // Explicitly reset header image unless the preset provides one.
+      // This fixes the bug where the header would be blank after switching from a custom template.
+      headerImage: templateTheme.headerImage || undefined,
+      headerImageMode: templateTheme.headerImageMode || 'none',
     }));
   };
 
