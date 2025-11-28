@@ -85,16 +85,19 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       );
     }
 
-    // Renderiza o PosterPreview editável
+    // Se não houver imagem estática selecionada, mostre uma mensagem de instrução.
     return (
-      <div className="flex-1 relative overflow-hidden bg-gray-200/80">
-        <PosterPreview 
-          ref={posterRef}
-          theme={theme} 
-          products={products} 
-          onDownloadStart={() => setIsDownloading(true)}
-          onDownloadEnd={() => setIsDownloading(false)}
-        />
+      <div className="flex-1 relative overflow-hidden bg-gray-200/80 flex items-center justify-center">
+        <div className="text-center p-8 bg-white/70 rounded-xl shadow-lg border border-dashed border-gray-300">
+          <Image size={48} className="text-indigo-500 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-700 mb-2">Visualização de Artes Salvas</h3>
+          <p className="text-gray-500">
+            Vá para a aba <span className="font-semibold">Imagens</span> e clique em "Visualizar" em uma arte salva para vê-la aqui.
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            O preview editável está disponível no módulo "OfertaFlash Builder".
+          </p>
+        </div>
       </div>
     );
   };
@@ -109,8 +112,8 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         handleFormatChange={applyFormatPreset}
         savedImages={savedImages}
         deleteImage={deleteImage}
-        handleSelectImageForPreview={handleSelectImageForPreview} // Nova prop
-        previewImage={previewImage} // Nova prop
+        handleSelectImageForPreview={handleSelectImageForPreview}
+        previewImage={previewImage}
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">

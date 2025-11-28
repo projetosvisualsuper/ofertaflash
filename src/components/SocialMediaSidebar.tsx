@@ -11,12 +11,20 @@ interface SocialMediaSidebarProps {
   handleFormatChange: (newFormat: PosterFormat) => void;
   savedImages: SavedImage[];
   deleteImage: (id: string) => void;
-  handleSelectImageForPreview: (image: SavedImage | null) => void; // Nova prop
-  previewImage: SavedImage | null; // Nova prop
+  handleSelectImageForPreview: (image: SavedImage | null) => void;
+  previewImage: SavedImage | null;
 }
 
 const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange, savedImages, deleteImage, handleSelectImageForPreview, previewImage }) => {
   const [activeTab, setActiveTab] = useState<'formats' | 'gallery'>('formats');
+
+  const handleTabChange = (tab: 'formats' | 'gallery') => {
+    setActiveTab(tab);
+    // Se mudar para a aba 'formats', desmarque qualquer imagem estática selecionada.
+    if (tab === 'formats') {
+      handleSelectImageForPreview(null);
+    }
+  };
 
   return (
     <div className="w-full md:w-[300px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative flex-shrink-0">
@@ -29,8 +37,8 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
       
       {/* Tabs */}
       <div className="flex border-b flex-shrink-0">
-        <button onClick={() => setActiveTab('formats')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'formats' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><LayoutTemplate size={16} /> Formato</button>
-        <button onClick={() => setActiveTab('gallery')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'gallery' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><ImageIcon size={16} /> Imagens</button>
+        <button onClick={() => handleTabChange('formats')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'formats' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><LayoutTemplate size={16} /> Formato</button>
+        <button onClick={() => handleTabChange('gallery')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'gallery' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><ImageIcon size={16} /> Imagens</button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -88,17 +96,16 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
 
       </div>
       
-      {activeTab === 'formats' && (
-        <div className="p-4 border-t bg-gray-50 flex-shrink-0">
-          <button
-            onClick={handleDownload}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all"
-          >
-            <Download size={20} />
-            Baixar {theme.format.name}
-          </button>
-        </div>
-      )}
+      {/* O botão de download deve funcionar para o que estiver no preview, seja o editável ou o estático */}
+      <div className="p-4 border-t bg-gray-50 flex-shrink-0">
+        <button
+          onClick={handleDownload}
+          className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all"
+        >
+          <Download size={20} />
+          Baixar {previewImage ? previewImage.formatName : theme.format.name}
+        </button>
+      </div>
     </div>
   );
 };
