@@ -20,6 +20,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const slideRef = useRef<HTMLDivElement>(null);
   
   const tvFormat = POSTER_FORMATS.find(f => f.id === 'tv');
@@ -56,9 +57,21 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
     );
   };
 
-  const handleDownload = async () => {
-    if (slideRef.current && tvFormat) {
-      setIsDownloading(true);
+  const handleDownloadAllSlides = async () => {
+    if (!slideRef.current || !tvFormat || productsForSlides.length === 0) return;
+
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    const originalSlideIndex = currentSlideIndex;
+
+    for (let i = 0; i < productsForSlides.length; i++) {
+      const product = productsForSlides[i];
+      setDownloadProgress(i + 1);
+      setCurrentSlideIndex(i);
+
+      // Wait for the DOM to update with the new slide
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       try {
         const element = slideRef.current;
         const targetWidth = tvFormat.width;
@@ -66,35 +79,43 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
         const scale = targetWidth / element.offsetWidth;
         const sourceHeight = element.offsetWidth * (targetHeight / targetWidth);
 
-        const dataUrl = await toPng(element, { 
-          cacheBust: true, 
+        const dataUrl = await toPng(element, {
+          cacheBust: true,
           quality: 1.0,
           pixelRatio: 1,
           width: targetWidth,
           height: targetHeight,
           style: {
-             transform: `scale(${scale})`,
-             transformOrigin: 'top left',
-             width: `${element.offsetWidth}px`,
-             height: `${sourceHeight}px`,
-             maxWidth: 'none',
-             maxHeight: 'none',
-             margin: '0',
-             boxShadow: 'none',
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            width: `${element.offsetWidth}px`,
+            height: `${sourceHeight}px`,
+            maxWidth: 'none',
+            maxHeight: 'none',
+            margin: '0',
+            boxShadow: 'none',
           }
         });
 
         const link = document.createElement('a');
-        link.download = `slide-${currentProduct.name.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+        link.download = `slide-${String(i + 1).padStart(2, '0')}-${product.name.replace(/\s+/g, '-').toLowerCase()}.png`;
         link.href = dataUrl;
         link.click();
+
+        // Small delay between downloads to help the browser
+        await new Promise(resolve => setTimeout(resolve, 500));
+
       } catch (err) {
-        console.error("Failed to download slide", err);
-        alert("Erro ao gerar a imagem do slide. Tente novamente.");
-      } finally {
-        setIsDownloading(false);
+        console.error(`Failed to download slide ${i + 1}`, err);
+        alert(`Erro ao gerar a imagem do slide ${i + 1}. O download será interrompido.`);
+        break;
       }
     }
+
+    // Restore original state
+    setCurrentSlideIndex(originalSlideIndex);
+    setIsDownloading(false);
+    setDownloadProgress(0);
   };
 
   const currentProduct = productsForSlides[currentSlideIndex];
@@ -114,7 +135,19 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
   }
 
   return (
-    <div className="flex-1 flex flex-col p-8 bg-gray-100 h-full overflow-y-auto">
+    <div className="flex-1 flex flex-col p-8 bg-gray-100 h-full overflow-y-auto relative">
+      {isDownloading && (
+        <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center text-center">
+            <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+            <p className="text-lg font-semibold text-gray-800">Gerando e Baixando Slides...</p>
+            <p className="text-gray-600 mt-2">
+              Progresso: {downloadProgress} de {productsForSlides.length}
+            </p>
+            <p className="text-xs text-gray-500 mt-4">A tela irá piscar durante o processo. Por favor, aguarde.</p>
+          </div>
+        </div>
+      )}
       <div className="flex-shrink-0">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
           <Monitor size={32} className="text-indigo-600" />
@@ -150,12 +183,12 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
               </div>
               <div className="mt-4">
                 <button 
-                  onClick={handleDownload}
-                  disabled={isDownloading}
+                  onClick={handleDownloadAllSlides}
+                  disabled={isDownloading || productsForSlides.length === 0}
                   className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all disabled:opacity-50"
                 >
                   {isDownloading ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
-                  {isDownloading ? 'Baixando...' : 'Baixar Slide'}
+                  {isDownloading ? `Baixando ${downloadProgress}/${productsForSlides.length}...` : 'Baixar Todos os Slides'}
                 </button>
               </div>
               <SlideLayoutControls 
