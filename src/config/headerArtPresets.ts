@@ -1,35 +1,45 @@
-import { Square, Scissors, Waves, Mountain, Orbit, Signal } from 'lucide-react';
+import { Square, Scissors, Waves, Mountain, Orbit, Signal, Brush, Circle } from 'lucide-react';
 
 export const HEADER_ART_PRESETS = [
   {
     id: 'block',
-    name: 'Bloco Moderno',
+    name: 'Bloco',
     icon: Square,
   },
   {
     id: 'slash',
-    name: 'Corte Diagonal',
+    name: 'Diagonal',
     icon: Scissors,
   },
   {
     id: 'wave',
-    name: 'Onda Suave',
+    name: 'Onda',
     icon: Waves,
   },
   {
     id: 'peak',
-    name: 'Pico Geométrico',
+    name: 'Pico',
     icon: Mountain,
   },
   {
     id: 'arc',
-    name: 'Arco Inferior',
+    name: 'Arco',
     icon: Orbit,
   },
   {
     id: 'steps',
     name: 'Degraus',
     icon: Signal,
+  },
+  {
+    id: 'brush',
+    name: 'Pincelada',
+    icon: Brush,
+  },
+  {
+    id: 'circles',
+    name: 'Círculos',
+    icon: Circle,
   },
 ] as const; // Use "as const" for stricter typing
 
