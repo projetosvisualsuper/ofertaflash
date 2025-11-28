@@ -2,7 +2,7 @@ import React from 'react';
 import { PosterTheme, HeaderElement } from '../types';
 
 interface PosterHeaderProps {
-  theme: Omit<PosterTheme, 'headerElements' | 'format'>; // Pass most of the theme
+  theme: PosterTheme;
   headerTitle: HeaderElement;
   headerSubtitle: HeaderElement;
   isLandscape: boolean;
@@ -17,6 +17,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
 
   const isHeroImageMode = theme.headerImage && theme.headerImageMode === 'hero';
   const isBackgroundMode = theme.headerImage && theme.headerImageMode === 'background';
+  
+  const currentLogoLayout = theme.logo?.layouts[theme.format.id];
 
   const HeaderText = () => (
     <div className={`flex flex-col ${
@@ -57,10 +59,10 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   );
 
   const HeaderLogo = () => (
-    theme.logo ? (
+    theme.logo && currentLogoLayout ? (
       <div 
         style={{
-          transform: `translateX(${theme.logo.x}px) translateY(${theme.logo.y}px) scale(${theme.logo.scale})`,
+          transform: `translateX(${currentLogoLayout.x}px) translateY(${currentLogoLayout.y}px) scale(${currentLogoLayout.scale})`,
           transformOrigin: effectiveHeaderLayout === 'logo-left' ? 'left center' : effectiveHeaderLayout === 'logo-right' ? 'right center' : 'center'
         }}
       >

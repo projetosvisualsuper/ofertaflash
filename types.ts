@@ -44,6 +44,12 @@ export interface HeaderAndFooterElements {
   footerText: HeaderElement;
 }
 
+export interface LogoLayout {
+  scale: number;
+  x: number;
+  y: number;
+}
+
 export interface PosterTheme {
   primaryColor: string;
   secondaryColor: string;
@@ -54,9 +60,7 @@ export interface PosterTheme {
   format: PosterFormat;
   logo?: {
     src: string;
-    scale: number;
-    x: number;
-    y: number;
+    layouts: Record<string, LogoLayout>;
   }
   priceCardStyle: 'default' | 'pill' | 'minimal';
   priceCardBackgroundColor: string;

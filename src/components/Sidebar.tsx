@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements } from '../types';
+import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
@@ -25,6 +25,13 @@ const defaultLayout: ProductLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
+const createInitialLogoLayouts = (): Record<string, LogoLayout> => ({
+    'story': { scale: 1, x: 0, y: 0 },
+    'feed': { scale: 1, x: 0, y: 0 },
+    'a4': { scale: 1, x: 0, y: 0 },
+    'tv': { scale: 1, x: 0, y: 0 },
+});
+
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -34,6 +41,25 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const [newThemeName, setNewThemeName] = useState('');
 
   const currentHeaderElements = theme.headerElements[theme.format.id];
+  const currentLogoLayout = theme.logo?.layouts[theme.format.id];
+
+  const handleLogoLayoutChange = (property: keyof LogoLayout, value: number) => {
+    setTheme(prevTheme => {
+        if (!prevTheme.logo) return prevTheme;
+        const newLayouts = { ...prevTheme.logo.layouts };
+        newLayouts[prevTheme.format.id] = {
+            ...newLayouts[prevTheme.format.id],
+            [property]: value,
+        };
+        return {
+            ...prevTheme,
+            logo: {
+                ...prevTheme.logo,
+                layouts: newLayouts,
+            }
+        };
+    });
+  };
 
   const handleHeaderElementChange = (element: keyof HeaderAndFooterElements, property: keyof HeaderElement, value: string | number) => {
     setTheme(prevTheme => {
@@ -137,9 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
           ...prev,
           logo: {
             src: reader.result as string,
-            scale: 1,
-            x: 0,
-            y: 0,
+            layouts: createInitialLogoLayouts(),
           },
           headerLayoutId: 'logo-left',
         }));
@@ -416,27 +440,27 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             <details className="space-y-2 border-t pt-4">
                 <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><ImageIcon size={16}/> Imagens e Fundos</summary>
                 <div className="p-2 space-y-4">
-                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Logo da Empresa</label><div className="flex items-center gap-2"><input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={handleLogoUpload} /><label htmlFor="logo-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.logo ? 'Trocar Logo' : 'Enviar Logo'}</label>{theme.logo && <button onClick={() => setTheme({ ...theme, logo: undefined, headerLayoutId: 'text-only' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
-                      {theme.logo && (
+                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Logo da Empresa ({theme.format.name})</label><div className="flex items-center gap-2"><input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={handleLogoUpload} /><label htmlFor="logo-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.logo ? 'Trocar Logo' : 'Enviar Logo'}</label>{theme.logo && <button onClick={() => setTheme({ ...theme, logo: undefined, headerLayoutId: 'text-only' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
+                      {theme.logo && currentLogoLayout && (
                         <div className="space-y-2 pt-2 border-t mt-2">
                             <div>
                                 <label className="text-xs font-medium text-gray-600">Tamanho do Logo</label>
-                                <input type="range" min="0.5" max="2" step="0.1" value={theme.logo.scale} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, scale: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                                <input type="range" min="0.5" max="2" step="0.1" value={currentLogoLayout.scale} onChange={(e) => handleLogoLayoutChange('scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
                             </div>
                             <div className="grid grid-cols-2 gap-x-4">
                                 <div className="space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <label className="font-medium text-gray-600">Posição X</label>
-                                        <span className="font-mono text-gray-500">{theme.logo.x}px</span>
+                                        <span className="font-mono text-gray-500">{currentLogoLayout.x}px</span>
                                     </div>
-                                    <input type="range" min="-400" max="400" value={theme.logo.x} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, x: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                                    <input type="range" min="-400" max="400" value={currentLogoLayout.x} onChange={(e) => handleLogoLayoutChange('x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
                                 </div>
                                 <div className="space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <label className="font-medium text-gray-600">Posição Y</label>
-                                        <span className="font-mono text-gray-500">{theme.logo.y}px</span>
+                                        <span className="font-mono text-gray-500">{currentLogoLayout.y}px</span>
                                     </div>
-                                    <input type="range" min="-400" max="400" value={theme.logo.y} onChange={(e) => setTheme({ ...theme, logo: { ...theme.logo!, y: Number(e.target.value) } })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+                                    <input type="range" min="-400" max="400" value={currentLogoLayout.y} onChange={(e) => handleLogoLayoutChange('y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
                                 </div>
                             </div>
                         </div>
