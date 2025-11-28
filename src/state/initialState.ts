@@ -45,7 +45,7 @@ export const INITIAL_THEME: PosterTheme = {
 };
 
 export const INITIAL_PRODUCTS: Product[] = [
-  { id: '1', name: 'Leite Integral 1L', description: 'Leite fresco e puro, ideal para toda a família.', price: '4.99', oldPrice: '6.50', unit: 'un', layout: defaultLayout },
-  { id: '2', name: 'Arroz Branco 5kg', description: 'Tipo 1, grãos selecionados.', price: '22.90', unit: 'un', layout: defaultLayout },
-  { id: '3', name: 'Café Tradicional 500g', description: 'Torra média, sabor intenso.', price: '14.50', oldPrice: '18.90', unit: 'un', layout: defaultLayout },
+  { id: '1', name: 'Leite Integral 1L', description: 'Leite fresco e puro, ideal para toda a família.', price: '4.99', oldPrice: '6.50', unit: 'un', layout: defaultLayout, tvLayout: defaultLayout },
+  { id: '2', name: 'Arroz Branco 5kg', description: 'Tipo 1, grãos selecionados.', price: '22.90', unit: 'un', layout: defaultLayout, tvLayout: defaultLayout },
+  { id: '3', name: 'Café Tradicional 500g', description: 'Torra média, sabor intenso.', price: '14.50', oldPrice: '18.90', unit: 'un', layout: defaultLayout, tvLayout: defaultLayout },
 ];

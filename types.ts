@@ -1,6 +1,13 @@
 import { HeaderLayoutId } from "./src/config/headerLayoutPresets";
 import { HeaderArtStyleId } from "./src/config/headerArtPresets";
 
+export interface ProductLayout {
+  image: { x: number; y: number; scale: number };
+  name: { x: number; y: number; scale: number };
+  price: { x: number; y: number; scale: number };
+  description: { x: number; y: number; scale: number };
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -9,12 +16,8 @@ export interface Product {
   oldPrice?: string;
   unit: string;
   image?: string;
-  layout?: {
-    image: { x: number; y: number; scale: number };
-    name: { x: number; y: number; scale: number };
-    price: { x: number; y: number; scale: number };
-    description: { x: number; y: number; scale: number };
-  }
+  layout?: ProductLayout;
+  tvLayout?: ProductLayout; // Novo layout específico para TV
 }
 
 export interface PosterFormat {

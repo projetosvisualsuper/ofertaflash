@@ -22,7 +22,8 @@ const SlidePreview: React.FC<SlidePreviewProps> = ({ product, theme }) => {
   // We force the theme to use the TV format for rendering consistency
   const slideTheme = { ...theme, format: tvFormat };
 
-  const layout = product.layout || defaultLayout;
+  // Use tvLayout if it exists, otherwise fall back to the main layout or a default
+  const layout = product.tvLayout || product.layout || defaultLayout;
   const isLandscape = true; // TV format is always landscape (16:9)
   const fontScale = 1; // Base scale for TV
 
