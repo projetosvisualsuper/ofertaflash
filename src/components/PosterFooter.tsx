@@ -1,6 +1,6 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import { PosterTheme, HeaderElement } from '../../types';
-import { Phone, MessageCircle, Instagram, Facebook, Globe, MapPin, CreditCard } from 'lucide-react';
+import { Phone, MessageCircle, Instagram, Facebook, Globe, MapPin, CreditCard, Building, Info, FileText } from 'lucide-react';
 
 interface PosterFooterProps {
   theme: PosterTheme;
@@ -41,14 +41,21 @@ const PosterFooter: React.FC<PosterFooterProps> = ({ theme, footerTextElement, i
       <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
       
       {hasCompanyInfo && (
-        <div className={`grid grid-flow-col auto-cols-max justify-center items-center gap-x-4 gap-y-1 p-2 ${textSize}`}>
-          {companyInfo.showPhone && companyInfo.phone && <div className="flex items-center gap-1"><Phone size={iconSize} /><span>{companyInfo.phone}</span></div>}
-          {companyInfo.showWhatsapp && companyInfo.whatsapp && <div className="flex items-center gap-1"><MessageCircle size={iconSize} /><span>{companyInfo.whatsapp}</span></div>}
-          {companyInfo.showInstagram && companyInfo.instagram && <div className="flex items-center gap-1"><Instagram size={iconSize} /><span>{companyInfo.instagram}</span></div>}
-          {companyInfo.showFacebook && companyInfo.facebook && <div className="flex items-center gap-1"><Facebook size={iconSize} /><span>{companyInfo.facebook}</span></div>}
-          {companyInfo.showWebsite && companyInfo.website && <div className="flex items-center gap-1"><Globe size={iconSize} /><span>{companyInfo.website}</span></div>}
-          {companyInfo.showAddress && companyInfo.address && <div className="flex items-center gap-1"><MapPin size={iconSize} /><span>{companyInfo.address}</span></div>}
-          {companyInfo.showPaymentMethods && companyInfo.paymentMethods && <div className="flex items-center gap-1"><CreditCard size={iconSize} /><span>{companyInfo.paymentMethods}</span></div>}
+        <div className="p-2 space-y-1 text-center">
+          {companyInfo.showName && companyInfo.name && <p className="font-bold" style={{ fontSize: isStory ? '1.2em' : '1.1em' }}>{companyInfo.name}</p>}
+          {companyInfo.showSlogan && companyInfo.slogan && <p className="italic opacity-90" style={{ fontSize: isStory ? '0.9em' : '0.8em' }}>{companyInfo.slogan}</p>}
+          
+          <div className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-1 ${textSize}`}>
+            {companyInfo.showPhone && companyInfo.phone && <div className="flex items-center gap-1"><Phone size={iconSize} /><span>{companyInfo.phone}</span></div>}
+            {companyInfo.showWhatsapp && companyInfo.whatsapp && <div className="flex items-center gap-1"><MessageCircle size={iconSize} /><span>{companyInfo.whatsapp}</span></div>}
+            {companyInfo.showPhonesLegend && companyInfo.phonesLegend && <div className="flex items-center gap-1"><Info size={iconSize} /><span>{companyInfo.phonesLegend}</span></div>}
+            {companyInfo.showPaymentMethods && companyInfo.paymentMethods && <div className="flex items-center gap-1"><CreditCard size={iconSize} /><span>{companyInfo.paymentMethods}</span></div>}
+            {companyInfo.showPaymentNotes && companyInfo.paymentNotes && <div className="flex items-center gap-1"><FileText size={iconSize} /><span>{companyInfo.paymentNotes}</span></div>}
+            {companyInfo.showAddress && companyInfo.address && <div className="flex items-center gap-1"><MapPin size={iconSize} /><span>{companyInfo.address}</span></div>}
+            {companyInfo.showInstagram && companyInfo.instagram && <div className="flex items-center gap-1"><Instagram size={iconSize} /><span>{companyInfo.instagram}</span></div>}
+            {companyInfo.showFacebook && companyInfo.facebook && <div className="flex items-center gap-1"><Facebook size={iconSize} /><span>{companyInfo.facebook}</span></div>}
+            {companyInfo.showWebsite && companyInfo.website && <div className="flex items-center gap-1"><Globe size={iconSize} /><span>{companyInfo.website}</span></div>}
+          </div>
         </div>
       )}
 

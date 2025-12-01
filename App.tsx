@@ -5,7 +5,8 @@ import DigitalSignagePage from './src/pages/DigitalSignagePage';
 import SocialMediaPage from './src/pages/SocialMediaPage';
 import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
-import ProductManagerPage from './src/pages/ProductManagerPage'; // Novo Import
+import ProductManagerPage from './src/pages/ProductManagerPage';
+import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage } from './types';
 import { useLocalStorageState } from './src/hooks/useLocalStorageState';
@@ -128,6 +129,8 @@ export default function App() {
         return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
       case 'product-db':
         return <ProductManagerPage />;
+      case 'company':
+        return <CompanyInfoPage theme={theme} setTheme={setTheme} />;
       case 'signage':
         return <DigitalSignagePage {...commonProps} />;
       case 'social':

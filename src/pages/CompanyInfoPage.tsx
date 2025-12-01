@@ -2,7 +2,7 @@ import React from 'react';
 import { PosterTheme, CompanyInfo } from '../../types';
 import { Building, Edit } from 'lucide-react';
 
-interface CompanyInfoTabProps {
+interface CompanyInfoPageProps {
   theme: PosterTheme;
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
 }
@@ -32,7 +32,7 @@ const InfoRow: React.FC<{
   };
 
   return (
-    <div className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
+    <div className="flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm">
       <div className="flex items-center gap-3">
         <label className="relative inline-flex items-center cursor-pointer">
           <input type="checkbox" checked={!!companyInfo[toggleField]} onChange={handleToggle} className="sr-only peer" />
@@ -67,7 +67,7 @@ const InfoRow: React.FC<{
   );
 };
 
-const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ theme, setTheme }) => {
+const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) => {
   if (!theme.companyInfo) return null;
 
   const fields: { label: string; field: keyof CompanyInfo; toggleField: keyof CompanyInfo; isTextarea?: boolean }[] = [
@@ -85,22 +85,27 @@ const CompanyInfoTab: React.FC<CompanyInfoTabProps> = ({ theme, setTheme }) => {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="p-3 bg-gray-50 rounded-lg border space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <Building size={16} /> Dados da Empresa
-        </h3>
-        <p className="text-xs text-gray-500">
-          Ative e edite as informações que devem aparecer no rodapé do seu cartaz.
-        </p>
-        <div className="space-y-2">
-          {fields.map(f => (
-            <InfoRow key={f.field} {...f} theme={theme} setTheme={setTheme} />
-          ))}
+    <div className="flex-1 flex flex-col p-8 bg-gray-100 h-full overflow-y-auto">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+        <Building size={32} className="text-indigo-600" />
+        Dados da Empresa
+      </h2>
+      
+      <div className="max-w-2xl w-full mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
+        <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800">Informações do Rodapé</h3>
+            <p className="text-sm text-gray-500">
+              Ative e edite as informações que devem aparecer no rodapé dos seus cartazes e artes.
+            </p>
+            <div className="space-y-2">
+              {fields.map(f => (
+                <InfoRow key={f.field} {...f} theme={theme} setTheme={setTheme} />
+              ))}
+            </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default CompanyInfoTab;
+export default CompanyInfoPage;
