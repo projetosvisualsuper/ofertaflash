@@ -3,7 +3,7 @@ import { Users, Loader2, User, Edit } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { Profile } from '../../types';
 import { showError } from '../utils/toast';
-import { ROLE_NAMES } from '../config/constants';
+import { PLAN_NAMES } from '../config/constants';
 
 const UserManagementPage: React.FC = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -61,7 +61,7 @@ const UserManagementPage: React.FC = () => {
                 
                 <div className="flex flex-col items-end shrink-0 ml-4">
                   <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#e0e7ff', color: '#4f46e5' }}>
-                    {ROLE_NAMES[profile.role] || profile.role}
+                    {PLAN_NAMES[profile.role] || profile.role}
                   </span>
                   <p className="text-xs text-gray-500 mt-1">{profile.permissions.length} Permissões</p>
                 </div>

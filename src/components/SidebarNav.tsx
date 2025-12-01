@@ -4,6 +4,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
 import { Permission } from '../../types';
+import { PLAN_NAMES } from '../config/constants';
 
 interface SidebarNavProps {
   activeModule: string;
@@ -47,7 +48,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       {profile && (
         <div className="p-4 border-b border-gray-700 text-xs text-gray-400">
           <p className="font-semibold text-white">Olá, {profile.username || 'Usuário'}</p>
-          <p>Função: {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}</p>
+          <p>Plano: {PLAN_NAMES[profile.role] || profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}</p>
         </div>
       )}
       

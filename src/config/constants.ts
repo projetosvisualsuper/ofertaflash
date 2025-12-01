@@ -15,14 +15,12 @@ export const PERMISSIONS = [
 
 export type Permission = typeof PERMISSIONS[number];
 
-// Mapeamento de permissões padrão por Role (deve ser sincronizado com a função handle_new_user no Supabase)
+// Mapeamento de permissões padrão por Role (agora alinhado com Planos SaaS)
 export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
-  admin: [
+  pro: [ // Plano Pro (Acesso Total)
     ...PERMISSIONS,
-    'view_reports',
-    'manage_users',
   ],
-  supervisor: [
+  premium: [ // Plano Premium
     'access_builder',
     'manage_products',
     'manage_company_info',
@@ -31,30 +29,18 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
     'access_ads',
     'view_reports',
   ],
-  operator: [
+  free: [ // Plano Grátis (Acesso Básico)
     'access_builder',
+    'access_social_media',
     'manage_products',
-    'access_signage',
-    'access_social_media',
-    'access_ads',
-  ],
-  technician: [
-    'access_builder',
-    'access_signage',
-  ],
-  demo: [
-    'access_builder',
-    'access_social_media',
   ],
 };
 
-// Mapeamento de Roles para exibição
-export const ROLE_NAMES: Record<string, string> = {
-  admin: 'Administrador',
-  supervisor: 'Supervisor',
-  operator: 'Operador',
-  technician: 'Técnico',
-  demo: 'Demonstração',
+// Mapeamento de Roles para exibição (agora Planos)
+export const PLAN_NAMES: Record<string, string> = {
+  pro: 'Plano Pro',
+  premium: 'Plano Premium',
+  free: 'Plano Grátis',
 };
 
 /**
