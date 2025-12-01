@@ -17,6 +17,8 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
+          '@supabase/auth-ui-react': '@supabase/auth-ui-react',
+          '@supabase/auth-ui-shared': '@supabase/auth-ui-shared',
         }
       },
       optimizeDeps: {
