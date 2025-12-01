@@ -14,13 +14,7 @@ interface SocialMediaGalleryProps {
 
 const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, deleteImage, setTheme, handleSelectImageForPreview, previewImage, activeFormatName }) => {
 
-  const handleDownload = (image: SavedImage) => {
-    const link = document.createElement('a');
-    link.download = `ofertaflash-${image.formatName.replace(/\s+/g, '-').toLowerCase()}-${image.id}.png`;
-    link.href = image.dataUrl;
-    link.click();
-    showSuccess(`Download de ${image.formatName} iniciado!`);
-  };
+  // Removendo handleDownload daqui. O download será feito pelo botão principal da sidebar.
   
   const handleLoadTheme = (image: SavedImage) => {
     // Restaura o tema completo, incluindo o formato
@@ -80,13 +74,7 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
                   <Eye size={14} /> {isSelected ? 'Voltar' : 'Visualizar'}
                 </button>
                 <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleDownload(image)}
-                    className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
-                    title="Baixar Imagem"
-                  >
-                    <Download size={18} />
-                  </button>
+                  {/* Botão de Download removido daqui */}
                   <button
                     onClick={() => deleteImage(image.id)}
                     className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"

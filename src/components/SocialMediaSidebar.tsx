@@ -17,7 +17,7 @@ interface SocialMediaSidebarProps {
 }
 
 const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme, formats, handleDownload, handleFormatChange, savedImages, deleteImage, handleSelectImageForPreview, previewImage }) => {
-  const [activeTab, setActiveTab] = useState<'formats' | 'gallery'>('formats');
+  const [activeTab, setActiveTab] = useState<'formats' | 'gallery'>('gallery'); // Mudando o padrão para 'gallery'
 
   const handleTabChange = (tab: 'formats' | 'gallery') => {
     setActiveTab(tab);
@@ -41,9 +41,8 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
       dataUrlToShare = previewImage.dataUrl;
       fileName = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}.png`;
     } else {
-      // Se não houver imagem salva selecionada, forçamos o download da imagem atual
-      // e pedimos ao usuário para compartilhar manualmente.
-      showError("Por favor, salve a arte na galeria primeiro (no módulo Builder) ou selecione uma imagem salva para compartilhar.");
+      // Se não houver imagem salva selecionada, pedimos ao usuário para selecionar uma.
+      showError("Por favor, selecione uma arte salva na galeria para compartilhar.");
       return;
     }
 
@@ -68,7 +67,7 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
         } else {
             // Fallback para navegadores que não suportam Web Share API com arquivos
             showError("Seu navegador não suporta compartilhamento direto. Baixe a imagem e poste manualmente.");
-            handleDownload(); // Força o download como fallback
+            // Não chamamos handleDownload aqui, pois o usuário deve baixar manualmente.
         }
     } catch (error) {
         if ((error as Error).name !== 'AbortError') {

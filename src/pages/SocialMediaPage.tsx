@@ -4,6 +4,7 @@ import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { Image } from 'lucide-react';
 import { INITIAL_THEME } from '../state/initialState';
+import { showSuccess, showError } from '../utils/toast'; // Importando toasts
 
 interface SocialMediaPageProps {
   theme: PosterTheme;
@@ -42,8 +43,27 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   }, [theme.format.id, socialFormats, applyFormatPreset]);
 
   const handleDownload = () => {
-    if (posterRef.current) {
+    if (previewImage) {
+      // Caso 1: Baixar a imagem salva estática
+      setIsDownloading(true);
+      try {
+        const link = document.createElement('a');
+        link.download = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}-${previewImage.id}.png`;
+        link.href = previewImage.dataUrl;
+        link.click();
+        showSuccess(`Download de ${previewImage.formatName} iniciado!`);
+      } catch (error) {
+        showError("Erro ao iniciar o download da imagem salva.");
+      } finally {
+        setIsDownloading(false);
+      }
+    } else if (posterRef.current) {
+      // Caso 2: Tentar baixar o preview editável (se for renderizado)
+      // Nota: O PosterPreview não é renderizado quando previewImage está ativo.
+      // Se o usuário estiver na aba 'formats' e clicar em download, ele tentará baixar o preview.
       posterRef.current.triggerDownload();
+    } else {
+      showError("Nenhuma arte selecionada ou carregada para download.");
     }
   };
   
