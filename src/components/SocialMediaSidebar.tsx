@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { PosterTheme, PosterFormat, SavedImage } from '../../types';
-import { Download, LayoutTemplate, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Download, LayoutTemplate, Image as ImageIcon, Share2 } from 'lucide-react';
 import SocialMediaGallery from './SocialMediaGallery';
+import { showSuccess, showError } from '../utils/toast';
 
 interface SocialMediaSidebarProps {
   theme: PosterTheme;
@@ -30,6 +31,51 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
     handleFormatChange(newFormat); // Atualiza o formato no tema
     handleSelectImageForPreview(null); // Limpa o preview estático
     setActiveTab('gallery'); // Muda para a aba de galeria para ver as imagens filtradas
+  };
+  
+  const handleShare = async () => {
+    let dataUrlToShare: string | undefined;
+    let fileName: string;
+    
+    if (previewImage) {
+      dataUrlToShare = previewImage.dataUrl;
+      fileName = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}.png`;
+    } else {
+      // Se não houver imagem salva selecionada, forçamos o download da imagem atual
+      // e pedimos ao usuário para compartilhar manualmente.
+      showError("Por favor, salve a arte na galeria primeiro (no módulo Builder) ou selecione uma imagem salva para compartilhar.");
+      return;
+    }
+
+    if (!dataUrlToShare) {
+        showError("Nenhuma imagem disponível para compartilhamento.");
+        return;
+    }
+
+    try {
+        // Converte Data URL para Blob
+        const response = await fetch(dataUrlToShare);
+        const blob = await response.blob();
+        const file = new File([blob], fileName, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: 'Nova OfertaFlash',
+                text: 'Confira esta oferta incrível que criei com o AI Marketing Hub!',
+            });
+            showSuccess("Arte compartilhada com sucesso!");
+        } else {
+            // Fallback para navegadores que não suportam Web Share API com arquivos
+            showError("Seu navegador não suporta compartilhamento direto. Baixe a imagem e poste manualmente.");
+            handleDownload(); // Força o download como fallback
+        }
+    } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+            console.error('Erro ao compartilhar:', error);
+            showError("Falha ao iniciar o compartilhamento. Tente baixar e postar manualmente.");
+        }
+    }
   };
 
   return (
@@ -103,8 +149,16 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
 
       </div>
       
-      {/* O botão de download deve funcionar para o que estiver no preview, seja o editável ou o estático */}
-      <div className="p-4 border-t bg-gray-50 flex-shrink-0">
+      {/* Botões de Ação */}
+      <div className="p-4 border-t bg-gray-50 flex-shrink-0 space-y-2">
+        <button
+          onClick={handleShare}
+          disabled={!previewImage}
+          className="w-full flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all disabled:opacity-50"
+        >
+          <Share2 size={20} />
+          Compartilhar Arte
+        </button>
         <button
           onClick={handleDownload}
           className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg font-bold shadow-lg transition-all"
