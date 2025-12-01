@@ -1,4 +1,4 @@
-import { Product, PosterTheme, PosterFormat, HeaderAndFooterElements } from '../types';
+import { Product, PosterTheme, PosterFormat, HeaderAndFooterElements, CompanyInfo } from '../types';
 
 export const POSTER_FORMATS: PosterFormat[] = [
   { id: 'story', name: 'Story / TikTok', aspectRatio: '1080 / 1920', width: 1080, height: 1920, label: '9:16', icon: '📱' },
@@ -37,6 +37,32 @@ const createInitialHeaderElements = (): Record<string, HeaderAndFooterElements> 
   'tv': JSON.parse(JSON.stringify(defaultHeaderElements)),
 });
 
+export const INITIAL_COMPANY_INFO: CompanyInfo = {
+  name: 'Nome da Sua Empresa',
+  slogan: 'Seu Slogan Incrível Aqui',
+  phone: '(XX) XXXX-XXXX',
+  whatsapp: '(XX) XXXXX-XXXX',
+  phonesLegend: 'Ligue ou chame no zap!',
+  paymentMethods: 'Aceitamos cartões de crédito, débito e PIX.',
+  paymentNotes: 'Parcelamos em até 3x sem juros.',
+  address: 'Rua das Ofertas, 123, Bairro Centro',
+  instagram: '@seu_mercado',
+  facebook: '/seumercado',
+  website: 'www.seumercado.com.br',
+
+  showName: false,
+  showSlogan: false,
+  showPhone: false,
+  showWhatsapp: false,
+  showPhonesLegend: false,
+  showPaymentMethods: false,
+  showPaymentNotes: false,
+  showAddress: false,
+  showInstagram: false,
+  showFacebook: false,
+  showWebsite: false,
+};
+
 export const INITIAL_THEME: PosterTheme = {
   primaryColor: '#dc2626',
   secondaryColor: '#fbbf24',
@@ -70,6 +96,7 @@ export const INITIAL_THEME: PosterTheme = {
   headerImageOpacity: 0.3,
   headerElements: createInitialHeaderElements(),
   slideTransitionId: 'slide-in', // Novo valor padrão
+  companyInfo: INITIAL_COMPANY_INFO,
 };
 
 export const INITIAL_PRODUCTS: Product[] = [

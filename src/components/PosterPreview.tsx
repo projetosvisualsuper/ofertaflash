@@ -8,6 +8,7 @@ import PriceDisplay from './PriceDisplay';
 import { INITIAL_THEME } from '../state/initialState';
 import SlideContent from './SlideContent';
 import SingleProductShowcase from './SingleProductShowcase'; // Importando o novo componente
+import PosterFooter from './PosterFooter';
 
 export interface PosterPreviewRef {
   triggerDownload: () => Promise<void>;
@@ -29,7 +30,6 @@ const defaultLayout = {
 
 const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme, products, onDownloadStart, onDownloadEnd }, ref) => {
   const posterRef = useRef<HTMLDivElement>(null);
-  const footerRef = useRef<HTMLParagraphElement>(null);
 
   const currentHeaderElements = theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id];
   const currentLayoutCols = theme.layoutCols[theme.format.id] || 2;
@@ -87,25 +87,6 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
     triggerDownload: handleDownload,
   }));
 
-  useLayoutEffect(() => {
-    const footerElement = footerRef.current;
-    if (footerElement && footerElement.parentElement) {
-        footerElement.style.fontSize = isStory ? '1.1rem' : '1rem';
-        footerElement.style.whiteSpace = 'nowrap';
-        const parentElement = footerElement.parentElement;
-        const parentStyle = window.getComputedStyle(parentElement);
-        const parentPaddingX = parseFloat(parentStyle.paddingLeft) + parseFloat(parentStyle.paddingRight);
-        const availableWidth = parentElement.clientWidth - parentPaddingX;
-        const currentScrollWidth = footerElement.scrollWidth;
-        if (currentScrollWidth > availableWidth) {
-            const scaleFactor = availableWidth / currentScrollWidth;
-            const currentFontSize = parseFloat(window.getComputedStyle(footerElement).fontSize);
-            const newFontSize = Math.max(8, currentFontSize * scaleFactor * 0.98); 
-            footerElement.style.fontSize = `${newFontSize}px`;
-        }
-    }
-  }, [currentHeaderElements.footerText, theme.format, isStory]);
-
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
       <div className="relative flex-shrink-0 origin-center transition-all duration-300">
@@ -151,10 +132,11 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
                 products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${currentLayoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={currentLayoutCols} isStory={isStory} />))}</div>)
               )}
             </div>
-            <footer className="relative z-10 w-full flex-shrink-0 text-center" style={{ backgroundColor: theme.primaryColor, padding: isStory ? '1rem' : '1rem 1.5rem' }}>
-              <div className="absolute top-0 left-0 w-full h-1 bg-black/10"></div>
-              <p ref={footerRef} className="font-bold uppercase tracking-wider opacity-95" style={{ color: theme.headerTextColor, fontSize: isStory ? '1.1rem' : '1rem', transform: `translateX(${currentHeaderElements.footerText.x}px) translateY(${currentHeaderElements.footerText.y}px) scale(${currentHeaderElements.footerText.scale})` }}>{currentHeaderElements.footerText.text}</p>
-            </footer>
+            <PosterFooter 
+              theme={theme}
+              footerTextElement={currentHeaderElements.footerText}
+              isStory={isStory}
+            />
          </div>
       </div>
     </div>

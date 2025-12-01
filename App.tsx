@@ -47,7 +47,7 @@ export default function App() {
     let productsUpdated = false;
 
     // Check and migrate theme state
-    if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null) {
+    if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
       console.log("Migrating theme state from localStorage to new structure...");
       themeUpdated = true;
       setTheme(prevTheme => ({
@@ -55,6 +55,7 @@ export default function App() {
         ...prevTheme,
         headerElements: prevTheme.headerElements || INITIAL_THEME.headerElements,
         layoutCols: INITIAL_THEME.layoutCols, // Reset layoutCols to the new structure with defaults
+        companyInfo: prevTheme.companyInfo || INITIAL_THEME.companyInfo,
       }));
     }
 
@@ -93,7 +94,7 @@ export default function App() {
 
   // This effect marks the app as ready once the data structures are confirmed to be valid.
   useEffect(() => {
-      if (theme.headerElements && typeof theme.layoutCols === 'object' && theme.layoutCols !== null && !products.some(p => !p.layouts) && (!theme.logo || (theme.logo as any).layouts)) {
+      if (theme.headerElements && typeof theme.layoutCols === 'object' && theme.layoutCols !== null && !products.some(p => !p.layouts) && (!theme.logo || (theme.logo as any).layouts) && theme.companyInfo) {
           setIsReady(true);
       }
   }, [theme, products]);

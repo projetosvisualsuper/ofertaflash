@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, Building } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
@@ -11,6 +11,7 @@ import HeaderTemplatesTab from './HeaderTemplatesTab';
 import { INITIAL_THEME } from '../state/initialState';
 import { useProductDatabase } from '../hooks/useProductDatabase';
 import { showSuccess, showError } from '../utils/toast';
+import CompanyInfoTab from './CompanyInfoTab';
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -37,7 +38,7 @@ const createInitialLogoLayouts = (): Record<string, LogoLayout> => ({
 });
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai' | 'company'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
@@ -334,6 +335,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
 
       <div className="flex border-b flex-shrink-0">
         <button onClick={() => setActiveTab('products')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'products' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><List size={16} /> Produtos</button>
+        <button onClick={() => setActiveTab('company')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'company' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><Building size={16} /> Empresa</button>
         <button onClick={() => setActiveTab('templates')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'templates' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><GalleryThumbnails size={16} /> Templates</button>
         <button onClick={() => setActiveTab('design')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'design' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><Palette size={16} /> Design</button>
         <button onClick={() => setActiveTab('ai')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'ai' ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-700'}`}><Wand2 size={16} /> IA</button>
@@ -436,6 +438,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               </details>
             )})}
           </div>
+        )}
+
+        {activeTab === 'company' && (
+          <CompanyInfoTab theme={theme} setTheme={setTheme} />
         )}
 
         {activeTab === 'templates' && (

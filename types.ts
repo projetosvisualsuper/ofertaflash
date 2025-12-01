@@ -70,6 +70,34 @@ export interface SavedImage {
   theme: PosterTheme; // Adicionando o tema completo
 }
 
+export interface CompanyInfo {
+  // Values
+  name?: string;
+  slogan?: string;
+  phone?: string;
+  whatsapp?: string;
+  phonesLegend?: string;
+  paymentMethods?: string;
+  paymentNotes?: string;
+  address?: string;
+  instagram?: string;
+  facebook?: string;
+  website?: string;
+
+  // Toggles
+  showName?: boolean;
+  showSlogan?: boolean;
+  showPhone?: boolean;
+  showWhatsapp?: boolean;
+  showPhonesLegend?: boolean;
+  showPaymentMethods?: boolean;
+  showPaymentNotes?: boolean;
+  showAddress?: boolean;
+  showInstagram?: boolean;
+  showFacebook?: boolean;
+  showWebsite?: boolean;
+}
+
 export interface PosterTheme {
   primaryColor: string;
   secondaryColor: string;
@@ -103,6 +131,7 @@ export interface PosterTheme {
   // Armazena elementos de cabeçalho/rodapé por formato
   headerElements: Record<string, HeaderAndFooterElements>;
   slideTransitionId: SlideTransitionId; // Novo campo
+  companyInfo?: CompanyInfo;
 }
 
 export interface AIGeneratedImage {
