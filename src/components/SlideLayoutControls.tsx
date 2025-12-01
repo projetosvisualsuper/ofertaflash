@@ -65,7 +65,7 @@ const SlideLayoutControls: React.FC<SlideLayoutControlsProps> = ({ product, onLa
           <label className="font-medium text-gray-600">Tamanho</label>
           <span className="font-mono text-gray-500">{layout[element].scale.toFixed(1)}x</span>
         </div>
-        <input type="range" min="0.5" max="2" step="0.1" value={layout[element].scale} onChange={(e) => handleChange(element, 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
+        <input type="range" min="0.5" max="4" step="0.1" value={layout[element].scale} onChange={(e) => handleChange(element, 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
       </div>
       <div className="space-y-1">
         <div className="flex justify-between text-xs">
