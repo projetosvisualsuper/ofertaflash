@@ -17,6 +17,9 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
+          // Adicionando aliases para pacotes externos que são carregados via importmap
+          '@supabase/auth-ui-react': '@supabase/auth-ui-react',
+          '@supabase/auth-ui-shared': '@supabase/auth-ui-shared',
         }
       },
       build: {
