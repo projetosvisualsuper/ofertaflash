@@ -1,18 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
-import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic } from 'lucide-react';
+import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX } from 'lucide-react';
 import { generateAdScript } from '../../services/geminiService';
-import { showSuccess, showError } from '../utils/toast';
+import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
+import { supabase } from '@/src/integrations/supabase/client';
 
 interface AdScriptGeneratorProps {
   products: Product[];
   theme: PosterTheme;
 }
 
+// Hardcoded URL for the Edge Function (replace with your project ID)
+const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/generate-tts";
+
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
   const [adScript, setAdScript] = useState<AdScript | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
   const selectedProducts = useMemo(() => 
@@ -36,15 +42,63 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
     setIsLoading(true);
     setAdScript(null);
+    setAudioUrl(null); // Limpa o áudio anterior
+    
+    const loadingToast = showLoading("Gerando roteiro com IA...");
     
     try {
       const generatedScript = await generateAdScript(selectedProducts);
       setAdScript(generatedScript);
-      showSuccess("Roteiro gerado com sucesso!");
+      updateToast(loadingToast, "Roteiro gerado com sucesso!", 'success');
     } catch (error) {
-      showError("Erro ao gerar roteiro. Verifique sua chave API.");
+      updateToast(loadingToast, "Erro ao gerar roteiro. Verifique sua chave API.", 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleGenerateAudio = async () => {
+    if (!adScript || !adScript.script) {
+      showError("Gere o roteiro de texto primeiro.");
+      return;
+    }
+    
+    setIsGeneratingAudio(true);
+    setAudioUrl(null);
+    const loadingToast = showLoading("Gerando áudio com Google Cloud TTS...");
+
+    try {
+      // Chamada direta à Edge Function (sem usar supabase.functions.invoke, pois é mais simples para Deno)
+      const response = await fetch(TTS_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Não precisamos de autenticação JWT aqui, pois a função é pública e usa a chave secreta do servidor.
+        },
+        body: JSON.stringify({ 
+          text: adScript.script,
+          voiceStyle: adScript.suggestions.voice, // Passa a sugestão de voz (embora a função use um padrão)
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Erro desconhecido na Edge Function.");
+      }
+
+      const audioBase64 = data.audioContent;
+      const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+      
+      updateToast(loadingToast, "Áudio gerado com sucesso!", 'success');
+
+    } catch (error) {
+      console.error("TTS Generation Error:", error);
+      updateToast(loadingToast, "Falha ao gerar áudio. Verifique a chave GOOGLE_CLOUD_TTS_API_KEY.", 'error');
+    } finally {
+      setIsGeneratingAudio(false);
     }
   };
 
@@ -58,7 +112,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     }
   };
   
-  const handleDownload = () => {
+  const handleDownloadText = () => {
     if (scriptText) {
       const element = document.createElement("a");
       const fileNameBase = selectedProducts.length === 1 
@@ -71,6 +125,28 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+    }
+  };
+  
+  const handleDownloadAudio = () => {
+    if (audioUrl) {
+      const element = document.createElement("a");
+      const fileNameBase = selectedProducts.length === 1 
+        ? selectedProducts[0].name.replace(/\s+/g, '-').toLowerCase()
+        : 'anuncio-multi-produtos';
+        
+      element.href = audioUrl;
+      element.download = `locucao-${fileNameBase}.mp3`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  };
+  
+  const handlePlayAudio = () => {
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      audio.play();
     }
   };
 
@@ -127,17 +203,51 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
         </button>
         
         {adScript && (
-          <div className="p-3 bg-gray-50 rounded-lg border text-sm space-y-3">
-            <p className="font-bold text-gray-800 border-b pb-1">Sugestões de Produção:</p>
-            <div className="flex items-center gap-2 text-gray-700">
-              <Music size={16} className="text-indigo-500 shrink-0" />
-              <span className="font-semibold">Música:</span> {adScript.suggestions.music}
+          <>
+            <div className="p-3 bg-gray-50 rounded-lg border text-sm space-y-3">
+              <p className="font-bold text-gray-800 border-b pb-1">Sugestões de Produção:</p>
+              <div className="flex items-center gap-2 text-gray-700">
+                <Music size={16} className="text-indigo-500 shrink-0" />
+                <span className="font-semibold">Música:</span> {adScript.suggestions.music}
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <Mic size={16} className="text-indigo-500 shrink-0" />
+                <span className="font-semibold">Voz:</span> {adScript.suggestions.voice}
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-gray-700">
-              <Mic size={16} className="text-indigo-500 shrink-0" />
-              <span className="font-semibold">Voz:</span> {adScript.suggestions.voice}
+            
+            <div className="border-t pt-4">
+              <button 
+                onClick={handleGenerateAudio}
+                disabled={isGeneratingAudio}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isGeneratingAudio ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  <Volume2 size={20} />
+                )}
+                {isGeneratingAudio ? 'Gerando Áudio...' : 'Gerar Locução (MP3)'}
+              </button>
+              
+              {audioUrl && (
+                <div className="mt-3 flex gap-2">
+                  <button 
+                    onClick={handlePlayAudio}
+                    className="flex-1 flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold transition-colors"
+                  >
+                    <Volume2 size={16} /> Ouvir Áudio
+                  </button>
+                  <button 
+                    onClick={handleDownloadAudio}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-lg font-bold transition-colors"
+                  >
+                    <Download size={16} /> Baixar MP3
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -147,12 +257,12 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
           <h3 className="text-xl font-bold text-gray-800">Roteiro Gerado</h3>
           <div className="flex gap-2">
             <button 
-              onClick={handleDownload}
+              onClick={handleDownloadText}
               disabled={!scriptText}
               className="flex items-center gap-1 text-sm px-3 py-1 rounded transition-colors disabled:opacity-50 bg-gray-200 hover:bg-gray-300 text-gray-700"
             >
               <Download size={16} />
-              Baixar
+              Baixar Texto
             </button>
             <button 
               onClick={handleCopy}
@@ -161,7 +271,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
               style={{ backgroundColor: isCopied ? '#10b981' : '#e0e7ff', color: isCopied ? 'white' : '#4f46e5' }}
             >
               {isCopied ? <Check size={16} /> : <Clipboard size={16} />}
-              {isCopied ? 'Copiado!' : 'Copiar'}
+              {isCopied ? 'Copiado!' : 'Copiar Texto'}
             </button>
           </div>
         </div>
