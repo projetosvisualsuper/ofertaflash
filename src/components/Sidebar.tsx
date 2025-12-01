@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw, Lock } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/geminiService';
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
@@ -11,6 +11,7 @@ import HeaderTemplatesTab from './HeaderTemplatesTab';
 import { INITIAL_THEME } from '../state/initialState';
 import { useProductDatabase } from '../hooks/useProductDatabase';
 import { showSuccess, showError } from '../utils/toast';
+import { useAuth } from '../context/AuthContext'; // Importando useAuth
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -66,6 +67,9 @@ const InputWithReset: React.FC<InputWithResetProps> = React.memo(({
 
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
+  const { profile } = useAuth(); // Usando useAuth
+  const isFreePlan = profile?.role === 'free';
+  
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
@@ -241,6 +245,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   };
 
   const handleSaveCustomTheme = () => {
+    if (isFreePlan) {
+        showError("Funcionalidade de salvar temas é exclusiva para planos Premium e Pro.");
+        return;
+    }
     if (!newThemeName.trim()) return;
     const themeToSave: Partial<PosterTheme> = {
       primaryColor: theme.primaryColor,
@@ -285,6 +293,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   };
 
   const handleGenerateHeadline = async () => {
+    if (isFreePlan) {
+        showError("Geração de Título com IA é exclusiva para planos Premium e Pro.");
+        return;
+    }
     setIsGenerating(true);
     const loadingToast = showSuccess('Gerando título com IA...');
     try {
@@ -316,6 +328,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   };
 
   const handleGenerateBg = async () => {
+    if (isFreePlan) {
+        showError("Geração de Fundo com IA é exclusiva para planos Premium e Pro.");
+        return;
+    }
     if(!bgPrompt.trim()) return;
     setIsGenerating(true);
     const loadingToast = showSuccess('Criando imagem de fundo com IA...');
@@ -337,6 +353,16 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const filteredRegisteredProducts = registeredProducts.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const UpgradeOverlay = () => (
+    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
+        <div className="text-center p-4">
+            <Lock size={24} className="text-red-500 mx-auto mb-2" />
+            <p className="text-sm font-bold text-gray-800">Recurso Premium</p>
+            <p className="text-xs text-gray-600 mt-1">Disponível nos planos Premium e Pro.</p>
+        </div>
+    </div>
   );
 
   return (
@@ -453,7 +479,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         )}
 
         {activeTab === 'templates' && (
-          <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
+          <div className="relative">
+            {isFreePlan && <UpgradeOverlay />}
+            <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
+          </div>
         )}
 
         {activeTab === 'design' && (
@@ -493,14 +522,15 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 {THEME_PRESETS.map(preset => (<button key={preset.id} onClick={() => handleThemePresetChange(preset.theme)} className="p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors"><div className="flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold">{preset.name}</span></div></button>))}
               </div>
             </div>
-            <div className="space-y-2 border-t pt-4">
+            <div className="space-y-2 border-t pt-4 relative">
+              {isFreePlan && <UpgradeOverlay />}
               <label className="text-sm font-semibold text-gray-700">Meus Temas Salvos ({customThemes.length})</label>
               <div className="grid grid-cols-2 gap-2">
                 {customThemes.map(preset => (<div key={preset.id} className="relative group"><button onClick={() => handleThemePresetChange(preset.theme)} className="w-full p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold truncate">{preset.name}</span></button><button onClick={() => handleDeleteCustomTheme(preset.id)} className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md" title="Excluir Tema"><XCircle size={14} /></button></div>))}
               </div>
               <div className="flex gap-2 pt-2">
-                <input type="text" placeholder="Nome do novo tema" value={newThemeName} onChange={(e) => setNewThemeName(e.target.value)} className="flex-1 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
-                <button onClick={handleSaveCustomTheme} disabled={!newThemeName.trim()} className="py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors disabled:opacity-50"><Save size={16} /> Salvar</button>
+                <input type="text" placeholder="Nome do novo tema" value={newThemeName} onChange={(e) => setNewThemeName(e.target.value)} className="flex-1 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" disabled={isFreePlan}/>
+                <button onClick={handleSaveCustomTheme} disabled={!newThemeName.trim() || isFreePlan} className="py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors disabled:opacity-50"><Save size={16} /> Salvar</button>
               </div>
             </div>
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
@@ -545,7 +575,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Rodapé</label><span className="font-mono text-gray-500">{(currentHeaderElements.footerText.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.footerText.scale} onChange={(e) => handleHeaderElementChange('footerText', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.x} onChange={(e) => handleHeaderElementChange('footerText', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.y} onChange={(e) => handleHeaderElementChange('footerText', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
             </div>
             
-            <details className="space-y-2 border-t pt-4" open>
+            <details className="space-y-2 border-t pt-4">
               <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Brush size={16}/> Cores</summary>
               <div className="grid grid-cols-2 gap-4 p-2">
                 <div><label className="text-xs font-medium text-gray-600">Cor Primária</label><input type="color" value={theme.primaryColor} onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
@@ -623,23 +653,35 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                         </div>
                       )}
                     </div>
-                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Fundo (Geral)</label><div className="flex items-center gap-2"><input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} /><label htmlFor="bg-img-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}</label>{theme.backgroundImage && <button onClick={() => setTheme({ ...theme, backgroundImage: undefined })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div></div>
+                    <div className="space-y-2 relative">
+                        {isFreePlan && <UpgradeOverlay />}
+                        <label className="text-xs font-medium text-gray-600">Imagem de Fundo (Geral)</label>
+                        <div className="flex items-center gap-2">
+                            <input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} disabled={isFreePlan} />
+                            <label htmlFor="bg-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                                {theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}
+                            </label>
+                            {theme.backgroundImage && <button onClick={() => setTheme({ ...theme, backgroundImage: undefined })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}
+                        </div>
+                    </div>
                 </div>
             </details>
 
-            <details className="space-y-2 border-t pt-4">
+            <details className="space-y-2 border-t pt-4 relative">
+                {isFreePlan && <UpgradeOverlay />}
                 <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Tag size={16}/> Estilo do Preço</summary>
                 <div className="p-2 space-y-3">
-                    <div><label className="text-xs font-medium text-gray-600">Formato do Card</label><select value={theme.priceCardStyle} onChange={(e) => setTheme({ ...theme, priceCardStyle: e.target.value as 'default' | 'pill' | 'minimal' })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="default">Padrão</option><option value="pill">Pílula</option><option value="minimal">Mínimo</option></select></div>
-                    {theme.priceCardStyle !== 'minimal' && (<div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div><div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div></div>)}
+                    <div><label className="text-xs font-medium text-gray-600">Formato do Card</label><select value={theme.priceCardStyle} onChange={(e) => setTheme({ ...theme, priceCardStyle: e.target.value as 'default' | 'pill' | 'minimal' })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}><option value="default">Padrão</option><option value="pill">Pílula</option><option value="minimal">Mínimo</option></select></div>
+                    {theme.priceCardStyle !== 'minimal' && (<div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div></div>)}
                 </div>
             </details>
 
-            <details className="space-y-2 border-t pt-4">
+            <details className="space-y-2 border-t pt-4 relative">
+                {isFreePlan && <UpgradeOverlay />}
                 <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Frame size={16}/> Bordas</summary>
                 <div className="p-2 space-y-3">
-                    <div className="flex items-center justify-between"><label className="text-xs font-medium text-gray-600">Adicionar Borda</label><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={theme.hasFrame} onChange={(e) => setTheme({ ...theme, hasFrame: e.target.checked })} className="sr-only peer" /><div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label></div>
-                    {theme.hasFrame && (<div className="space-y-2"><div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div><div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /></div></div>)}
+                    <div className="flex items-center justify-between"><label className="text-xs font-medium text-gray-600">Adicionar Borda</label><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={theme.hasFrame} onChange={(e) => setTheme({ ...theme, hasFrame: e.target.checked })} className="sr-only peer" disabled={isFreePlan} /><div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-disabled:opacity-50"></div></label></div>
+                    {theme.hasFrame && (<div className="space-y-2"><div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} /></div></div>)}
                 </div>
             </details>
           </div>
@@ -651,9 +693,9 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               <div>
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Gerar Título com IA</label>
                 <p className="text-xs text-gray-500 mb-2">Use o subtítulo como base para gerar um título principal criativo.</p>
-                <button onClick={handleGenerateHeadline} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
+                <button onClick={handleGenerateHeadline} disabled={isGenerating || isFreePlan} className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
                   {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
-                  {isGenerating ? 'Gerando...' : 'Gerar Título'}
+                  {isGenerating ? 'Gerando...' : isFreePlan ? 'Recurso Premium' : 'Gerar Título'}
                 </button>
               </div>
               <div className="border-t pt-3">
@@ -668,10 +710,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                <div className="border-t pt-3">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Gerar Fundo com IA</label>
                 <p className="text-xs text-gray-500 mb-2">Descreva o fundo que você quer (ex: "madeira rústica", "frutas e vegetais").</p>
-                <input value={bgPrompt} onChange={(e) => setBgPrompt(e.target.value)} className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ex: fundo de supermercado desfocado"/>
-                <button onClick={handleGenerateBg} disabled={isGenerating || !bgPrompt.trim()} className="w-full mt-2 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
+                <input value={bgPrompt} onChange={(e) => setBgPrompt(e.target.value)} className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ex: fundo de supermercado desfocado" disabled={isFreePlan}/>
+                <button onClick={handleGenerateBg} disabled={isGenerating || !bgPrompt.trim() || isFreePlan} className="w-full mt-2 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
                   {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
-                  {isGenerating ? 'Criando Imagem...' : 'Gerar Fundo'}
+                  {isGenerating ? 'Criando Imagem...' : isFreePlan ? 'Recurso Premium' : 'Gerar Fundo'}
                 </button>
               </div>
             </div>
