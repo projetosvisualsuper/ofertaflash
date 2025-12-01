@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PosterTheme, CompanyInfo, LogoLayout } from '../../types';
-import { Building, Edit, Image as ImageIcon, Trash2, Loader2 } from 'lucide-react';
+import { Building, Edit, Image as ImageIcon, Trash2, Loader2, Check, X } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
 
@@ -18,70 +18,37 @@ const createInitialLogoLayouts = (): Record<string, LogoLayout> => ({
     'tv': { scale: 1, x: 0, y: 0 },
 });
 
-
-const InfoRow: React.FC<{
+// Componente para o toggle de exibição
+const ToggleSwitch: React.FC<{
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   label: string;
-  field: keyof CompanyInfo;
-  toggleField: keyof CompanyInfo;
-  theme: PosterTheme;
-  setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
-  isTextarea?: boolean;
-}> = ({ label, field, toggleField, theme, setTheme, isTextarea = false }) => {
-  const companyInfo = theme.companyInfo || {};
-  
-  const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTheme(prev => ({
-      ...prev,
-      companyInfo: { ...prev.companyInfo, [toggleField]: e.target.checked },
-    }));
-  };
-
-  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setTheme(prev => ({
-      ...prev,
-      companyInfo: { ...prev.companyInfo, [field]: e.target.value },
-    }));
-  };
-
-  return (
-    <div className="flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm">
-      <div className="flex items-center gap-3">
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" checked={!!companyInfo[toggleField]} onChange={handleToggle} className="sr-only peer" />
-          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-        </label>
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-      </div>
-      <details className="relative">
-        <summary className="p-1 text-gray-500 hover:text-indigo-600 cursor-pointer list-none">
-          <Edit size={16} />
-        </summary>
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white border rounded-lg shadow-xl p-3 z-20 space-y-2">
-          <label className="text-xs font-semibold text-gray-600 block">{label}</label>
-          {isTextarea ? (
-            <textarea
-              value={(companyInfo[field] as string) || ''}
-              onChange={handleValueChange}
-              className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-              rows={3}
-            />
-          ) : (
-            <input
-              type="text"
-              value={(companyInfo[field] as string) || ''}
-              onChange={handleValueChange}
-              className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
-          )}
-        </div>
-      </details>
-    </div>
-  );
-};
+}> = ({ checked, onChange, label }) => (
+  <label className="relative inline-flex items-center cursor-pointer">
+    <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
+    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+    <span className="ml-3 text-sm font-medium text-gray-700">{label}</span>
+  </label>
+);
 
 const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) => {
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Usamos um estado local temporário para a edição, mas o salvamento é imediato via setTheme
+  const [localCompanyInfo, setLocalCompanyInfo] = useState<CompanyInfo>(theme.companyInfo || {});
+
   if (!theme.companyInfo) return null;
+
+  const handleInfoChange = (field: keyof CompanyInfo, value: string | boolean) => {
+    const updatedInfo = { ...localCompanyInfo, [field]: value };
+    setLocalCompanyInfo(updatedInfo);
+    
+    // Salva imediatamente no tema (que por sua vez salva no Supabase via useUserSettings)
+    setTheme(prev => ({
+      ...prev,
+      companyInfo: updatedInfo,
+    }));
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,18 +131,18 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
     }
   };
 
-  const fields: { label: string; field: keyof CompanyInfo; toggleField: keyof CompanyInfo; isTextarea?: boolean }[] = [
-    { label: 'Nome da Empresa', field: 'name', toggleField: 'showName' },
-    { label: 'Slogan', field: 'slogan', toggleField: 'showSlogan' },
-    { label: 'Telefone', field: 'phone', toggleField: 'showPhone' },
-    { label: 'Whatsapp', field: 'whatsapp', toggleField: 'showWhatsapp' },
-    { label: 'Legenda dos Telefones', field: 'phonesLegend', toggleField: 'showPhonesLegend' },
-    { label: 'Formas de Pagamento', field: 'paymentMethods', toggleField: 'showPaymentMethods', isTextarea: true },
-    { label: 'Obs. Pagamento', field: 'paymentNotes', toggleField: 'showPaymentNotes' },
-    { label: 'Endereço', field: 'address', toggleField: 'showAddress', isTextarea: true },
-    { label: 'Instagram', field: 'instagram', toggleField: 'showInstagram' },
-    { label: 'Facebook', field: 'facebook', toggleField: 'showFacebook' },
-    { label: 'Website', field: 'website', toggleField: 'showWebsite' },
+  const fields: { label: string; field: keyof CompanyInfo; isTextarea?: boolean }[] = [
+    { label: 'Nome da Empresa', field: 'name' },
+    { label: 'Slogan', field: 'slogan' },
+    { label: 'Telefone', field: 'phone' },
+    { label: 'Whatsapp', field: 'whatsapp' },
+    { label: 'Legenda dos Telefones', field: 'phonesLegend' },
+    { label: 'Formas de Pagamento', field: 'paymentMethods', isTextarea: true },
+    { label: 'Obs. Pagamento', field: 'paymentNotes' },
+    { label: 'Endereço', field: 'address', isTextarea: true },
+    { label: 'Instagram', field: 'instagram' },
+    { label: 'Facebook', field: 'facebook' },
+    { label: 'Website', field: 'website' },
   ];
 
   return (
@@ -185,12 +152,13 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
         Dados da Empresa
       </h2>
       
-      <div className="max-w-2xl w-full mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
+      <div className="max-w-3xl w-full mx-auto bg-white p-6 rounded-xl shadow-md space-y-8">
         
-        <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800">Logo da Empresa</h3>
-            <div className="p-4 bg-gray-50 rounded-lg border flex items-center gap-4">
-              <div className="w-24 h-24 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0">
+        {/* Seção 1: Logo */}
+        <div className="space-y-4 border-b pb-6">
+            <h3 className="text-xl font-semibold text-gray-800">Logo da Empresa</h3>
+            <div className="p-4 bg-gray-50 rounded-lg border flex items-center gap-6">
+              <div className="w-28 h-28 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0">
                 {isUploading ? (
                     <Loader2 size={32} className="text-indigo-500 animate-spin" />
                 ) : theme.logo ? (
@@ -215,15 +183,50 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
             </div>
         </div>
 
-        <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800 border-t pt-6">Informações do Rodapé</h3>
+        {/* Seção 2: Informações do Rodapé */}
+        <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-gray-800">Informações de Contato e Rodapé</h3>
             <p className="text-sm text-gray-500">
-              Ative e edite as informações que devem aparecer no rodapé dos seus cartazes e artes.
+              Preencha os dados e use o toggle para controlar quais informações aparecem no rodapé dos seus cartazes.
             </p>
-            <div className="space-y-2">
-              {fields.map(f => (
-                <InfoRow key={f.field} {...f} theme={theme} setTheme={setTheme} />
-              ))}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {fields.map(({ label, field, isTextarea }) => {
+                const toggleField = `show${field.charAt(0).toUpperCase() + field.slice(1)}` as keyof CompanyInfo;
+                const value = (localCompanyInfo[field] as string) || '';
+                const isChecked = !!localCompanyInfo[toggleField];
+
+                return (
+                  <div key={field} className="p-4 border rounded-lg bg-gray-50 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-bold text-gray-700">{label}</label>
+                      <ToggleSwitch 
+                        label={isChecked ? 'Exibindo' : 'Oculto'}
+                        checked={isChecked}
+                        onChange={(e) => handleInfoChange(toggleField, e.target.checked)}
+                      />
+                    </div>
+                    
+                    {isTextarea ? (
+                      <textarea
+                        value={value}
+                        onChange={(e) => handleInfoChange(field, e.target.value)}
+                        className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                        rows={2}
+                        placeholder={`Insira o(a) ${label.toLowerCase()}`}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={value}
+                        onChange={(e) => handleInfoChange(field, e.target.value)}
+                        className="w-full border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        placeholder={`Insira o(a) ${label.toLowerCase()}`}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
         </div>
       </div>
