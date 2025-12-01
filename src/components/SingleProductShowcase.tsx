@@ -20,10 +20,11 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
 
   return (
-    <div className="flex flex-col h-full w-full items-center p-4 md:p-8">
-      {/* Image Section - Takes up available space */}
+    <div className="flex flex-col h-full w-full p-4 md:p-8">
+      {/* Image Section - Takes up a fixed proportion of the space */}
       <div
-        className="relative w-full flex-1 min-h-0 flex items-center justify-center"
+        className="relative w-full flex items-center justify-center"
+        style={{ height: '60%' }}
       >
         {product.image ? (
           <img
@@ -42,8 +43,8 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
         )}
       </div>
 
-      {/* Text & Price Section - Sits at the bottom */}
-      <div className="relative flex-shrink-0 flex flex-col items-center text-center w-full pt-2">
+      {/* Text & Price Section - Takes remaining space and centers content */}
+      <div className="relative flex-1 flex flex-col items-center justify-center text-center w-full pt-2">
         <div style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
           <h2
             className="font-bold leading-tight tracking-tight line-clamp-3"
