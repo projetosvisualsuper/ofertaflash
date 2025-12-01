@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Zap, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Settings, Zap, CheckCircle, AlertTriangle, Eye, EyeOff, User, LogOut, Loader2 } from 'lucide-react';
+import { useProfile } from '../hooks/useProfile';
+import { supabase } from '../integrations/supabase/client';
+import { showSuccess, showError } from '../utils/toast';
 
 const SettingsPage: React.FC = () => {
+  const { profile, user, loading: isProfileLoading } = useProfile();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
   // A chave real é carregada via vite.config.ts para process.env.GEMINI_API_KEY
   const initialApiKey = process.env.GEMINI_API_KEY || '';
   
@@ -31,6 +37,18 @@ const SettingsPage: React.FC = () => {
       Chave Ausente
     </span>
   );
+  
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout error:", error);
+      showError("Falha ao sair. Tente novamente.");
+    } else {
+      showSuccess("Sessão encerrada com sucesso.");
+    }
+    setIsLoggingOut(false);
+  };
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 overflow-y-auto">
@@ -40,7 +58,39 @@ const SettingsPage: React.FC = () => {
       </h2>
       
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
-        <h3 className="text-xl font-semibold mb-4 border-b pb-2">Integrações de IA</h3>
+        
+        {/* Gerenciamento de Usuários */}
+        <h3 className="text-xl font-semibold mb-4 border-b pb-2 flex items-center gap-2">
+            <User size={20} className="text-indigo-600" />
+            Gerenciamento de Usuários
+        </h3>
+        
+        {isProfileLoading ? (
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+                <p className="text-sm text-gray-600">Carregando perfil...</p>
+            </div>
+        ) : (
+            <div className="p-4 border rounded-lg bg-indigo-50 space-y-2">
+                <p className="font-medium text-gray-800">Usuário Logado:</p>
+                <p className="text-sm text-gray-600">Email: <span className="font-mono">{user?.email}</span></p>
+                <p className="text-sm text-gray-600">Função: <span className="font-semibold text-indigo-700">{profile?.role || 'Não Definida'}</span></p>
+                <button 
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="mt-3 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+                >
+                    {isLoggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+                    Sair
+                </button>
+            </div>
+        )}
+
+        {/* Integrações de IA */}
+        <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2 flex items-center gap-2">
+            <Zap size={20} className="text-indigo-600" />
+            Integrações de IA
+        </h3>
         
         {/* Status Atual da Chave */}
         <div className="flex items-center justify-between p-4 border rounded-lg" style={{ borderColor: isKeyConfigured ? '#d1fae5' : '#fee2e2', backgroundColor: isKeyConfigured ? '#f0fdf4' : '#fef2f2' }}>
@@ -87,7 +137,7 @@ const SettingsPage: React.FC = () => {
         </div>
         
         <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Outras Configurações</h3>
-        <p className="text-gray-500">Em breve: Gerenciamento de usuários, faturamento e modelos personalizados.</p>
+        <p className="text-gray-500">Em breve: Faturamento e modelos personalizados.</p>
       </div>
     </div>
   );
