@@ -9,6 +9,7 @@ import ProductManagerPage from './src/pages/ProductManagerPage';
 import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import UserManagementPage from './src/pages/UserManagementPage';
 import LoginPage from './src/pages/LoginPage';
+import UpgradeOverlay from './src/components/UpgradeOverlay'; // Importando o novo overlay
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
@@ -118,26 +119,21 @@ const AppContent: React.FC = () => {
         );
       }
       
-      // 4. Definir o módulo ativo para o primeiro permitido
-      let moduleToActivate = activeModule;
+      // 4. Definir o módulo ativo para o primeiro permitido (ou manter o atual se for permitido)
       const currentModulePermission = MODULE_PERMISSIONS[activeModule];
       
       if (!hasPermission(currentModulePermission)) {
+        // Se o módulo ativo não for permitido, encontre o primeiro permitido para iniciar
         const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
         if (firstAllowedModule) {
-            moduleToActivate = firstAllowedModule[0];
+            setActiveModule(firstAllowedModule[0]);
         } else {
-            moduleToActivate = 'none'; 
+            // Se não houver módulos permitidos (o que não deve acontecer se 'poster' for free)
+            setActiveModule('poster'); 
         }
       }
       
-      // Se o módulo precisar ser alterado, atualize o estado e espere o próximo ciclo de renderização.
-      if (moduleToActivate !== activeModule) {
-          setActiveModule(moduleToActivate);
-      } else {
-          // Se o módulo estiver correto, marque como pronto.
-          setIsReady(true);
-      }
+      setIsReady(true);
     }
   }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, profile, hasPermission, activeModule]);
 
@@ -158,29 +154,16 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const renderModule = () => {
-    const currentModulePermission = MODULE_PERMISSIONS[activeModule];
-    
-    // Se o módulo ativo for 'none' (nenhum permitido) ou se a permissão falhar
-    if (activeModule === 'none' || !hasPermission(currentModulePermission)) {
-        return (
-            <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
-                <div className="text-center p-8 bg-white rounded-xl shadow-lg">
-                    <h3 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h3>
-                    <p className="text-gray-600">Você não tem permissão para acessar este módulo ({activeModule}).</p>
-                    <p className="text-sm text-gray-500 mt-2">Sua função atual é: {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}.</p>
-                </div>
-            </div>
-        );
-    }
-    
+  const currentModulePermission = MODULE_PERMISSIONS[activeModule];
+  const isModuleAllowed = hasPermission(currentModulePermission);
+
+  const renderModuleContent = () => {
     const commonProps = { theme, setTheme, products, setProducts, formats };
 
     switch (activeModule) {
       case 'poster':
         return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
       case 'product-db':
-        // O ProductManagerPage usa useProductDatabase internamente, que já usa o userId
         return <ProductManagerPage />;
       case 'company':
         return <CompanyInfoPage theme={theme} setTheme={setTheme} />;
@@ -199,12 +182,11 @@ const AppContent: React.FC = () => {
       case 'settings':
         return <SettingsPage />;
       default:
-        // Este bloco deve ser inalcançável após a correção da lógica de inicialização
         return (
             <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
                 <div className="text-center p-8 bg-white rounded-xl shadow-lg">
-                    <h3 className="text-2xl font-bold text-red-600 mb-4">Erro de Módulo</h3>
-                    <p className="text-gray-600">O módulo ativo é inválido.</p>
+                    <h3 className="text-2xl font-bold text-red-600 mb-4">Módulo Inválido</h3>
+                    <p className="text-gray-600">O módulo selecionado não existe ou não está configurado.</p>
                 </div>
             </div>
         );
@@ -215,7 +197,12 @@ const AppContent: React.FC = () => {
     <div className="flex h-screen w-full overflow-hidden font-sans">
       <SidebarNav activeModule={activeModule} setActiveModule={setActiveModule} />
       <main className="flex-1 relative h-full overflow-hidden">
-         {renderModule()}
+         <div className="relative w-full h-full">
+            {renderModuleContent()}
+            {!isModuleAllowed && (
+                <UpgradeOverlay requiredPermission={currentModulePermission} />
+            )}
+         </div>
       </main>
     </div>
   );

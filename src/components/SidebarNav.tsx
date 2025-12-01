@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
@@ -37,7 +37,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     }
   };
   
-  const filteredModules = MODULES.filter(module => hasPermission(module.permission));
+  // Agora, todos os módulos são renderizados
+  const allModules = MODULES;
 
   return (
     <div className="w-64 h-full bg-gray-900 text-white flex flex-col flex-shrink-0">
@@ -53,23 +54,40 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       )}
       
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {filteredModules.map((module) => (
-          <button
-            key={module.id}
-            onClick={() => setActiveModule(module.id)}
-            className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
-              activeModule === module.id
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
-          >
-            <module.icon size={20} />
-            <div>
-              <span className="block text-sm font-semibold leading-tight">{module.name}</span>
-              <span className="block text-xs text-gray-400 leading-tight">{module.description}</span>
-            </div>
-          </button>
-        ))}
+        {allModules.map((module) => {
+          const isAllowed = hasPermission(module.permission);
+          const Icon = module.icon;
+          
+          const handleClick = () => {
+            if (isAllowed) {
+              setActiveModule(module.id);
+            } else {
+              showError(`Recurso bloqueado. Faça upgrade para o ${PLAN_NAMES.premium} ou ${PLAN_NAMES.pro}.`);
+            }
+          };
+
+          return (
+            <button
+              key={module.id}
+              onClick={handleClick}
+              disabled={!isAllowed && activeModule !== module.id} // Permite que o módulo ativo (se for bloqueado) permaneça ativo
+              className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
+                activeModule === module.id
+                  ? 'bg-indigo-600 text-white shadow-lg'
+                  : isAllowed
+                    ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    : 'text-gray-500 cursor-not-allowed opacity-70'
+              }`}
+            >
+              <Icon size={20} className={isAllowed ? '' : 'text-red-500'} />
+              <div className="flex-1">
+                <span className="block text-sm font-semibold leading-tight">{module.name}</span>
+                <span className="block text-xs text-gray-400 leading-tight">{module.description}</span>
+              </div>
+              {!isAllowed && <Lock size={16} className="text-red-500 shrink-0" />}
+            </button>
+          );
+        })}
       </nav>
       
       {profile && <PlanStatus profile={profile} onPlanUpdated={refreshProfile} />}
