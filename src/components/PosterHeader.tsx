@@ -72,7 +72,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         }}
       >
         <img 
-          key={theme.logo.src} // Mantém a key baseada na URL original
+          key={logoSrcWithCacheBust} // Usando a URL com timestamp como chave
           src={logoSrcWithCacheBust} 
           className="max-w-full max-h-16 object-contain drop-shadow-lg" 
         />
