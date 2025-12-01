@@ -3,6 +3,42 @@ import { RegisteredProduct } from '../../types';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
 
+// Define a interface para o formato do banco de dados (que usa camelCase para estas colunas)
+interface ProductDB {
+  id: string;
+  name: string;
+  description?: string;
+  defaultPrice: string;
+  defaultOldPrice?: string;
+  defaultUnit: string;
+  image?: string;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
+}
+
+// Função auxiliar para mapear do DB para o App
+const mapFromDB = (item: ProductDB): RegisteredProduct => ({
+  id: item.id,
+  name: item.name,
+  description: item.description,
+  defaultPrice: item.defaultPrice,
+  defaultOldPrice: item.defaultOldPrice,
+  defaultUnit: item.defaultUnit,
+  image: item.image,
+});
+
+// Função auxiliar para mapear do App para o DB (para INSERT/UPDATE)
+const mapToDB = (product: Partial<Omit<RegisteredProduct, 'id'>>): Partial<ProductDB> => ({
+  name: product.name,
+  description: product.description,
+  defaultPrice: product.defaultPrice,
+  defaultOldPrice: product.defaultOldPrice,
+  defaultUnit: product.defaultUnit,
+  image: product.image,
+});
+
+
 export function useProductDatabase() {
   const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,17 +55,7 @@ export function useProductDatabase() {
       showError('Falha ao carregar produtos do banco de dados.');
       setRegisteredProducts([]);
     } else {
-      // Mapear os nomes das colunas do banco de dados para as propriedades do objeto
-      const mappedData = data.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        defaultPrice: item.defaultPrice,
-        defaultOldPrice: item.defaultOldPrice,
-        defaultUnit: item.defaultUnit,
-        image: item.image,
-      }));
-      setRegisteredProducts(mappedData);
+      setRegisteredProducts(data.map(mapFromDB));
     }
     setLoading(false);
   }, []);
@@ -39,15 +65,7 @@ export function useProductDatabase() {
   }, [fetchProducts]);
 
   const addProduct = async (product: Omit<RegisteredProduct, 'id'>) => {
-    // Mapear para o formato do banco de dados
-    const productForDb = {
-      name: product.name,
-      description: product.description,
-      defaultPrice: product.defaultPrice,
-      defaultOldPrice: product.defaultOldPrice,
-      defaultUnit: product.defaultUnit,
-      image: product.image,
-    };
+    const productForDb = mapToDB(product);
 
     const { data, error } = await supabase
       .from('products')
@@ -61,31 +79,14 @@ export function useProductDatabase() {
       return null;
     }
     
-    // Mapear a resposta de volta para o formato do app
-    const newProduct = {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      defaultPrice: data.defaultPrice,
-      defaultOldPrice: data.defaultOldPrice,
-      defaultUnit: data.defaultUnit,
-      image: data.image,
-    };
+    const newProduct = mapFromDB(data);
 
     setRegisteredProducts(prev => [newProduct, ...prev]);
     return newProduct;
   };
 
   const updateProduct = async (id: string, updates: Partial<RegisteredProduct>) => {
-    // Mapear para o formato do banco de dados
-    const updatesForDb = {
-      name: updates.name,
-      description: updates.description,
-      defaultPrice: updates.defaultPrice,
-      defaultOldPrice: updates.defaultOldPrice,
-      defaultUnit: updates.defaultUnit,
-      image: updates.image,
-    };
+    const updatesForDb = mapToDB(updates);
 
     const { error } = await supabase
       .from('products')
