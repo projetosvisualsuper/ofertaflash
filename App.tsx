@@ -10,12 +10,13 @@ import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import LoginPage from './src/pages/LoginPage';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
-import { PosterTheme, Product, PosterFormat, SavedImage } from './types';
+import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
 import { useLocalStorageState } from './src/hooks/useLocalStorageState';
 import { useUserSettings } from './src/hooks/useUserSettings';
 import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
 import { Loader2 } from 'lucide-react';
+import { hasPermission } from './src/config/constants';
 
 const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
@@ -40,8 +41,19 @@ const createInitialLogoLayouts = (base: any) => ({
     'tv': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
 });
 
+// Mapeamento de módulos para a permissão necessária
+const MODULE_PERMISSIONS: Record<string, Permission> = {
+  'poster': 'access_builder',
+  'product-db': 'manage_products',
+  'company': 'manage_company_info',
+  'signage': 'access_signage',
+  'social': 'access_social_media',
+  'ads': 'access_ads',
+  'settings': 'access_settings',
+};
+
 const AppContent: React.FC = () => {
-  const { session } = useAuth();
+  const { session, profile, hasPermission } = useAuth();
   const userId = session?.user?.id;
   
   const [activeModule, setActiveModule] = useState('poster');
@@ -62,52 +74,64 @@ const AppContent: React.FC = () => {
 
   // Lógica de migração e verificação de prontidão
   useEffect(() => {
-    let themeUpdated = false;
-    let productsUpdated = false;
-
-    // 1. Theme structure migration (ensures all fields exist)
-    if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
-      themeUpdated = true;
-      setTheme(prevTheme => ({
-        ...INITIAL_THEME,
-        ...prevTheme,
-        headerElements: prevTheme.headerElements || INITIAL_THEME.headerElements,
-        layoutCols: INITIAL_THEME.layoutCols,
-        companyInfo: prevTheme.companyInfo || INITIAL_THEME.companyInfo,
-      }));
-    }
-
-    // 2. Logo layout migration
-    if (theme.logo && !(theme.logo as any).layouts) {
+    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && profile) {
+      // 1. Lógica de migração (mantida)
+      let themeUpdated = false;
+      // ... (restante da lógica de migração)
+      
+      // 1. Theme structure migration (ensures all fields exist)
+      if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
         themeUpdated = true;
-        setTheme(prevTheme => {
-            if (!prevTheme.logo) return prevTheme;
-            const oldLogo: any = prevTheme.logo;
-            return {
-                ...prevTheme,
-                logo: {
-                    src: oldLogo.src,
-                    layouts: createInitialLogoLayouts(oldLogo),
-                    path: oldLogo.path, // Mantém o path se existir
-                }
-            };
-        });
-    }
+        setTheme(prevTheme => ({
+          ...INITIAL_THEME,
+          ...prevTheme,
+          headerElements: prevTheme.headerElements || INITIAL_THEME.headerElements,
+          layoutCols: INITIAL_THEME.layoutCols,
+          companyInfo: prevTheme.companyInfo || INITIAL_THEME.companyInfo,
+        }));
+      }
 
-    // 3. Product layout migration
-    if (products.some(p => !p.layouts)) {
-      productsUpdated = true;
-      setProducts(prevProducts => 
-        prevProducts.map(p => 
-          p.layouts ? p : { ...p, layouts: createInitialLayouts() }
-        )
-      );
-    }
+      // 2. Logo layout migration
+      if (theme.logo && !(theme.logo as any).layouts) {
+          themeUpdated = true;
+          setTheme(prevTheme => {
+              if (!prevTheme.logo) return prevTheme;
+              const oldLogo: any = prevTheme.logo;
+              return {
+                  ...prevTheme,
+                  logo: {
+                      src: oldLogo.src,
+                      layouts: createInitialLogoLayouts(oldLogo),
+                      path: oldLogo.path, // Mantém o path se existir
+                  }
+              };
+          });
+      }
 
-    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages) {
+      // 3. Product layout migration
+      if (products.some(p => !p.layouts)) {
+        setProducts(prevProducts => 
+          prevProducts.map(p => 
+            p.layouts ? p : { ...p, layouts: createInitialLayouts() }
+          )
+        );
+      }
+      
+      // 4. Verificar permissão do módulo ativo
+      if (!hasPermission(MODULE_PERMISSIONS[activeModule])) {
+        // Se o módulo ativo não for permitido, encontre o primeiro módulo permitido
+        const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
+        if (firstAllowedModule) {
+          setActiveModule(firstAllowedModule[0]);
+        } else {
+          // Se não houver módulos permitidos, talvez mostrar uma tela de erro/acesso negado
+          setActiveModule('poster'); // Fallback, mas o SidebarNav deve filtrar
+        }
+      }
+
       setIsReady(true);
     }
-  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages]);
+  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, profile, hasPermission, activeModule]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
   
@@ -115,7 +139,7 @@ const AppContent: React.FC = () => {
     return <LoginPage />;
   }
 
-  if (!isReady) {
+  if (!isReady || !profile) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-gray-100">
         <div className="flex flex-col items-center gap-4">
@@ -127,6 +151,19 @@ const AppContent: React.FC = () => {
   }
 
   const renderModule = () => {
+    // Garante que o usuário tem permissão para o módulo antes de renderizá-lo
+    if (!hasPermission(MODULE_PERMISSIONS[activeModule])) {
+        return (
+            <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
+                <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+                    <h3 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h3>
+                    <p className="text-gray-600">Você não tem permissão para acessar este módulo ({activeModule}).</p>
+                    <p className="text-sm text-gray-500 mt-2">Sua função atual é: {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}.</p>
+                </div>
+            </div>
+        );
+    }
+    
     const commonProps = { theme, setTheme, products, setProducts, formats };
 
     switch (activeModule) {
@@ -150,7 +187,15 @@ const AppContent: React.FC = () => {
       case 'settings':
         return <SettingsPage />;
       default:
-        return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
+        // Se o módulo ativo for inválido ou não permitido, tenta o 'poster' como fallback
+        return hasPermission('access_builder') ? <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} /> : (
+            <div className="flex-1 flex items-center justify-center p-8 bg-gray-100">
+                <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+                    <h3 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h3>
+                    <p className="text-gray-600">Nenhum módulo disponível para sua conta.</p>
+                </div>
+            </div>
+        );
     }
   };
 

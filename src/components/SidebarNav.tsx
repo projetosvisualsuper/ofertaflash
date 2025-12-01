@@ -2,23 +2,27 @@ import React from 'react';
 import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
+import { useAuth } from '../context/AuthContext';
+import { Permission } from '../../types';
 
 interface SidebarNavProps {
   activeModule: string;
   setActiveModule: (module: string) => void;
 }
 
-const MODULES = [
-  { id: 'poster', name: 'OfertaFlash Builder', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.' },
-  { id: 'product-db', name: 'Banco de Produtos', icon: Database, description: 'Cadastre produtos e imagens para reutilizar.' },
-  { id: 'company', name: 'Dados da Empresa', icon: Building, description: 'Gerencie as informações do seu negócio.' },
-  { id: 'signage', name: 'TV Digital (Slides)', icon: Monitor, description: 'Gere slides e vídeos para telas de TV.' },
-  { id: 'social', name: 'Artes para Redes Sociais', icon: Image, description: 'Crie posts e stories otimizados.' },
-  { id: 'ads', name: 'Anúncios Áudio/Vídeo', icon: Clapperboard, description: 'Crie anúncios curtos com narração IA.' },
-  { id: 'settings', name: 'Configurações', icon: Settings, description: 'Gerencie integrações e chaves.' },
+// Mapeamento de módulos para a permissão necessária
+const MODULES: { id: string; name: string; icon: React.ElementType; description: string; permission: Permission }[] = [
+  { id: 'poster', name: 'OfertaFlash Builder', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.', permission: 'access_builder' },
+  { id: 'product-db', name: 'Banco de Produtos', icon: Database, description: 'Cadastre produtos e imagens para reutilizar.', permission: 'manage_products' },
+  { id: 'company', name: 'Dados da Empresa', icon: Building, description: 'Gerencie as informações do seu negócio.', permission: 'manage_company_info' },
+  { id: 'signage', name: 'TV Digital (Slides)', icon: Monitor, description: 'Gere slides e vídeos para telas de TV.', permission: 'access_signage' },
+  { id: 'social', name: 'Artes para Redes Sociais', icon: Image, description: 'Crie posts e stories otimizados.', permission: 'access_social_media' },
+  { id: 'ads', name: 'Anúncios Áudio/Vídeo', icon: Clapperboard, description: 'Crie anúncios curtos com narração IA.', permission: 'access_ads' },
+  { id: 'settings', name: 'Configurações', icon: Settings, description: 'Gerencie integrações e chaves.', permission: 'access_settings' },
 ];
 
 const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }) => {
+  const { profile, hasPermission } = useAuth();
   
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -29,6 +33,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       showSuccess('Sessão encerrada com sucesso.');
     }
   };
+  
+  const filteredModules = MODULES.filter(module => hasPermission(module.permission));
 
   return (
     <div className="w-64 h-full bg-gray-900 text-white flex flex-col flex-shrink-0">
@@ -37,8 +43,15 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
         <h1 className="text-xl font-bold tracking-wider">AI Marketing Hub</h1>
       </div>
       
+      {profile && (
+        <div className="p-4 border-b border-gray-700 text-xs text-gray-400">
+          <p className="font-semibold text-white">Olá, {profile.username || 'Usuário'}</p>
+          <p>Função: {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}</p>
+        </div>
+      )}
+      
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {MODULES.map((module) => (
+        {filteredModules.map((module) => (
           <button
             key={module.id}
             onClick={() => setActiveModule(module.id)}

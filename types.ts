@@ -1,6 +1,7 @@
 import { HeaderLayoutId } from "./src/config/headerLayoutPresets";
 import { HeaderArtStyleId } from "./src/config/headerArtPresets";
-import { SlideTransitionId } from "./src/config/slideTransitions"; // Novo Import
+import { SlideTransitionId } from "./src/config/slideTransitions";
+import { Permission } from "./src/config/constants"; // Novo Import
 
 export interface ProductLayout {
   image: { x: number; y: 0; scale: 1 };
@@ -149,7 +150,7 @@ export interface HeaderTemplate {
   theme: Partial<PosterTheme>;
 }
 
-// NOVO: Estrutura para o roteiro de anúncio
+// Estrutura para o roteiro de anúncio
 export interface AdScript {
   headline: string;
   script: string;
@@ -157,4 +158,14 @@ export interface AdScript {
     music: string;
     voice: string;
   };
+}
+
+// NOVO: Interface para o perfil do usuário
+export interface Profile {
+  id: string;
+  username: string | null;
+  role: string;
+  permissions: Permission[];
+  updated_at: string;
+  deleted_at: string | null;
 }
