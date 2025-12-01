@@ -6,7 +6,8 @@ import { Download } from 'lucide-react';
 import PosterHeader from './PosterHeader';
 import PriceDisplay from './PriceDisplay';
 import { INITIAL_THEME } from '../state/initialState';
-import SlideContent from './SlideContent'; // Importando o novo componente
+import SlideContent from './SlideContent';
+import SingleProductShowcase from './SingleProductShowcase'; // Importando o novo componente
 
 export interface PosterPreviewRef {
   triggerDownload: () => Promise<void>;
@@ -33,8 +34,8 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   const currentHeaderElements = theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id];
   const currentLayoutCols = theme.layoutCols[theme.format.id] || 2;
 
-  // Lógica atualizada: Modo Herói/Slide é ativado se for formato 'tv' OU se houver apenas 1 produto.
-  const isHeroMode = theme.format.id === 'tv' || products.length === 1;
+  const isTvFormat = theme.format.id === 'tv';
+  const isSingleProductShowcase = products.length === 1 && !isTvFormat;
   const product = products[0];
 
   const isLandscape = theme.format.width > theme.format.height;
@@ -123,7 +124,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
           >
             {theme.hasFrame && (<div className="absolute inset-0 z-20 pointer-events-none" style={{ borderStyle: 'solid', borderWidth: `${theme.frameThickness}vmin`, borderColor: theme.frameColor, boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)' }}/>)}
             {theme.backgroundImage && (<div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${theme.backgroundImage})` }}/>)}
-            <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: isHeroMode ? `radial-gradient(circle at center, transparent 0%, ${theme.backgroundColor} 100%)` : 'none' }}/>
+            <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: (isTvFormat || isSingleProductShowcase) ? `radial-gradient(circle at center, transparent 0%, ${theme.backgroundColor} 100%)` : 'none' }}/>
             <PosterHeader 
               theme={theme} 
               headerTitle={currentHeaderElements.headerTitle}
@@ -132,9 +133,8 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
               fontScale={fontScale} 
               isStory={isStory} 
             />
-            <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col" style={{ padding: isHeroMode ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')) }}>
-              {isHeroMode && product ? (
-                // Usando SlideContent para garantir o estilo de slide de TV
+            <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col" style={{ padding: (isTvFormat || isSingleProductShowcase) ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')) }}>
+              {isTvFormat && product ? (
                 <div className="w-full flex-1 relative flex p-8">
                   <SlideContent 
                     product={product} 
@@ -142,6 +142,10 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
                     fontScale={fontScale} 
                     isLandscape={isLandscape} 
                   />
+                </div>
+              ) : isSingleProductShowcase && product ? (
+                <div className="w-full flex-1 relative flex p-4 md:p-8">
+                  <SingleProductShowcase product={product} theme={theme} />
                 </div>
               ) : (
                 products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${currentLayoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={currentLayoutCols} isStory={isStory} />))}</div>)
