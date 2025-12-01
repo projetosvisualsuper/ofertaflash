@@ -7,6 +7,7 @@ import AudioVideoAdPage from './src/pages/AudioVideoAdPage';
 import SettingsPage from './src/pages/SettingsPage';
 import ProductManagerPage from './src/pages/ProductManagerPage';
 import CompanyInfoPage from './src/pages/CompanyInfoPage';
+import UserManagementPage from './src/pages/UserManagementPage';
 import LoginPage from './src/pages/LoginPage';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
@@ -49,6 +50,7 @@ const MODULE_PERMISSIONS: Record<string, Permission> = {
   'signage': 'access_signage',
   'social': 'access_social_media',
   'ads': 'access_ads',
+  'users': 'manage_users',
   'settings': 'access_settings',
 };
 
@@ -192,6 +194,8 @@ const AppContent: React.FC = () => {
         />;
       case 'ads':
         return <AudioVideoAdPage theme={theme} products={products} />;
+      case 'users':
+        return <UserManagementPage />;
       case 'settings':
         return <SettingsPage />;
       default:

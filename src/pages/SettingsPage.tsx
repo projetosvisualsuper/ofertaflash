@@ -13,6 +13,7 @@ const SettingsPage: React.FC = () => {
       </h2>
       
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
+        
         <h3 className="text-xl font-semibold mb-4 border-b pb-2">Integrações de IA</h3>
         
         {/* Gemini API Key */}

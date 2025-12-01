@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,7 @@ const MODULES: { id: string; name: string; icon: React.ElementType; description:
   { id: 'signage', name: 'TV Digital (Slides)', icon: Monitor, description: 'Gere slides e vídeos para telas de TV.', permission: 'access_signage' },
   { id: 'social', name: 'Artes para Redes Sociais', icon: Image, description: 'Crie posts e stories otimizados.', permission: 'access_social_media' },
   { id: 'ads', name: 'Anúncios Áudio/Vídeo', icon: Clapperboard, description: 'Crie anúncios curtos com narração IA.', permission: 'access_ads' },
+  { id: 'users', name: 'Gerenciamento de Usuários', icon: Users, description: 'Adicione e gerencie perfis de acesso.', permission: 'manage_users' },
   { id: 'settings', name: 'Configurações', icon: Settings, description: 'Gerencie integrações e chaves.', permission: 'access_settings' },
 ];
 
