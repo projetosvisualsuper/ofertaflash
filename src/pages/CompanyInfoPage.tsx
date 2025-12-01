@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PosterTheme, CompanyInfo, LogoLayout } from '../../types';
 import { Building, Edit, Image as ImageIcon, Trash2, Loader2, Check, X, Lock } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
-import { showSuccess, showError } => '../utils/toast';
+import { showSuccess, showError } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
 
 interface CompanyInfoPageProps {
