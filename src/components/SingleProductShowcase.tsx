@@ -1,5 +1,5 @@
 import React from 'react';
-import { Product, PosterTheme } from '../types';
+import { Product, PosterTheme, ProductLayout } from '../../types';
 import PriceDisplay from './PriceDisplay';
 
 interface SingleProductShowcaseProps {
@@ -7,14 +7,25 @@ interface SingleProductShowcaseProps {
   theme: PosterTheme;
 }
 
+const defaultLayout: ProductLayout = {
+  image: { x: 0, y: 0, scale: 1 },
+  name: { x: 0, y: 0, scale: 1 },
+  price: { x: 0, y: 0, scale: 1 },
+  description: { x: 0, y: 0, scale: 1 },
+};
+
 const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, theme }) => {
   const isLandscape = theme.format.width > theme.format.height;
   const fontScale = isLandscape ? 0.8 : 1;
+  const layout = product.layouts?.[theme.format.id] || defaultLayout;
 
   return (
-    <div className="flex flex-col h-full w-full items-center p-4">
-      {/* Image Section - This will take up the available space */}
-      <div className="flex-1 w-full flex items-center justify-center min-h-0">
+    <div className="flex flex-col h-full w-full items-center justify-between p-4">
+      {/* Image Section */}
+      <div
+        className="w-full flex items-center justify-center min-h-0"
+        style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
+      >
         {product.image ? (
           <img
             src={product.image}
@@ -29,29 +40,39 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
         )}
       </div>
 
-      {/* Text Section - This will not grow, and have a margin top */}
-      <div className="flex-shrink-0 flex flex-col items-center text-center mt-4">
-        <h2
-          className="font-bold leading-tight tracking-tight line-clamp-3"
-          style={{
-            fontFamily: theme.fontFamilyDisplay,
-            color: theme.textColor,
-            fontSize: 3 * fontScale + 'rem',
-          }}
-        >
-          {product.name}
-        </h2>
+      {/* Text Section */}
+      <div className="flex-shrink-0 flex flex-col items-center text-center">
+        <div style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
+          <h2
+            className="font-bold leading-tight tracking-tight line-clamp-3"
+            style={{
+              fontFamily: theme.fontFamilyDisplay,
+              color: theme.textColor,
+              fontSize: 3 * fontScale + 'rem',
+            }}
+          >
+            {product.name}
+          </h2>
+        </div>
 
         {product.description && (
-          <p
-            className="leading-tight drop-shadow-sm line-clamp-3 max-w-prose mt-1"
-            style={{ color: theme.textColor, opacity: 0.8, fontSize: 1.2 * fontScale + 'rem' }}
+          <div
+            className="mt-1"
+            style={{ transform: `translateX(${layout.description?.x || 0}px) translateY(${layout.description?.y || 0}px) scale(${layout.description?.scale || 1})` }}
           >
-            {product.description}
-          </p>
+            <p
+              className="leading-tight drop-shadow-sm line-clamp-3 max-w-prose"
+              style={{ color: theme.textColor, opacity: 0.8, fontSize: 1.2 * fontScale + 'rem' }}
+            >
+              {product.description}
+            </p>
+          </div>
         )}
 
-        <div className="mt-2 md:mt-4">
+        <div
+          className="mt-2 md:mt-4"
+          style={{ transform: `translateX(${layout.price.x}px) translateY(${layout.price.y}px) scale(${layout.price.scale})` }}
+        >
           <PriceDisplay
             price={product.price}
             oldPrice={product.oldPrice}
