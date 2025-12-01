@@ -20,18 +20,20 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
   const layout = product.layouts?.[theme.format.id] || defaultLayout;
 
   return (
-    <div className="flex flex-col h-full w-full items-center">
+    <div className="flex flex-col h-full w-full items-center p-4 md:p-8">
       {/* Image Section - Takes up available space */}
       <div
-        className="flex-1 w-full flex items-center justify-center min-h-0 relative"
-        style={{ transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})` }}
+        className="relative w-full flex-1 min-h-0 flex items-center justify-center"
       >
         {product.image ? (
           <img
             src={product.image}
             alt={product.name}
             className="max-w-full max-h-full object-contain drop-shadow-2xl"
-            style={{ filter: 'drop-shadow(0 20px 20px rgba(0,0,0,0.25))' }}
+            style={{
+              filter: 'drop-shadow(0 20px 20px rgba(0,0,0,0.25))',
+              transform: `translateX(${layout.image.x}px) translateY(${layout.image.y}px) scale(${layout.image.scale})`
+            }}
           />
         ) : (
           <div className="w-full h-full text-gray-300 opacity-50 border-4 border-dashed rounded-3xl flex items-center justify-center">
@@ -41,7 +43,7 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
       </div>
 
       {/* Text & Price Section - Sits at the bottom */}
-      <div className="flex-shrink-0 flex flex-col items-center text-center w-full p-4">
+      <div className="relative flex-shrink-0 flex flex-col items-center text-center w-full pt-2">
         <div style={{ transform: `translateX(${layout.name.x}px) translateY(${layout.name.y}px) scale(${layout.name.scale})` }}>
           <h2
             className="font-bold leading-tight tracking-tight line-clamp-3"

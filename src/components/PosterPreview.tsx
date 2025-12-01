@@ -144,7 +144,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
                   />
                 </div>
               ) : isSingleProductShowcase && product ? (
-                <div className="w-full flex-1 relative flex p-4 md:p-8">
+                <div className="w-full flex-1 relative flex">
                   <SingleProductShowcase product={product} theme={theme} />
                 </div>
               ) : (
