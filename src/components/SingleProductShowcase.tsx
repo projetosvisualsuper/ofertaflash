@@ -12,9 +12,9 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
   const fontScale = isLandscape ? 0.8 : 1;
 
   return (
-    <div className="flex flex-col h-full w-full items-center justify-around p-4">
+    <div className="flex flex-col h-full w-full items-center justify-center p-4 gap-4">
       {/* Image Section */}
-      <div className="flex-1 w-full flex items-center justify-center min-h-0 max-h-[55%]">
+      <div className="flex-1 w-full flex items-center justify-center min-h-0 max-h-[50%]">
         {product.image ? (
           <img
             src={product.image}
@@ -30,7 +30,7 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
       </div>
 
       {/* Text Section */}
-      <div className="flex-shrink-0 flex flex-col items-center text-center mt-4 md:mt-8">
+      <div className="flex-shrink-0 flex flex-col items-center text-center">
         <h2
           className="font-bold leading-tight tracking-tight line-clamp-3"
           style={{
@@ -44,14 +44,14 @@ const SingleProductShowcase: React.FC<SingleProductShowcaseProps> = ({ product, 
 
         {product.description && (
           <p
-            className="leading-tight drop-shadow-sm line-clamp-3 max-w-prose mt-2"
+            className="leading-tight drop-shadow-sm line-clamp-3 max-w-prose mt-1"
             style={{ color: theme.textColor, opacity: 0.8, fontSize: 1.2 * fontScale + 'rem' }}
           >
             {product.description}
           </p>
         )}
 
-        <div className="mt-4 md:mt-8">
+        <div className="mt-2 md:mt-4">
           <PriceDisplay
             price={product.price}
             oldPrice={product.oldPrice}
