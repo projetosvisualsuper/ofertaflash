@@ -117,18 +117,25 @@ const AppContent: React.FC = () => {
       }
       
       // 4. Definir o módulo ativo para o primeiro permitido
+      let moduleToActivate = activeModule;
       const currentModulePermission = MODULE_PERMISSIONS[activeModule];
+      
       if (!hasPermission(currentModulePermission)) {
         const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
         if (firstAllowedModule) {
-          setActiveModule(firstAllowedModule[0]);
+            moduleToActivate = firstAllowedModule[0];
         } else {
-          // Se não houver módulos permitidos, o usuário verá a tela de Acesso Negado
-          setActiveModule('none'); 
+            moduleToActivate = 'none'; 
         }
       }
-
-      setIsReady(true);
+      
+      // Se o módulo precisar ser alterado, atualize o estado e espere o próximo ciclo de renderização.
+      if (moduleToActivate !== activeModule) {
+          setActiveModule(moduleToActivate);
+      } else {
+          // Se o módulo estiver correto, marque como pronto.
+          setIsReady(true);
+      }
     }
   }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, profile, hasPermission, activeModule]);
 
