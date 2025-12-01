@@ -28,14 +28,6 @@ const defaultLayout: ProductLayout = {
   description: { x: 0, y: 0, scale: 1 },
 };
 
-const createInitialLogoLayouts = (): Record<string, LogoLayout> => ({
-    'story': { scale: 1, x: 0, y: 0 },
-    'feed': { scale: 1, x: 0, y: 0 },
-    'a4': { scale: 1, x: 0, y: 0 },
-    'landscape-poster': { scale: 1, x: 0, y: 0 },
-    'tv': { scale: 1, x: 0, y: 0 },
-});
-
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -44,7 +36,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const [customThemes, setCustomThemes] = useLocalStorageState<ThemePreset[]>('ofertaflash_custom_themes', []);
   const [newThemeName, setNewThemeName] = useState('');
   
-  // Novo estado para busca de produtos
   const { registeredProducts } = useProductDatabase();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -169,24 +160,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTheme(prev => ({
-          ...prev,
-          logo: {
-            src: reader.result as string,
-            layouts: createInitialLogoLayouts(),
-          },
-          headerLayoutId: 'logo-left',
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -207,14 +180,11 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       const newTheme = {
         ...prev,
         ...presetTheme,
-        // ** THE FIX IS HERE **
-        // Explicitly reset header image properties if the new preset doesn't provide them.
         headerImage: presetTheme.headerImage || undefined,
         headerImageMode: presetTheme.headerImageMode || 'none',
         backgroundImage: presetTheme.backgroundImage || undefined,
       };
       
-      // Preserve user text for the current format
       const currentElements = newTheme.headerElements[newTheme.format.id];
       currentElements.headerTitle.text = prev.headerElements[prev.format.id].headerTitle.text;
       currentElements.headerSubtitle.text = prev.headerElements[prev.format.id].headerSubtitle.text;
@@ -250,8 +220,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       headerImageOpacity: theme.headerImageOpacity,
       logo: theme.logo,
       backgroundImage: theme.backgroundImage,
-      layoutCols: theme.layoutCols, // Save all format-specific elements
-      headerElements: theme.headerElements, // Save all format-specific elements
+      layoutCols: theme.layoutCols,
+      headerElements: theme.headerElements,
     };
     const newPreset: ThemePreset = {
       id: crypto.randomUUID(),
@@ -343,7 +313,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         {activeTab === 'products' && (
           <div className="space-y-4">
             
-            {/* Busca e Adição Rápida */}
             <details className="p-3 bg-green-50 rounded-lg border border-green-200" open>
                 <summary className="text-sm font-semibold text-green-800 cursor-pointer flex items-center gap-2">
                     <Database size={16} /> Adicionar do Banco de Produtos
@@ -390,7 +359,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 </div>
             </details>
             
-            {/* Controles de Quantidade */}
             <div className="flex items-end gap-2 p-3 bg-gray-50 rounded-lg border">
               <div className="flex-1">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Quantidade de Produtos</label>
@@ -531,8 +499,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             <details className="space-y-2 border-t pt-4">
                 <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><ImageIcon size={16}/> Imagens e Fundos</summary>
                 <div className="p-2 space-y-4">
-                    <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Logo da Empresa ({theme.format.name})</label><div className="flex items-center gap-2"><input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={handleLogoUpload} /><label htmlFor="logo-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.logo ? 'Trocar Logo' : 'Enviar Logo'}</label>{theme.logo && <button onClick={() => setTheme({ ...theme, logo: undefined, headerLayoutId: 'text-only' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
-                      {theme.logo && currentLogoLayout && (
+                    {theme.logo && currentLogoLayout && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-gray-600">Layout do Logo ({theme.format.name})</label>
+                        <p className="text-xs text-gray-500">A imagem do logo é gerenciada no módulo "Dados da Empresa".</p>
                         <div className="space-y-2 pt-2 border-t mt-2">
                             <div>
                                 <label className="text-xs font-medium text-gray-600">Tamanho do Logo</label>
@@ -555,8 +525,8 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                                 </div>
                             </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label><div className="flex items-center gap-2"><input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} /><label htmlFor="header-img-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}</label>{theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
                       {theme.headerImage && (
                         <div className="space-y-2">

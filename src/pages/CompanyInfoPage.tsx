@@ -1,11 +1,21 @@
 import React from 'react';
-import { PosterTheme, CompanyInfo } from '../../types';
-import { Building, Edit } from 'lucide-react';
+import { PosterTheme, CompanyInfo, LogoLayout } from '../../types';
+import { Building, Edit, Image as ImageIcon, Trash2 } from 'lucide-react';
 
 interface CompanyInfoPageProps {
   theme: PosterTheme;
   setTheme: React.Dispatch<React.SetStateAction<PosterTheme>>;
 }
+
+// Helper function to create layouts for all formats
+const createInitialLogoLayouts = (): Record<string, LogoLayout> => ({
+    'story': { scale: 1, x: 0, y: 0 },
+    'feed': { scale: 1, x: 0, y: 0 },
+    'a4': { scale: 1, x: 0, y: 0 },
+    'landscape-poster': { scale: 1, x: 0, y: 0 },
+    'tv': { scale: 1, x: 0, y: 0 },
+});
+
 
 const InfoRow: React.FC<{
   label: string;
@@ -70,6 +80,32 @@ const InfoRow: React.FC<{
 const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) => {
   if (!theme.companyInfo) return null;
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTheme(prev => ({
+          ...prev,
+          logo: {
+            src: reader.result as string,
+            layouts: createInitialLogoLayouts(), 
+          },
+          headerLayoutId: prev.headerLayoutId === 'text-only' ? 'logo-left' : prev.headerLayoutId,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setTheme(prev => ({
+      ...prev,
+      logo: undefined,
+      headerLayoutId: 'text-only',
+    }));
+  };
+
   const fields: { label: string; field: keyof CompanyInfo; toggleField: keyof CompanyInfo; isTextarea?: boolean }[] = [
     { label: 'Nome da Empresa', field: 'name', toggleField: 'showName' },
     { label: 'Slogan', field: 'slogan', toggleField: 'showSlogan' },
@@ -92,8 +128,35 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
       </h2>
       
       <div className="max-w-2xl w-full mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
+        
         <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-800">Informações do Rodapé</h3>
+            <h3 className="text-lg font-semibold text-gray-800">Logo da Empresa</h3>
+            <div className="p-4 bg-gray-50 rounded-lg border flex items-center gap-4">
+              <div className="w-24 h-24 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0">
+                {theme.logo ? (
+                  <img src={theme.logo.src} alt="Logo" className="max-w-full max-h-full object-contain" />
+                ) : (
+                  <ImageIcon size={32} className="text-gray-400" />
+                )}
+              </div>
+              <div className="space-y-2">
+                <input type="file" id="logo-upload-company" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                <label htmlFor="logo-upload-company" className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors cursor-pointer">
+                  {theme.logo ? 'Trocar Logo' : 'Enviar Logo'}
+                </label>
+                {theme.logo && (
+                  <button onClick={removeLogo} className="flex items-center gap-1 text-sm text-red-600 hover:text-red-800 ml-1">
+                    <Trash2 size={14} />
+                    Remover
+                  </button>
+                )}
+                <p className="text-xs text-gray-500">Use uma imagem com fundo transparente (PNG) para melhores resultados.</p>
+              </div>
+            </div>
+        </div>
+
+        <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-800 border-t pt-6">Informações do Rodapé</h3>
             <p className="text-sm text-gray-500">
               Ative e edite as informações que devem aparecer no rodapé dos seus cartazes e artes.
             </p>
