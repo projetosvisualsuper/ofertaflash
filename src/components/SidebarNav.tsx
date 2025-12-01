@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ interface SidebarNavProps {
 
 // Mapeamento de módulos para a permissão necessária
 const MODULES: { id: string; name: string; icon: React.ElementType; description: string; permission: Permission }[] = [
+  { id: 'profile', name: 'Meu Perfil', icon: UserCircle, description: 'Gerencie sua conta e plano.', permission: 'access_builder' },
   { id: 'poster', name: 'OfertaFlash Builder', icon: LayoutTemplate, description: 'Crie cartazes e flyers de ofertas.', permission: 'access_builder' },
   { id: 'product-db', name: 'Banco de Produtos', icon: Database, description: 'Cadastre produtos e imagens para reutilizar.', permission: 'manage_products' },
   { id: 'company', name: 'Dados da Empresa', icon: Building, description: 'Gerencie as informações do seu negócio.', permission: 'access_builder' },

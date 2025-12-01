@@ -8,6 +8,7 @@ import SettingsPage from './src/pages/SettingsPage';
 import ProductManagerPage from './src/pages/ProductManagerPage';
 import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import UserManagementPage from './src/pages/UserManagementPage';
+import ProfilePage from './src/pages/ProfilePage'; // NOVO: Importando ProfilePage
 import LoginPage from './src/pages/LoginPage';
 import UpgradeOverlay from './src/components/UpgradeOverlay'; // Importando o novo overlay
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -45,9 +46,10 @@ const createInitialLogoLayouts = (base: any) => ({
 
 // Mapeamento de módulos para a permissão necessária
 const MODULE_PERMISSIONS: Record<string, Permission> = {
+  'profile': 'access_builder', // Permissão básica para todos
   'poster': 'access_builder',
   'product-db': 'manage_products',
-  'company': 'access_builder', // Alterado para 'access_builder' para permitir acesso Free
+  'company': 'access_builder',
   'signage': 'access_signage',
   'social': 'access_social_media',
   'ads': 'access_ads',
@@ -59,7 +61,7 @@ const AppContent: React.FC = () => {
   const { session, profile, hasPermission } = useAuth();
   const userId = session?.user?.id;
   
-  const [activeModule, setActiveModule] = useState('poster');
+  const [activeModule, setActiveModule] = useState('profile'); // Mudando o padrão para 'profile'
   
   // Usando Supabase para Theme
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
@@ -161,6 +163,8 @@ const AppContent: React.FC = () => {
     const commonProps = { theme, setTheme, products, setProducts, formats };
 
     switch (activeModule) {
+      case 'profile': // NOVO: Renderizando ProfilePage
+        return <ProfilePage />;
       case 'poster':
         return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
       case 'product-db':
