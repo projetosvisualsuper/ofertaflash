@@ -363,235 +363,241 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
   );
 
-  const renderDesignTab = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-         <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><LayoutTemplate size={16}/> Formato do Cartaz</label>
-         <div className="grid grid-cols-2 gap-2">
-            {formats.map(fmt => (<button key={fmt.id} onClick={() => handleFormatChange(fmt)} className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}><span className="text-xl mb-1">{fmt.icon}</span><span className="font-semibold">{fmt.name}</span><span className="text-[10px] opacity-70">{fmt.label}</span></button>))}
-         </div>
-      </div>
-      <div className="space-y-2">
-          <label htmlFor="layoutCols" className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Grid size={16}/> Colunas de Produtos</label>
-          <input 
-              type="number" 
-              id="layoutCols"
-              min="1" 
-              max="4" 
-              value={theme.layoutCols[theme.format.id] || 2} 
-              onChange={(e) => {
-                  const newCols = parseInt(e.target.value, 10) || 1;
-                  setTheme(prev => ({
-                      ...prev,
-                      layoutCols: {
-                          ...prev.layoutCols,
-                          [prev.format.id]: newCols,
-                      }
-                  }));
-              }} 
-              className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-              disabled={products.length <= 1}
+  const renderDesignTab = () => {
+    // Classe de bloqueio para seções inteiras
+    const premiumSectionClass = isFreePlan ? 'opacity-50 pointer-events-none' : '';
+
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><LayoutTemplate size={16}/> Formato do Cartaz</label>
+           <div className="grid grid-cols-2 gap-2">
+              {formats.map(fmt => (<button key={fmt.id} onClick={() => handleFormatChange(fmt)} className={`flex flex-col items-center justify-center p-2 border rounded-lg text-xs transition-all ${theme.format.id === fmt.id ? 'bg-indigo-50 border-indigo-600 text-indigo-700 ring-1 ring-indigo-600' : 'bg-white text-gray-600 hover:border-gray-400'}`}><span className="text-xl mb-1">{fmt.icon}</span><span className="font-semibold">{fmt.name}</span><span className="text-[10px] opacity-70">{fmt.label}</span></button>))}
+           </div>
+        </div>
+        <div className="space-y-2">
+            <label htmlFor="layoutCols" className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Grid size={16}/> Colunas de Produtos</label>
+            <input 
+                type="number" 
+                id="layoutCols"
+                min="1" 
+                max="4" 
+                value={theme.layoutCols[theme.format.id] || 2} 
+                onChange={(e) => {
+                    const newCols = parseInt(e.target.value, 10) || 1;
+                    setTheme(prev => ({
+                        ...prev,
+                        layoutCols: {
+                            ...prev.layoutCols,
+                            [prev.format.id]: newCols,
+                        }
+                    }));
+                }} 
+                className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                disabled={products.length <= 1}
+            />
+            {products.length <= 1 && <p className="text-xs text-gray-500">O layout de colunas é aplicado quando há mais de um produto.</p>}
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-gray-700">Temas Rápidos</label>
+          <div className="grid grid-cols-2 gap-2">
+            {THEME_PRESETS.map(preset => (<button key={preset.id} onClick={() => handleThemePresetChange(preset.theme)} className="p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors"><div className="flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold">{preset.name}</span></div></button>))}
+          </div>
+        </div>
+        
+        {/* BLOCO AVANÇADO: Meus Temas Salvos */}
+        <div className={`space-y-2 border-t pt-4 ${premiumSectionClass}`}>
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              Meus Temas Salvos ({customThemes.length})
+              {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {customThemes.map(preset => (<div key={preset.id} className="relative group"><button onClick={() => handleThemePresetChange(preset.theme)} className="w-full p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold truncate">{preset.name}</span></button><button onClick={() => handleDeleteCustomTheme(preset.id)} className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md" title="Excluir Tema"><XCircle size={14} /></button></div>))}
+          </div>
+          <div className="flex gap-2 pt-2">
+            <input type="text" placeholder="Nome do novo tema" value={newThemeName} onChange={(e) => setNewThemeName(e.target.value)} className="flex-1 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
+            <button onClick={handleSaveCustomTheme} disabled={!newThemeName.trim() || isFreePlan} className="py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors disabled:opacity-50"><Save size={16} /> Salvar</button>
+          </div>
+        </div>
+
+        <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
+          <div className="flex justify-between items-center"><label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label><div className="flex border rounded-md overflow-hidden"><button onClick={() => setTheme({...theme, headerTitleCase: 'uppercase'})} className={`p-1 ${theme.headerTitleCase === 'uppercase' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Caixa Alta"><CaseUpper size={16}/></button><button onClick={() => setTheme({...theme, headerTitleCase: 'capitalize'})} className={`p-1 ${theme.headerTitleCase === 'capitalize' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Capitalizado"><CaseLower size={16}/></button></div></div>
+          
+          {/* Título Principal */}
+          <InputWithReset 
+            element="headerTitle" 
+            field="text" 
+            placeholder="Título Principal" 
+            currentHeaderElements={currentHeaderElements}
+            theme={theme}
+            handleHeaderElementChange={handleHeaderElementChange}
+            handleResetText={handleResetText}
           />
-          {products.length <= 1 && <p className="text-xs text-gray-500">O layout de colunas é aplicado quando há mais de um produto.</p>}
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700">Temas Rápidos</label>
-        <div className="grid grid-cols-2 gap-2">
-          {THEME_PRESETS.map(preset => (<button key={preset.id} onClick={() => handleThemePresetChange(preset.theme)} className="p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors"><div className="flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold">{preset.name}</span></div></button>))}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Título</label><span className="font-mono text-gray-500">{(currentHeaderElements.headerTitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.headerTitle.scale} onChange={(e) => handleHeaderElementChange('headerTitle', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.headerTitle.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerTitle.x} onChange={(e) => handleHeaderElementChange('headerTitle', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.headerTitle.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerTitle.y} onChange={(e) => handleHeaderElementChange('headerTitle', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
+          <hr className="my-3"/>
+          
+          {/* Subtítulo */}
+          <InputWithReset 
+            element="headerSubtitle" 
+            field="text" 
+            placeholder="Subtítulo" 
+            currentHeaderElements={currentHeaderElements}
+            theme={theme}
+            handleHeaderElementChange={handleHeaderElementChange}
+            handleResetText={handleResetText}
+          />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Subtítulo</label><span className="font-mono text-gray-500">{(currentHeaderElements.headerSubtitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.headerSubtitle.scale} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.headerSubtitle.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerSubtitle.x} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.headerSubtitle.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerSubtitle.y} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
+          <hr className="my-3"/>
+          
+          {/* Texto do Rodapé */}
+          <InputWithReset 
+            element="footerText" 
+            field="text" 
+            placeholder="Texto do Rodapé" 
+            currentHeaderElements={currentHeaderElements}
+            theme={theme}
+            handleHeaderElementChange={handleHeaderElementChange}
+            handleResetText={handleResetText}
+          />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Rodapé</label><span className="font-mono text-gray-500">{(currentHeaderElements.footerText.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.footerText.scale} onChange={(e) => handleHeaderElementChange('footerText', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.x} onChange={(e) => handleHeaderElementChange('footerText', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.y} onChange={(e) => handleHeaderElementChange('footerText', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
         </div>
-      </div>
-      
-      {/* BLOCO AVANÇADO: Meus Temas Salvos */}
-      <div className={`space-y-2 border-t pt-4 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
-        <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-            Meus Temas Salvos ({customThemes.length})
-            {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          {customThemes.map(preset => (<div key={preset.id} className="relative group"><button onClick={() => handleThemePresetChange(preset.theme)} className="w-full p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold truncate">{preset.name}</span></button><button onClick={() => handleDeleteCustomTheme(preset.id)} className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md" title="Excluir Tema"><XCircle size={14} /></button></div>))}
-        </div>
-        <div className="flex gap-2 pt-2">
-          <input type="text" placeholder="Nome do novo tema" value={newThemeName} onChange={(e) => setNewThemeName(e.target.value)} className="flex-1 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
-          <button onClick={handleSaveCustomTheme} disabled={!newThemeName.trim() || isFreePlan} className="py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors disabled:opacity-50"><Save size={16} /> Salvar</button>
-        </div>
-      </div>
-
-      <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
-        <div className="flex justify-between items-center"><label className="text-sm font-semibold text-gray-700">Cabeçalho e Rodapé</label><div className="flex border rounded-md overflow-hidden"><button onClick={() => setTheme({...theme, headerTitleCase: 'uppercase'})} className={`p-1 ${theme.headerTitleCase === 'uppercase' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Caixa Alta"><CaseUpper size={16}/></button><button onClick={() => setTheme({...theme, headerTitleCase: 'capitalize'})} className={`p-1 ${theme.headerTitleCase === 'capitalize' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Capitalizado"><CaseLower size={16}/></button></div></div>
         
-        {/* Título Principal */}
-        <InputWithReset 
-          element="headerTitle" 
-          field="text" 
-          placeholder="Título Principal" 
-          currentHeaderElements={currentHeaderElements}
-          theme={theme}
-          handleHeaderElementChange={handleHeaderElementChange}
-          handleResetText={handleResetText}
-        />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Título</label><span className="font-mono text-gray-500">{(currentHeaderElements.headerTitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.headerTitle.scale} onChange={(e) => handleHeaderElementChange('headerTitle', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.headerTitle.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerTitle.x} onChange={(e) => handleHeaderElementChange('headerTitle', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.headerTitle.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerTitle.y} onChange={(e) => handleHeaderElementChange('headerTitle', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
-        <hr className="my-3"/>
-        
-        {/* Subtítulo */}
-        <InputWithReset 
-          element="headerSubtitle" 
-          field="text" 
-          placeholder="Subtítulo" 
-          currentHeaderElements={currentHeaderElements}
-          theme={theme}
-          handleHeaderElementChange={handleHeaderElementChange}
-          handleResetText={handleResetText}
-        />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Subtítulo</label><span className="font-mono text-gray-500">{(currentHeaderElements.headerSubtitle.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.headerSubtitle.scale} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.headerSubtitle.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerSubtitle.x} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.headerSubtitle.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.headerSubtitle.y} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
-        <hr className="my-3"/>
-        
-        {/* Texto do Rodapé */}
-        <InputWithReset 
-          element="footerText" 
-          field="text" 
-          placeholder="Texto do Rodapé" 
-          currentHeaderElements={currentHeaderElements}
-          theme={theme}
-          handleHeaderElementChange={handleHeaderElementChange}
-          handleResetText={handleResetText}
-        />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2"><div className="space-y-1 col-span-2"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Tamanho Rodapé</label><span className="font-mono text-gray-500">{(currentHeaderElements.footerText.scale).toFixed(1)}x</span></div><input type="range" min="0.5" max="2" step="0.1" value={currentHeaderElements.footerText.scale} onChange={(e) => handleHeaderElementChange('footerText', 'scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição X</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.x}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.x} onChange={(e) => handleHeaderElementChange('footerText', 'x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div><div className="space-y-1"><div className="flex justify-between text-xs"><label className="font-medium text-gray-600">Posição Y</label><span className="font-mono text-gray-500">{currentHeaderElements.footerText.y}px</span></div><input type="range" min="-200" max="200" value={currentHeaderElements.footerText.y} onChange={(e) => handleHeaderElementChange('footerText', 'y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/></div></div>
-      </div>
-      
-      <details className="space-y-2 border-t pt-4">
-        <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Brush size={16}/> Cores</summary>
-        <div className="grid grid-cols-2 gap-4 p-2">
-          <div><label className="text-xs font-medium text-gray-600">Cor Primária</label><input type="color" value={theme.primaryColor} onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
-          <div><label className="text-xs font-medium text-gray-600">Cor Secundária</label><input type="color" value={theme.secondaryColor} onChange={(e) => setTheme({ ...theme, secondaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
-          <div><label className="text-xs font-medium text-gray-600">Cor de Fundo</label><input type="color" value={theme.backgroundColor} onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
-          <div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.textColor} onChange={(e) => setTheme({ ...theme, textColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
-          <div><label className="text-xs font-medium text-gray-600">Texto Cabeçalho</label><input type="color" value={theme.headerTextColor} onChange={(e) => setTheme({ ...theme, headerTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
-        </div>
-      </details>
-
-      <details className="space-y-2 border-t pt-4">
-          <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Type size={16}/> Fontes</summary>
-          <div className="p-2 space-y-3">
-              <div><label className="text-xs font-medium text-gray-600">Fonte do Título</label><select value={theme.fontFamilyDisplay} onChange={(e) => setTheme({ ...theme, fontFamilyDisplay: e.target.value })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="" disabled>Selecione...</option>{FONT_PRESETS.map(font => <option key={font.id} value={font.fontFamily}>{font.name}</option>)}</select></div>
-              <div><label className="text-xs font-medium text-gray-600">Fonte do Corpo</label><select value={theme.fontFamilyBody} onChange={(e) => setTheme({ ...theme, fontFamilyBody: e.target.value })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="Inter, sans-serif">Padrão</option><option value="Roboto Condensed, sans-serif">Condensada</option></select></div>
+        {/* Cores - Permitido */}
+        <details className="space-y-2 border-t pt-4">
+          <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Brush size={16}/> Cores</summary>
+          <div className="grid grid-cols-2 gap-4 p-2">
+            <div><label className="text-xs font-medium text-gray-600">Cor Primária</label><input type="color" value={theme.primaryColor} onChange={(e) => setTheme({ ...theme, primaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+            <div><label className="text-xs font-medium text-gray-600">Cor Secundária</label><input type="color" value={theme.secondaryColor} onChange={(e) => setTheme({ ...theme, secondaryColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+            <div><label className="text-xs font-medium text-gray-600">Cor de Fundo</label><input type="color" value={theme.backgroundColor} onChange={(e) => setTheme({ ...theme, backgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+            <div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.textColor} onChange={(e) => setTheme({ ...theme, textColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
+            <div><label className="text-xs font-medium text-gray-600">Texto Cabeçalho</label><input type="color" value={theme.headerTextColor} onChange={(e) => setTheme({ ...theme, headerTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" /></div>
           </div>
-      </details>
+        </details>
 
-      <details className="space-y-2 border-t pt-4">
-          <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Settings size={16}/> Estilo do Cabeçalho</summary>
-          <div className="p-2 space-y-3">
-              {/* Layout do Logo - Permitido, mas o logo em si é gerenciado na aba Company (bloqueada) */}
-              <div><label className="text-xs font-medium text-gray-600">Layout do Logo</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_LAYOUT_PRESETS.map(preset => (<button key={preset.id} onClick={() => setTheme({ ...theme, headerLayoutId: preset.id })} className={`p-2 border rounded flex flex-col items-center ${theme.headerLayoutId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
-              {/* Estilo de Arte - Permitido */}
-              <div><label className="text-xs font-medium text-gray-600">Estilo de Arte (se não houver imagem)</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_ART_PRESETS.map(preset => (<button key={preset.id} onClick={() => setTheme({ ...theme, headerArtStyleId: preset.id })} className={`p-2 border rounded flex flex-col items-center ${theme.headerArtStyleId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
-          </div>
-      </details>
+        {/* Fontes - BLOQUEADO */}
+        <details className={`space-y-2 border-t pt-4 ${premiumSectionClass}`}>
+            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
+                <Type size={16}/> Fontes
+                {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+            </summary>
+            <div className="p-2 space-y-3">
+                <div><label className="text-xs font-medium text-gray-600">Fonte do Título</label><select value={theme.fontFamilyDisplay} onChange={(e) => setTheme({ ...theme, fontFamilyDisplay: e.target.value })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}><option value="" disabled>Selecione...</option>{FONT_PRESETS.map(font => <option key={font.id} value={font.fontFamily}>{font.name}</option>)}</select></div>
+                <div><label className="text-xs font-medium text-gray-600">Fonte do Corpo</label><select value={theme.fontFamilyBody} onChange={(e) => setTheme({ ...theme, fontFamilyBody: e.target.value })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}><option value="Inter, sans-serif">Padrão</option><option value="Roboto Condensed, sans-serif">Condensada</option></select></div>
+            </div>
+        </details>
 
-      <details className="space-y-2 border-t pt-4">
-          <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><ImageIcon size={16}/> Imagens e Fundos</summary>
-          <div className="p-2 space-y-4">
-              {theme.logo && currentLogoLayout && (
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-600">Layout do Logo ({theme.format.name})</label>
-                  <p className="text-xs text-gray-500">A imagem do logo é gerenciada no módulo "Dados da Empresa".</p>
-                  {/* Controles de Layout do Logo - Permitido */}
-                  <div className="space-y-2 pt-2 border-t mt-2">
-                      <div>
-                          <label className="text-xs font-medium text-gray-600">Tamanho do Logo</label>
-                          <input type="range" min="0.5" max="2" step="0.1" value={currentLogoLayout.scale} onChange={(e) => handleLogoLayoutChange('scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4">
-                          <div className="space-y-1">
-                              <div className="flex justify-between text-xs">
-                                  <label className="font-medium text-gray-600">Posição X</label>
-                                  <span className="font-mono text-gray-500">{currentLogoLayout.x}px</span>
-                              </div>
-                              <input type="range" min="-400" max="400" value={currentLogoLayout.x} onChange={(e) => handleLogoLayoutChange('x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-                          </div>
-                          <div className="space-y-1">
-                              <div className="flex justify-between text-xs">
-                                  <label className="font-medium text-gray-600">Posição Y</label>
-                                  <span className="font-mono text-gray-500">{currentLogoLayout.y}px</span>
-                              </div>
-                              <input type="range" min="-400" max="400" value={currentLogoLayout.y} onChange={(e) => handleLogoLayoutChange('y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-                          </div>
-                      </div>
-                  </div>
-                </div>
-              )}
-              {/* Imagem de Cabeçalho - Permitido */}
-              <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label><div className="flex items-center gap-2"><input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} /><label htmlFor="header-img-upload" className="flex-1 text-center text-xs py-2 px-3 bg-white border rounded cursor-pointer hover:bg-gray-50">{theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}</label>{theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500"><Trash2 size={16} /></button>}</div>
-                {theme.headerImage && (
+        {/* Estilo do Cabeçalho - BLOQUEADO */}
+        <details className={`space-y-2 border-t pt-4 ${premiumSectionClass}`}>
+            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
+                <Settings size={16}/> Estilo do Cabeçalho
+                {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+            </summary>
+            <div className="p-2 space-y-3">
+                {/* Layout do Logo */}
+                <div><label className="text-xs font-medium text-gray-600">Layout do Logo</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_LAYOUT_PRESETS.map(preset => (<button key={preset.id} onClick={() => setTheme({ ...theme, headerLayoutId: preset.id })} className={`p-2 border rounded flex flex-col items-center ${theme.headerLayoutId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`} disabled={isFreePlan}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
+                {/* Estilo de Arte */}
+                <div><label className="text-xs font-medium text-gray-600">Estilo de Arte (se não houver imagem)</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_ART_PRESETS.map(preset => (<button key={preset.id} onClick={() => setTheme({ ...theme, headerArtStyleId: preset.id })} className={`p-2 border rounded flex flex-col items-center ${theme.headerArtStyleId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`} disabled={isFreePlan}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
+            </div>
+        </details>
+
+        {/* Imagens e Fundos - BLOQUEADO (Controles) */}
+        <details className={`space-y-2 border-t pt-4 ${premiumSectionClass}`}>
+            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
+                <ImageIcon size={16}/> Imagens e Fundos
+                {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+            </summary>
+            <div className="p-2 space-y-4">
+                {theme.logo && currentLogoLayout && (
                   <div className="space-y-2">
-                    <select value={theme.headerImageMode} onChange={(e) => setTheme({ ...theme, headerImageMode: e.target.value as HeaderImageMode })} className="w-full border rounded px-2 py-1 text-sm bg-white">
-                      <option value="background">Fundo (com cor)</option>
-                      <option value="hero">Herói (imagem pura)</option>
-                    </select>
-                    {theme.headerImageMode === 'background' && (<div><label className="text-xs font-medium text-gray-600">Opacidade</label><input type="range" min="0.1" max="1" step="0.1" value={theme.headerImageOpacity} onChange={(e) => setTheme({ ...theme, headerImageOpacity: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /></div>)}
-                    {theme.headerImageMode === 'hero' && (
-                      <div className="flex items-center justify-between pt-2 border-t mt-2">
-                          <label className="text-xs font-medium text-gray-600">Exibir logo sobre a imagem</label>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" checked={!!theme.useLogoOnHero} onChange={(e) => setTheme({ ...theme, useLogoOnHero: e.target.checked })} className="sr-only peer" disabled={!theme.logo} />
-                              <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                          </label>
-                      </div>
-                    )}
+                    <label className="text-xs font-medium text-gray-600">Layout do Logo ({theme.format.name})</label>
+                    <p className="text-xs text-gray-500">A imagem do logo é gerenciada no módulo "Dados da Empresa".</p>
+                    {/* Controles de Layout do Logo */}
+                    <div className="space-y-2 pt-2 border-t mt-2">
+                        <div>
+                            <label className="text-xs font-medium text-gray-600">Tamanho do Logo</label>
+                            <input type="range" min="0.5" max="2" step="0.1" value={currentLogoLayout.scale} onChange={(e) => handleLogoLayoutChange('scale', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4">
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs">
+                                    <label className="font-medium text-gray-600">Posição X</label>
+                                    <span className="font-mono text-gray-500">{currentLogoLayout.x}px</span>
+                                </div>
+                                <input type="range" min="-400" max="400" value={currentLogoLayout.x} onChange={(e) => handleLogoLayoutChange('x', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan}/>
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs">
+                                    <label className="font-medium text-gray-600">Posição Y</label>
+                                    <span className="font-mono text-gray-500">{currentLogoLayout.y}px</span>
+                                </div>
+                                <input type="range" min="-400" max="400" value={currentLogoLayout.y} onChange={(e) => handleLogoLayoutChange('y', Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan}/>
+                            </div>
+                        </div>
+                    </div>
                   </div>
                 )}
-              </div>
-              
-              {/* BLOCO AVANÇADO: Imagem de Fundo Geral (IA/Upload) */}
-              <div className={`space-y-2 border-t pt-4 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
-                    Imagem de Fundo (Geral)
-                    {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
-                  </label>
-                  <div className="flex items-center gap-2">
-                      <input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} disabled={isFreePlan} />
-                      <label htmlFor="bg-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors bg-white hover:bg-gray-50`}>
-                          {theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}
-                      </label>
-                      {theme.backgroundImage && <button onClick={() => setTheme({ ...theme, backgroundImage: undefined })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}
-                  </div>
-              </div>
-          </div>
-      </details>
-
-      <details className="space-y-2 border-t pt-4">
-          <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Tag size={16}/> Estilo do Preço</summary>
-          <div className="p-2 space-y-3">
-              <div><label className="text-xs font-medium text-gray-600">Formato do Card</label><select value={theme.priceCardStyle} onChange={(e) => setTheme({ ...theme, priceCardStyle: e.target.value as 'default' | 'pill' | 'minimal' })} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="default">Padrão</option><option value="pill">Pílula</option><option value="minimal">Mínimo</option></select></div>
-              
-              {/* BLOCO AVANÇADO: Cores do Card de Preço */}
-              {theme.priceCardStyle !== 'minimal' && (
-                <div className={`space-y-2 border-t pt-3 mt-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <label className="text-xs font-medium text-gray-600 flex items-center gap-2">
-                        Cores do Card de Preço
-                        {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div>
-                        <div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div>
+                {/* Imagem de Cabeçalho */}
+                <div className="space-y-2"><label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label><div className="flex items-center gap-2"><input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} disabled={isFreePlan} /><label htmlFor="header-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>{theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}</label>{theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}</div>
+                  {theme.headerImage && (
+                    <div className="space-y-2">
+                      <select value={theme.headerImageMode} onChange={(e) => setTheme({ ...theme, headerImageMode: e.target.value as HeaderImageMode })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}>
+                        <option value="background">Fundo (com cor)</option>
+                        <option value="hero">Herói (imagem pura)</option>
+                      </select>
+                      {theme.headerImageMode === 'background' && (<div><label className="text-xs font-medium text-gray-600">Opacidade</label><input type="range" min="0.1" max="1" step="0.1" value={theme.headerImageOpacity} onChange={(e) => setTheme({ ...theme, headerImageOpacity: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} /></div>)}
+                      {theme.headerImageMode === 'hero' && (
+                        <div className="flex items-center justify-between pt-2 border-t mt-2">
+                            <label className="text-xs font-medium text-gray-600">Exibir logo sobre a imagem</label>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked={!!theme.useLogoOnHero} onChange={(e) => setTheme({ ...theme, useLogoOnHero: e.target.checked })} className="sr-only peer" disabled={!theme.logo || isFreePlan} />
+                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                            </label>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Imagem de Fundo Geral (Upload) */}
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-600">Imagem de Fundo (Geral)</label>
+                    <div className="flex items-center gap-2">
+                        <input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} disabled={isFreePlan} />
+                        <label htmlFor="bg-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                            {theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}
+                        </label>
+                        {theme.backgroundImage && <button onClick={() => setTheme({ ...theme, backgroundImage: undefined })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}
                     </div>
                 </div>
-              )}
-          </div>
-      </details>
+            </div>
+        </details>
 
-      {/* BLOCO AVANÇADO: Bordas */}
-      <details className="space-y-2 border-t pt-4">
-        <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
-            <Frame size={16}/> Bordas
-            {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
-        </summary>
-        <div className={`p-2 space-y-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between"><label className="text-xs font-medium text-gray-600">Adicionar Borda</label><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={theme.hasFrame} onChange={(e) => setTheme({ ...theme, hasFrame: e.target.checked })} className="sr-only peer" disabled={isFreePlan} /><div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label></div>
-            {theme.hasFrame && (<div className="space-y-2"><div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} /></div></div>)}
-        </div>
-      </details>
-    </div>
-  );
+        {/* Estilo do Preço - BLOQUEADO */}
+        <details className={`space-y-2 border-t pt-4 ${premiumSectionClass}`}>
+            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
+                <Tag size={16}/> Estilo do Preço
+                {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+            </summary>
+            <div className="p-2 space-y-3">
+                <div><label className="text-xs font-medium text-gray-600">Formato do Card</label><select value={theme.priceCardStyle} onChange={(e) => setTheme({ ...theme, priceCardStyle: e.target.value as 'default' | 'pill' | 'minimal' })} className="w-full border rounded px-2 py-1 text-sm bg-white" disabled={isFreePlan}><option value="default">Padrão</option><option value="pill">Pílula</option><option value="minimal">Mínimo</option></select></div>
+                {theme.priceCardStyle !== 'minimal' && (<div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-medium text-gray-600">Cor do Fundo</label><input type="color" value={theme.priceCardBackgroundColor} onChange={(e) => setTheme({ ...theme, priceCardBackgroundColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Cor do Texto</label><input type="color" value={theme.priceCardTextColor} onChange={(e) => setTheme({ ...theme, priceCardTextColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div></div>)}
+            </div>
+        </details>
+
+        {/* Bordas - BLOQUEADO */}
+        <details className={`space-y-2 border-t pt-4 ${premiumSectionClass}`}>
+          <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
+              <Frame size={16}/> Bordas
+              {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
+          </summary>
+          <div className="p-2 space-y-3">
+              <div className="flex items-center justify-between"><label className="text-xs font-medium text-gray-600">Adicionar Borda</label><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={theme.hasFrame} onChange={(e) => setTheme({ ...theme, hasFrame: e.target.checked })} className="sr-only peer" disabled={isFreePlan} /><div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label></div>
+              {theme.hasFrame && (<div className="space-y-2"><div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} /></div></div>)}
+          </div>
+        </details>
+      </div>
+    );
+  };
 
   const renderAITab = () => (
     <div className="space-y-6">
