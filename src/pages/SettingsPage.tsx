@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Zap, CheckCircle, AlertTriangle, Eye, EyeOff, User, LogOut, Loader2 } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
 
 const SettingsPage: React.FC = () => {

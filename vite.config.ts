@@ -20,6 +20,10 @@ export default defineConfig(({ mode }) => {
         }
       },
       optimizeDeps: {
+        include: [
+          '@supabase/auth-ui-react',
+          '@supabase/auth-ui-shared'
+        ],
         // Mantendo apenas React/React-DOM na exclusão, que são carregados via importmap
         exclude: [
           'react',
