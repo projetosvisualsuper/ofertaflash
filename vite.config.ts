@@ -17,13 +17,12 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
+          // Adicionando aliases explícitos para forçar a resolução correta
+          '@supabase/auth-ui-react': path.resolve(__dirname, 'node_modules/@supabase/auth-ui-react'),
+          '@supabase/auth-ui-shared': path.resolve(__dirname, 'node_modules/@supabase/auth-ui-shared'),
         }
       },
       optimizeDeps: {
-        include: [
-          '@supabase/auth-ui-react',
-          '@supabase/auth-ui-shared'
-        ],
         // Mantendo apenas React/React-DOM na exclusão, que são carregados via importmap
         exclude: [
           'react',
