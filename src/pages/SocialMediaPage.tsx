@@ -12,7 +12,7 @@ interface SocialMediaPageProps {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[]; // Full list from App.tsx
   savedImages: SavedImage[];
-  deleteImage: (id: string) => void;
+  deleteImage: (id: string) => Promise<void>;
 }
 
 export default function SocialMediaPage({ theme, setTheme, products, setProducts, formats, savedImages, deleteImage }: SocialMediaPageProps) {

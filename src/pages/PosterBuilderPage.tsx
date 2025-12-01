@@ -13,7 +13,7 @@ interface PosterBuilderPageProps {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[];
-  addSavedImage: (image: SavedImage) => void;
+  addSavedImage: (image: Omit<SavedImage, 'id' | 'timestamp'>) => Promise<void>;
 }
 
 export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats, addSavedImage }: PosterBuilderPageProps) {
@@ -84,16 +84,13 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         }
       });
 
-      const newImage: SavedImage = {
-        id: crypto.randomUUID(),
+      const newImage: Omit<SavedImage, 'id' | 'timestamp'> = {
         dataUrl: dataUrl,
         formatName: theme.format.name,
-        timestamp: Date.now(),
         theme: theme, // SALVANDO O TEMA COMPLETO
       };
       
-      addSavedImage(newImage);
-      showSuccess(`Arte salva na galeria de Redes Sociais! (${theme.format.name})`);
+      await addSavedImage(newImage);
 
     } catch (err) {
       console.error("Failed to save poster to gallery", err);

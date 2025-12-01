@@ -29,7 +29,7 @@ const mapFromDB = (item: ProductDB): RegisteredProduct => ({
 });
 
 // Função auxiliar para mapear do App para o DB (para INSERT/UPDATE)
-const mapToDB = (product: Partial<Omit<RegisteredProduct, 'id'>>): Partial<ProductDB> => ({
+const mapToDB = (product: Partial<Omit<RegisteredProduct, 'id'>>): Partial<Omit<ProductDB, 'id' | 'created_at' | 'updated_at'>> => ({
   name: product.name,
   description: product.description,
   defaultPrice: product.defaultPrice,
@@ -39,15 +39,21 @@ const mapToDB = (product: Partial<Omit<RegisteredProduct, 'id'>>): Partial<Produ
 });
 
 
-export function useProductDatabase() {
+export function useProductDatabase(userId: string | undefined) {
   const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = useCallback(async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     const { data, error } = await supabase
       .from('products')
       .select('*')
+      .eq('user_id', userId) // Filtra apenas os produtos do usuário logado
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -58,14 +64,19 @@ export function useProductDatabase() {
       setRegisteredProducts(data.map(mapFromDB));
     }
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
   const addProduct = async (product: Omit<RegisteredProduct, 'id'>) => {
-    const productForDb = mapToDB(product);
+    if (!userId) return null;
+    
+    const productForDb = {
+        ...mapToDB(product),
+        user_id: userId, // Adiciona o ID do usuário na inserção
+    };
 
     const { data, error } = await supabase
       .from('products')
@@ -86,12 +97,15 @@ export function useProductDatabase() {
   };
 
   const updateProduct = async (id: string, updates: Partial<RegisteredProduct>) => {
+    if (!userId) return;
+    
     const updatesForDb = mapToDB(updates);
 
     const { error } = await supabase
       .from('products')
       .update(updatesForDb)
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', userId); // Garante que só o dono pode atualizar
 
     if (error) {
       console.error('Error updating product:', error);
@@ -104,10 +118,13 @@ export function useProductDatabase() {
   };
 
   const deleteProduct = async (id: string) => {
+    if (!userId) return;
+    
     const { error } = await supabase
       .from('products')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', userId); // Garante que só o dono pode deletar
 
     if (error) {
       console.error('Error deleting product:', error);
@@ -124,5 +141,6 @@ export function useProductDatabase() {
     updateProduct,
     deleteProduct,
     loading,
+    fetchProducts, // Exporta para uso em outros lugares, se necessário
   };
 }

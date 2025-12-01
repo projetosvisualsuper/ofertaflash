@@ -12,6 +12,9 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage } from './types';
 import { useLocalStorageState } from './src/hooks/useLocalStorageState';
+import { useUserSettings } from './src/hooks/useUserSettings';
+import { useProductDatabase } from './src/hooks/useProductDatabase';
+import { useSavedImages } from './src/hooks/useSavedImages';
 import { Loader2 } from 'lucide-react';
 
 const defaultLayout = {
@@ -39,17 +42,30 @@ const createInitialLogoLayouts = (base: any) => ({
 
 const AppContent: React.FC = () => {
   const { session } = useAuth();
+  const userId = session?.user?.id;
+  
   const [activeModule, setActiveModule] = useState('poster');
   
-  const [theme, setTheme] = useLocalStorageState<PosterTheme>('ofertaflash_theme', INITIAL_THEME);
+  // Usando Supabase para Theme
+  const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
+  
+  // Usando localStorage APENAS para os produtos do cartaz (não os cadastrados)
   const [products, setProducts] = useLocalStorageState<Product[]>('ofertaflash_products', INITIAL_PRODUCTS);
-  const [savedImages, setSavedImages] = useLocalStorageState<SavedImage[]>('ofertaflash_saved_images', []);
+  
+  // Usando Supabase para Imagens Salvas
+  const { savedImages, addSavedImage, deleteImage: deleteSavedImage, loading: loadingSavedImages } = useSavedImages(userId);
+  
+  // Hook para o Banco de Produtos (Registered Products)
+  const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
+  
   const [isReady, setIsReady] = useState(false);
 
+  // Lógica de migração e verificação de prontidão
   useEffect(() => {
     let themeUpdated = false;
     let productsUpdated = false;
 
+    // 1. Theme structure migration (ensures all fields exist)
     if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
       themeUpdated = true;
       setTheme(prevTheme => ({
@@ -61,6 +77,7 @@ const AppContent: React.FC = () => {
       }));
     }
 
+    // 2. Logo layout migration
     if (theme.logo && !(theme.logo as any).layouts) {
         themeUpdated = true;
         setTheme(prevTheme => {
@@ -76,6 +93,7 @@ const AppContent: React.FC = () => {
         });
     }
 
+    // 3. Product layout migration
     if (products.some(p => !p.layouts)) {
       productsUpdated = true;
       setProducts(prevProducts => 
@@ -85,27 +103,13 @@ const AppContent: React.FC = () => {
       );
     }
 
-    if (!themeUpdated && !productsUpdated) {
+    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages) {
       setIsReady(true);
     }
-  }, []);
-
-  useEffect(() => {
-      if (theme.headerElements && typeof theme.layoutCols === 'object' && theme.layoutCols !== null && !products.some(p => !p.layouts) && (!theme.logo || (theme.logo as any).layouts) && theme.companyInfo) {
-          setIsReady(true);
-      }
-  }, [theme, products]);
+  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
   
-  const addSavedImage = (image: SavedImage) => {
-    setSavedImages(prev => [image, ...prev]);
-  };
-
-  const deleteSavedImage = (id: string) => {
-    setSavedImages(prev => prev.filter(img => img.id !== id));
-  };
-
   if (!session) {
     return <LoginPage />;
   }
@@ -115,7 +119,7 @@ const AppContent: React.FC = () => {
       <div className="flex items-center justify-center h-screen w-screen bg-gray-100">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-          <p className="text-lg text-gray-700">Carregando dados...</p>
+          <p className="text-lg text-gray-700">Carregando dados do usuário...</p>
         </div>
       </div>
     );
@@ -128,6 +132,7 @@ const AppContent: React.FC = () => {
       case 'poster':
         return <PosterBuilderPage {...commonProps} addSavedImage={addSavedImage} />;
       case 'product-db':
+        // O ProductManagerPage usa useProductDatabase internamente, que já usa o userId
         return <ProductManagerPage />;
       case 'company':
         return <CompanyInfoPage theme={theme} setTheme={setTheme} />;
