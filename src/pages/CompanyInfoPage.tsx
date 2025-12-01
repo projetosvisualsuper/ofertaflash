@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PosterTheme, CompanyInfo, LogoLayout } from '../../types';
 import { Building, Edit, Image as ImageIcon, Trash2, Loader2, Check, X } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
@@ -34,8 +34,15 @@ const ToggleSwitch: React.FC<{
 const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) => {
   const [isUploading, setIsUploading] = useState(false);
   
-  // Usamos um estado local temporário para a edição, mas o salvamento é imediato via setTheme
+  // Inicializa o estado local com o valor do tema
   const [localCompanyInfo, setLocalCompanyInfo] = useState<CompanyInfo>(theme.companyInfo || {});
+
+  // Sincroniza o estado local quando o tema muda (ex: ao carregar do Supabase)
+  useEffect(() => {
+    if (theme.companyInfo) {
+      setLocalCompanyInfo(theme.companyInfo);
+    }
+  }, [theme.companyInfo]);
 
   if (!theme.companyInfo) return null;
 
@@ -158,7 +165,7 @@ const CompanyInfoPage: React.FC<CompanyInfoPageProps> = ({ theme, setTheme }) =>
         <div className="space-y-4 border-b pb-6">
             <h3 className="text-xl font-semibold text-gray-800">Logo da Empresa</h3>
             <div className="p-4 bg-gray-50 rounded-lg border flex items-center gap-6">
-              <div className="w-28 h-28 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0">
+              <div className="w-28 h-28 bg-white border-2 border-dashed rounded-md flex items-center justify-center shrink-0 overflow-hidden relative">
                 {isUploading ? (
                     <Loader2 size={32} className="text-indigo-500 animate-spin" />
                 ) : theme.logo ? (
