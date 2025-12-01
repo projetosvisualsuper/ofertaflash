@@ -17,10 +17,16 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
-          // Adicionando aliases para pacotes externos que são carregados via importmap
-          '@supabase/auth-ui-react': '@supabase/auth-ui-react',
-          '@supabase/auth-ui-shared': '@supabase/auth-ui-shared',
         }
+      },
+      optimizeDeps: {
+        // Exclui pacotes externos para que o Vite não tente resolvê-los ou pré-empacotá-los no modo dev.
+        exclude: [
+          '@supabase/auth-ui-react', 
+          '@supabase/auth-ui-shared',
+          'react',
+          'react-dom',
+        ],
       },
       build: {
         rollupOptions: {
