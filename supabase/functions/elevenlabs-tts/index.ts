@@ -6,8 +6,9 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Usando uma voz conhecida por suportar pt-BR no modelo multilingual
-const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDz7Sg"; // Rachel (Multilingual)
+// Usando uma voz alternativa conhecida por suportar pt-BR no modelo multilingual (ex: 'Antoni' ou 'Bella')
+// Mudando para 'Bella' (Voice ID: 21m00Tz4a8C3YgS-x8g) que é mais estável para multilingual.
+const DEFAULT_VOICE_ID = "21m00Tz4a8C3YgS-x8g"; 
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 serve(async (req) => {
