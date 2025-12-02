@@ -5,6 +5,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
+import ConfirmationModal from '../components/ConfirmationModal'; // Importando o modal
 
 const ProfilePage: React.FC = () => {
   const { profile, session, refreshProfile } = useAuth();
@@ -13,6 +14,7 @@ const ProfilePage: React.FC = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isCancellingPlan, setIsCancellingPlan] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Novo estado
 
   if (!profile || !session) {
     return (
@@ -79,10 +81,7 @@ const ProfilePage: React.FC = () => {
   };
   
   const handleCancelPlan = async () => {
-    if (!window.confirm("Tem certeza que deseja cancelar seu plano e voltar para o Plano Grátis? Você perderá o acesso aos recursos Premium/Pro.")) {
-        return;
-    }
-    
+    setIsCancelModalOpen(false); // Fecha o modal
     setIsCancellingPlan(true);
     
     const newRole = 'free';
@@ -206,7 +205,7 @@ const ProfilePage: React.FC = () => {
                 <p className="text-sm font-medium">Cancelar Plano (Downgrade)</p>
             </div>
             <button
-              onClick={handleCancelPlan}
+              onClick={() => setIsCancelModalOpen(true)} // Abre o modal
               disabled={isCancellingPlan}
               className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
             >
@@ -234,6 +233,18 @@ const ProfilePage: React.FC = () => {
             <PasswordSection />
         </div>
       </div>
+      
+      {/* Modal de Confirmação de Cancelamento de Plano */}
+      <ConfirmationModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelPlan}
+        title="Confirmar Cancelamento de Plano"
+        description="Tem certeza que deseja cancelar seu plano e voltar para o Plano Grátis? Você perderá o acesso aos recursos Premium/Pro."
+        confirmText="Sim, Cancelar Plano"
+        isConfirming={isCancellingPlan}
+        variant="danger"
+      />
     </div>
   );
 };

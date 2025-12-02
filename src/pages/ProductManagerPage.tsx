@@ -4,9 +4,14 @@ import { useProductDatabase } from '../hooks/useProductDatabase';
 import { RegisteredProduct } from '../../types';
 import { showSuccess, showError } from '../utils/toast';
 import ProductFormModal from '../components/ProductFormModal';
+import ConfirmationModal from '../components/ConfirmationModal'; // Importando o modal
 
 const ProductManagerPage: React.FC = () => {
   const { registeredProducts, addProduct, updateProduct, deleteProduct, loading } = useProductDatabase();
+  
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string, name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const handleSave = async (product: Omit<RegisteredProduct, 'id'>, id?: string) => {
     if (id) {
@@ -19,10 +24,19 @@ const ProductManagerPage: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string, name: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir o produto "${name}"?`)) {
-      deleteProduct(id);
-    }
+  const handleDeleteClick = (id: string, name: string) => {
+    setProductToDelete({ id, name });
+    setIsDeleteModalOpen(true);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+    
+    setIsDeleting(true);
+    await deleteProduct(productToDelete.id);
+    setIsDeleting(false);
+    setIsDeleteModalOpen(false);
+    setProductToDelete(null);
   };
 
   return (
@@ -83,7 +97,7 @@ const ProductManagerPage: React.FC = () => {
                   }
                   initialProduct={product}
                   onSave={handleSave}
-                  onDelete={handleDelete}
+                  onDelete={handleDeleteClick} // Passa a função que abre o modal
                 />
               </div>
             ))}
@@ -95,6 +109,18 @@ const ProductManagerPage: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Modal de Confirmação de Exclusão de Produto */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        description={`Tem certeza que deseja excluir o produto "${productToDelete?.name}"? Esta ação é irreversível.`}
+        confirmText="Excluir Produto"
+        isConfirming={isDeleting}
+        variant="danger"
+      />
     </div>
   );
 };

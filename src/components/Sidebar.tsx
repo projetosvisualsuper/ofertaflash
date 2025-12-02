@@ -10,9 +10,10 @@ import HeaderTemplatesTab from './HeaderTemplatesTab';
 import { INITIAL_THEME } from '../state/initialState';
 import { useProductDatabase } from '../hooks/useProductDatabase';
 import { showSuccess, showError } from '../utils/toast';
-import { useAuth } from '../context/AuthContext'; // Importando useAuth
-import { useCustomThemes } from '../hooks/useCustomThemes'; // NOVO HOOK
-import { supabase } from '@/src/integrations/supabase/client'; // Importando Supabase
+import { useAuth } from '../context/AuthContext';
+import { useCustomThemes } from '../hooks/useCustomThemes';
+import { supabase } from '@/src/integrations/supabase/client';
+import ConfirmationModal from './ConfirmationModal'; // Importando o modal
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -81,7 +82,7 @@ const dataURLtoBlob = (dataurl: string) => {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
-  const { profile, session } = useAuth(); // Usando useAuth
+  const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
   
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
@@ -89,11 +90,15 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
   
-  const { customThemes, addCustomTheme, deleteCustomTheme } = useCustomThemes(session?.user?.id); // USANDO HOOK DO SUPABASE
+  const { customThemes, addCustomTheme, deleteCustomTheme } = useCustomThemes(session?.user?.id);
   const [newThemeName, setNewThemeName] = useState('');
   
   const { registeredProducts } = useProductDatabase(session?.user?.id);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados para o modal de exclusão de tema
+  const [isDeleteThemeModalOpen, setIsDeleteThemeModalOpen] = useState(false);
+  const [themeToDeleteId, setThemeToDeleteId] = useState<string | null>(null);
 
   const currentHeaderElements = useMemo(() => 
     theme.headerElements[theme.format.id] || INITIAL_THEME.headerElements[theme.format.id], 
@@ -353,11 +358,18 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
-  const handleDeleteCustomTheme = async (id: string) => {
-    if (window.confirm("Tem certeza que deseja excluir este tema?")) {
-        await deleteCustomTheme(id);
-        showSuccess("Tema excluído.");
-    }
+  const handleDeleteClick = (id: string) => {
+    setThemeToDeleteId(id);
+    setIsDeleteThemeModalOpen(true);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!themeToDeleteId) return;
+    
+    setIsDeleteThemeModalOpen(false);
+    await deleteCustomTheme(themeToDeleteId);
+    setThemeToDeleteId(null);
+    showSuccess("Tema excluído.");
   };
 
   const handleGenerateHeadline = async () => {
@@ -507,7 +519,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
               {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {customThemes.map(preset => (<div key={preset.id} className="relative group"><button onClick={() => handleThemePresetChange(preset.theme)} className="w-full p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold truncate">{preset.name}</span></button><button onClick={() => handleDeleteCustomTheme(preset.id)} className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md" title="Excluir Tema"><XCircle size={14} /></button></div>))}
+            {customThemes.map(preset => (<div key={preset.id} className="relative group"><button onClick={() => handleThemePresetChange(preset.theme)} className="w-full p-2 border rounded-lg text-left bg-white hover:border-indigo-500 transition-colors flex items-center gap-2"><div className="flex -space-x-1"><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.primaryColor }}></span><span className="w-4 h-4 rounded-full border-2 border-white" style={{ backgroundColor: preset.theme.secondaryColor }}></span></div><span className="text-xs font-semibold truncate">{preset.name}</span></button><button onClick={() => handleDeleteClick(preset.id)} className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md" title="Excluir Tema"><XCircle size={14} /></button></div>))}
           </div>
           <div className="flex gap-2 pt-2">
             <input type="text" placeholder="Nome do novo tema" value={newThemeName} onChange={(e) => setNewThemeName(e.target.value)} className="flex-1 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
@@ -881,6 +893,17 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         )}
       </div>
       <div className="p-4 border-t bg-gray-50 text-xs text-gray-500 text-center flex-shrink-0">Powered by Google Gemini 2.5</div>
+      
+      {/* Modal de Confirmação de Exclusão de Tema */}
+      <ConfirmationModal
+        isOpen={isDeleteThemeModalOpen}
+        onClose={() => setIsDeleteThemeModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão de Tema"
+        description="Tem certeza que deseja excluir este tema personalizado? Esta ação é irreversível."
+        confirmText="Excluir Tema"
+        variant="danger"
+      />
     </div>
   );
 };

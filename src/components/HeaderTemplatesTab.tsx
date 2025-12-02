@@ -4,7 +4,8 @@ import { HEADER_TEMPLATE_PRESETS } from '../config/headerTemplatePresets';
 import { Save, Trash2, Upload, XCircle, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { showError, showSuccess } from '../utils/toast';
-import { useCustomHeaderTemplates } from '../hooks/useCustomHeaderTemplates'; // NOVO HOOK
+import { useCustomHeaderTemplates } from '../hooks/useCustomHeaderTemplates';
+import ConfirmationModal from './ConfirmationModal'; // Importando o modal
 
 interface HeaderTemplatesTabProps {
   theme: PosterTheme;
@@ -15,9 +16,13 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
   
-  const { customTemplates, addCustomTemplate, deleteCustomTemplate } = useCustomHeaderTemplates(session?.user?.id); // USANDO HOOK DO SUPABASE
+  const { customTemplates, addCustomTemplate, deleteCustomTemplate } = useCustomHeaderTemplates(session?.user?.id);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
+  
+  // Estados para o modal de exclusão
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [templateToDeleteId, setTemplateToDeleteId] = useState<string | null>(null);
 
   // For applying default templates from the gallery
   const applyPresetTemplate = (templateTheme: Partial<PosterTheme>) => {
@@ -106,15 +111,18 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     }
   };
 
-  const handleDeleteTemplate = async (id: string) => {
-    if (isFreePlan) {
-        showError("Funcionalidade de salvar templates é exclusiva para planos Premium e Pro.");
-        return;
-    }
-    if (window.confirm("Tem certeza que deseja excluir este template?")) {
-      await deleteCustomTemplate(id);
-      showSuccess("Template excluído.");
-    }
+  const handleDeleteClick = (id: string) => {
+    setTemplateToDeleteId(id);
+    setIsDeleteModalOpen(true);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!templateToDeleteId) return;
+    
+    setIsDeleteModalOpen(false);
+    await deleteCustomTemplate(templateToDeleteId);
+    setTemplateToDeleteId(null);
+    showSuccess("Template excluído.");
   };
 
   const saveTemplateClasses = isFreePlan ? 'opacity-50 cursor-not-allowed' : '';
@@ -181,7 +189,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
                   </div>
                 </button>
                 <button
-                  onClick={() => handleDeleteTemplate(template.id)}
+                  onClick={() => handleDeleteClick(template.id)}
                   className="absolute top-0 right-0 p-1 text-red-500 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2 shadow-md"
                   title="Excluir Template"
                   disabled={isFreePlan}
@@ -215,6 +223,17 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
           ))}
         </div>
       </div>
+      
+      {/* Modal de Confirmação de Exclusão de Template */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão de Template"
+        description="Tem certeza que deseja excluir este template de cabeçalho? Esta ação é irreversível."
+        confirmText="Excluir Template"
+        variant="danger"
+      />
     </div>
   );
 };
