@@ -12,6 +12,7 @@ import { useProductDatabase } from '../hooks/useProductDatabase';
 import { showSuccess, showError } from '../utils/toast';
 import { useAuth } from '../context/AuthContext'; // Importando useAuth
 import { useCustomThemes } from '../hooks/useCustomThemes'; // NOVO HOOK
+import { supabase } from '@/src/integrations/supabase/client'; // Importando Supabase
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -65,6 +66,19 @@ const InputWithReset: React.FC<InputWithResetProps> = React.memo(({
   </div>
 ));
 
+// Função auxiliar para converter Data URL para Blob
+const dataURLtoBlob = (dataurl: string) => {
+    const arr = dataurl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+};
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
   const { profile, session } = useAuth(); // Usando useAuth
@@ -211,19 +225,66 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   };
 
-  const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Função genérica para upload de imagem de fundo/cabeçalho
+  const handleThemeImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'headerImage' | 'backgroundImage') => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTheme(prev => ({
-          ...prev,
-          headerImage: reader.result as string,
-          headerImageMode: 'background',
-        }));
-      };
-      reader.readAsDataURL(file);
+    const user = await supabase.auth.getUser();
+    const userId = user.data.user?.id;
+
+    if (!file || !userId) {
+      showError("Erro: Usuário não autenticado ou arquivo não selecionado.");
+      return;
     }
+    
+    if (isFreePlan) {
+        showError("Upload de imagens de fundo é exclusivo para planos Premium e Pro.");
+        return;
+    }
+
+    setIsGenerating(true);
+    const filePath = `${userId}/${field}-${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+
+    try {
+      // 1. Upload para o Storage
+      const { error: uploadError } = await supabase.storage
+        .from('theme_images') // Usando um bucket dedicado para imagens de tema
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 2. Obter URL pública
+      const { data: urlData } = supabase.storage
+        .from('theme_images')
+        .getPublicUrl(filePath);
+        
+      if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública.");
+
+      // 3. Atualizar o tema com a nova URL
+      setTheme(prev => ({
+        ...prev,
+        [field]: urlData.publicUrl,
+        ...(field === 'headerImage' && { headerImageMode: 'background' }),
+      }));
+      
+      showSuccess("Imagem enviada com sucesso!");
+
+    } catch (error) {
+      console.error("Erro no upload da imagem de tema:", error);
+      showError("Falha ao enviar a imagem. Verifique as permissões do Storage e se o bucket 'theme_images' existe.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  const handleRemoveThemeImage = (field: 'headerImage' | 'backgroundImage') => {
+    setTheme(prev => ({
+        ...prev,
+        [field]: undefined,
+        ...(field === 'headerImage' && { headerImageMode: 'none' }),
+    }));
   };
 
   const handleThemePresetChange = (presetTheme: Partial<PosterTheme>) => {
@@ -347,15 +408,42 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     setIsGenerating(true);
     const loadingToast = showSuccess('Criando imagem de fundo com IA...');
     try {
-        const bgImage = await generateBackgroundImage(bgPrompt);
-        if(bgImage) {
-            setTheme(prev => ({ ...prev, backgroundImage: bgImage }));
+        const bgImageBase64 = await generateBackgroundImage(bgPrompt);
+        if(bgImageBase64) {
+            // 1. Converter Base64 para Blob
+            const blob = dataURLtoBlob(bgImageBase64);
+            const user = await supabase.auth.getUser();
+            const userId = user.data.user?.id;
+            
+            if (!userId) throw new Error("Usuário não autenticado.");
+
+            // 2. Upload para o Storage
+            const filePath = `${userId}/ai-bg-${crypto.randomUUID()}.png`;
+            const { error: uploadError } = await supabase.storage
+                .from('theme_images')
+                .upload(filePath, blob, {
+                    cacheControl: '3600',
+                    upsert: true,
+                });
+
+            if (uploadError) throw uploadError;
+
+            // 3. Obter URL pública
+            const { data: urlData } = supabase.storage
+                .from('theme_images')
+                .getPublicUrl(filePath);
+            
+            if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública.");
+
+            // 4. Atualizar o tema com o URL
+            setTheme(prev => ({ ...prev, backgroundImage: urlData.publicUrl }));
             showSuccess('Fundo gerado e aplicado!');
         } else {
             showError('A IA não conseguiu gerar a imagem. Tente um prompt diferente.');
         }
     } catch (error) {
-        showError('Erro ao gerar imagem. Verifique sua chave API.');
+        console.error("Erro ao gerar e salvar imagem de fundo:", error);
+        showError('Erro ao gerar imagem. Verifique sua chave API e permissões do Storage.');
     } finally {
         setIsGenerating(false);
     }
@@ -547,11 +635,11 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-gray-600">Imagem de Cabeçalho</label>
                     <div className="flex items-center gap-2">
-                        <input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={handleHeaderImageUpload} disabled={isFreePlan} />
-                        <label htmlFor="header-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
-                            {theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}
+                        <input type="file" id="header-img-upload" accept="image/*" className="hidden" onChange={(e) => handleThemeImageUpload(e, 'headerImage')} disabled={isFreePlan || isGenerating} />
+                        <label htmlFor="header-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan || isGenerating ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                            {isGenerating ? 'Enviando...' : theme.headerImage ? 'Trocar Imagem' : 'Enviar Imagem'}
                         </label>
-                        {theme.headerImage && <button onClick={() => setTheme({ ...theme, headerImage: undefined, headerImageMode: 'none' })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}
+                        {theme.headerImage && <button onClick={() => handleRemoveThemeImage('headerImage')} className="p-2 text-red-500" disabled={isFreePlan || isGenerating}><Trash2 size={16} /></button>}
                     </div>
                   {theme.headerImage && (
                     <div className="space-y-2">
@@ -580,11 +668,11 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                       {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
                     </label>
                     <div className="flex items-center gap-2">
-                        <input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => {const file = e.target.files?.[0]; if (file) {const reader = new FileReader(); reader.onloadend = () => setTheme({ ...theme, backgroundImage: reader.result as string }); reader.readAsDataURL(file);}}} disabled={isFreePlan} />
-                        <label htmlFor="bg-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
-                            {theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}
+                        <input type="file" id="bg-img-upload" accept="image/*" className="hidden" onChange={(e) => handleThemeImageUpload(e, 'backgroundImage')} disabled={isFreePlan || isGenerating} />
+                        <label htmlFor="bg-img-upload" className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isFreePlan || isGenerating ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                            {isGenerating ? 'Enviando...' : theme.backgroundImage ? 'Trocar Fundo' : 'Enviar Fundo'}
                         </label>
-                        {theme.backgroundImage && <button onClick={() => setTheme({ ...theme, backgroundImage: undefined })} className="p-2 text-red-500" disabled={isFreePlan}><Trash2 size={16} /></button>}
+                        {theme.backgroundImage && <button onClick={() => handleRemoveThemeImage('backgroundImage')} className="p-2 text-red-500" disabled={isFreePlan || isGenerating}><Trash2 size={16} /></button>}
                     </div>
                 </div>
             </div>
