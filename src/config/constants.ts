@@ -11,7 +11,8 @@ export const PERMISSIONS = [
   'access_settings',
   'view_reports',
   'manage_users',
-  'access_admin_panel', // Nova permissão
+  'access_admin_panel',
+  'manage_orders', // NOVA PERMISSÃO
 ] as const;
 
 export type Permission = typeof PERMISSIONS[number];
@@ -29,8 +30,9 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
     'access_social_media',
     'access_ads',
     'access_settings',
-    'view_reports', // Mantido no Pro
+    'view_reports',
     'manage_users',
+    'manage_orders', // Adicionado ao Pro
   ],
   premium: [ // Plano Premium (Removendo 'view_reports')
     'access_builder',
@@ -39,7 +41,7 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
     'access_signage',
     'access_social_media',
     'access_ads',
-    // 'view_reports' removido daqui
+    'manage_orders', // Adicionado ao Premium
   ],
   free: [ // Plano Grátis (Acesso Básico)
     'access_builder',

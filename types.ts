@@ -176,3 +176,22 @@ export interface AdminProfileView extends Profile {
   email: string | null;
   created_at: string;
 }
+
+// NOVO: Interface para Pedidos (Orders)
+export interface Order {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  status: 'Pendente' | 'Em Progresso' | 'Concluído' | 'Cancelado';
+  priority: 'Baixa' | 'Média' | 'Alta';
+  assigned_to: string | null; // UUID do usuário atribuído
+  order_number: string | null;
+  entry_date: string | null;
+  estimated_delivery_date: string | null;
+  created_at: string;
+  updated_at: string;
+  // Propriedades de junção (não do DB, mas úteis no front)
+  creator_username?: string;
+  assigned_username?: string;
+}

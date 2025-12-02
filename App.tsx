@@ -12,6 +12,7 @@ import ProfilePage from './src/pages/ProfilePage';
 import LoginPage from './src/pages/LoginPage';
 import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
+import OrderManagerPage from './src/pages/OrderManagerPage'; // NOVO IMPORT
 import UpgradeOverlay from './src/components/UpgradeOverlay';
 import ReturnToAdminBanner from './src/components/ReturnToAdminBanner'; // Importando o novo componente
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -54,6 +55,7 @@ const MODULE_PERMISSIONS: Record<string, Permission> = {
   'signage': 'access_signage',
   'social': 'access_social_media',
   'ads': 'access_ads',
+  'orders': 'manage_orders', // NOVO MÓDULO
   'reports': 'view_reports',
   'users': 'manage_users',
   'settings': 'access_settings',
@@ -118,7 +120,7 @@ const AppContent: React.FC = () => {
         if (firstAllowedModule) {
             setActiveModule(firstAllowedModule[0]);
         } else {
-            setActiveModule('poster'); 
+            setActiveModule('profile'); 
         }
       }
       
@@ -172,6 +174,8 @@ const AppContent: React.FC = () => {
         />;
       case 'ads':
         return <AudioVideoAdPage theme={theme} products={products} />;
+      case 'orders':
+        return <OrderManagerPage />; // NOVO MÓDULO
       case 'reports':
         return <ReportsPage />;
       case 'users':
