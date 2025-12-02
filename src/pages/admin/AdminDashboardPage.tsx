@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, DollarSign, Clock, Loader2, UserPlus, Image, Zap, BarChart3 } from 'lucide-react';
+import { Home, Users, DollarSign, Clock, Loader2, UserPlus, Image, Zap, BarChart3, TrendingUp } from 'lucide-react';
 import { useAdminStats } from '../../hooks/useAdminStats';
 import { useRecentActivities, Activity } from '../../hooks/useRecentActivities';
 
@@ -60,6 +60,13 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
 const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ setActiveAdminModule }) => {
   const { stats, loading: loadingStats } = useAdminStats();
   const { activities, loading: loadingActivities } = useRecentActivities();
+  
+  // Pega os 3 formatos mais usados
+  const topFormats = stats.format_usage
+    .sort((a, b) => b.total_count - a.total_count)
+    .slice(0, 3);
+    
+  const totalArtsSaved = stats.format_usage.reduce((sum, item) => sum + item.total_count, 0);
 
   if (loadingStats) {
     return (
@@ -126,17 +133,38 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ setActiveAdminM
           )}
         </div>
         
-        {/* Link para Relatórios */}
+        {/* Uso de Formatos (Novo Card) */}
         <div className="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
-            <h3 className="font-semibold text-lg mb-4">Relatórios Detalhados</h3>
-            <p className="text-sm text-gray-600 mb-4">
-                Acesse o módulo de Relatórios para visualizar métricas de engajamento, formatos mais populares e uso de produtos.
-            </p>
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <TrendingUp size={20} className="text-purple-500" /> Formatos Mais Populares
+            </h3>
+            
+            {totalArtsSaved === 0 ? (
+                <div className="text-center text-gray-400 p-4 border-2 border-dashed rounded-lg">
+                    <Image size={32} className="mx-auto mb-2" />
+                    <p className="mt-2 text-sm">Nenhuma arte salva ainda.</p>
+                </div>
+            ) : (
+                <ul className="space-y-3 flex-1">
+                    {topFormats.map((item, index) => (
+                        <li key={item.format_name} className="flex justify-between items-center text-sm pb-2 border-b last:border-b-0">
+                            <span className="text-gray-700">{index + 1}. {item.format_name}</span>
+                            <span className="font-bold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">{item.total_count}</span>
+                        </li>
+                    ))}
+                    {topFormats.length < stats.format_usage.length && (
+                        <li className="text-xs text-gray-500 text-center pt-2">
+                            ...e mais {stats.format_usage.length - topFormats.length} formatos.
+                        </li>
+                    )}
+                </ul>
+            )}
+            
             <button 
-                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors mt-4"
                 onClick={() => setActiveAdminModule('reports')}
             >
-                <BarChart3 size={16} /> Ver Relatórios
+                <BarChart3 size={16} /> Ver Relatórios Detalhados
             </button>
         </div>
       </div>
