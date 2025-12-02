@@ -25,7 +25,7 @@ const UserManagementPage: React.FC = () => {
 
     if (error) {
       console.error('Error fetching profiles:', error);
-      showError('Falha ao carregar a lista de usuários.');
+      showError('Falha ao carregar la lista de usuários.');
       setProfiles([]);
     } else {
       setProfiles(data as Profile[]);
