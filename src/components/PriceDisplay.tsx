@@ -92,7 +92,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
           }}
         >
           <span className="font-bold tracking-wider" style={wholesaleTextStyle}>
-            LEVE MAIS: R$ {wholesalePriceFormatted} / {wholesaleUnit}
+            ATACADO: R$ {wholesalePriceFormatted} / {wholesaleUnit}
           </span>
         </div>
       )}
