@@ -38,25 +38,30 @@ export function usePosterProducts(userId: string | undefined) {
       setProductsState(data.products);
       setDbRowId(data.id);
     } else {
-      // If no products found, save the initial state immediately
-      await saveProducts(INITIAL_PRODUCTS);
+      // If no settings found, save the initial theme immediately
+      // Passamos o estado inicial para a função de salvar
+      await saveProducts(INITIAL_PRODUCTS, null); 
     }
     setLoading(false);
   }, [userId]);
 
   // 2. Save products function (UPSERT)
-  const saveProducts = useCallback(async (newProducts: Product[]) => {
+  // Adicionamos dbRowId como parâmetro para controlar o estado de INSERT/UPDATE
+  const saveProducts = useCallback(async (newProducts: Product[], currentDbRowId: string | null = dbRowId) => {
     if (!userId) return;
 
     const productData = {
       user_id: userId,
       products: newProducts,
-      ...(dbRowId && { id: dbRowId }), // Include ID if updating existing row
     };
+    
+    // Se tivermos um ID de linha, usamos ele para o upsert.
+    // Se não tivermos, confiamos no onConflict: 'user_id' para fazer o INSERT ou UPDATE.
+    const payload = currentDbRowId ? { ...productData, id: currentDbRowId } : productData;
 
     const { data, error } = await supabase
       .from('user_products')
-      .upsert(productData, { onConflict: 'user_id' })
+      .upsert(payload, { onConflict: 'user_id' })
       .select('id')
       .single();
 
@@ -77,7 +82,8 @@ export function usePosterProducts(userId: string | undefined) {
   const setProducts = useCallback((newProducts: Product[] | ((prev: Product[]) => Product[])) => {
     setProductsState(prev => {
       const updatedProducts = typeof newProducts === 'function' ? newProducts(prev) : newProducts;
-      saveProducts(updatedProducts);
+      // Chamamos saveProducts sem passar o dbRowId, usando o estado interno
+      saveProducts(updatedProducts); 
       return updatedProducts;
     });
   }, [saveProducts]);
