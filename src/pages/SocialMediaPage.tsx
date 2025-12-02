@@ -49,7 +49,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
       try {
         const link = document.createElement('a');
         link.download = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}-${previewImage.id}.png`;
-        link.href = previewImage.dataUrl;
+        link.href = previewImage.imageUrl; // Usando imageUrl
         link.click();
         showSuccess(`Download de ${previewImage.formatName} iniciado!`);
       } catch (error) {
@@ -96,7 +96,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
             }}
           >
             <img 
-              src={previewImage.dataUrl} 
+              src={previewImage.imageUrl} // Usando imageUrl
               alt={`Preview ${previewImage.formatName}`} 
               className="w-full h-full object-contain"
             />

@@ -71,7 +71,8 @@ export interface Logo {
 
 export interface SavedImage {
   id: string;
-  dataUrl: string;
+  imageUrl: string; // Alterado de dataUrl para imageUrl
+  storagePath: string; // Novo campo para rastrear o arquivo no Storage
   formatName: string;
   timestamp: number;
   theme: PosterTheme; // Adicionando o tema completo

@@ -54,7 +54,7 @@ const SocialMediaGallery: React.FC<SocialMediaGalleryProps> = ({ savedImages, de
           return (
             <div key={image.id} className={`relative group bg-white rounded-lg shadow-md overflow-hidden border ${isSelected ? 'border-4 border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200'}`}>
               <img 
-                src={image.dataUrl} 
+                src={image.imageUrl} // Usando imageUrl
                 alt={`Arte ${image.formatName}`} 
                 className="w-full h-48 object-cover bg-gray-100"
               />

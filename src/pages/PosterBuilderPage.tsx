@@ -6,6 +6,8 @@ import { INITIAL_THEME } from '../state/initialState';
 import { Download, Save } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { showSuccess, showError } from '../utils/toast';
+import { dataURLtoBlob } from '../utils/cn'; // Importando a função auxiliar
+import { supabase } from '@/src/integrations/supabase/client';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -60,7 +62,16 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
     if (!posterElement) return;
 
     setIsSaving(true);
+    const user = await supabase.auth.getUser();
+    const userId = user.data.user?.id;
+    if (!userId) {
+        showError("Usuário não autenticado.");
+        setIsSaving(false);
+        return;
+    }
+
     try {
+      // 1. Gerar a imagem PNG em Base64
       const targetWidth = theme.format.width;
       const targetHeight = theme.format.height;
       const scale = targetWidth / posterElement.offsetWidth;
@@ -83,32 +94,54 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
            boxShadow: 'none',
         }
       });
+      
+      // 2. Converter Base64 para Blob
+      const imageBlob = dataURLtoBlob(dataUrl);
+      const fileName = `art-${theme.format.id}-${crypto.randomUUID()}.png`;
+      const filePath = `${userId}/${fileName}`;
 
-      // --- Limpeza do Tema antes de salvar ---
+      // 3. Upload para o Supabase Storage (Bucket 'saved_arts')
+      const { error: uploadError } = await supabase.storage
+        .from('saved_arts')
+        .upload(filePath, imageBlob, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 4. Obter URL pública
+      const { data: urlData } = supabase.storage
+        .from('saved_arts')
+        .getPublicUrl(filePath);
+        
+      if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública do Storage.");
+
+      // 5. Limpeza do Tema antes de salvar no DB
       const themeToSave = { ...theme };
       
-      // 1. Remover a imagem de fundo (Base64) se existir
+      // Garantir que Base64 não seja salvo no tema (embora já tenhamos feito isso no Sidebar, é uma boa prática)
       if (themeToSave.backgroundImage && themeToSave.backgroundImage.startsWith('data:')) {
         themeToSave.backgroundImage = undefined;
       }
-      
-      // 2. Remover o src do logo (Base64) se existir, mantendo o path do storage
       if (themeToSave.logo && themeToSave.logo.src.startsWith('data:')) {
-        themeToSave.logo.src = ''; // Limpa o src, mas mantém o path se for do storage
+        themeToSave.logo.src = '';
       }
       // ---------------------------------------
 
+      // 6. Salvar o registro no DB com o URL e o path
       const newImage: Omit<SavedImage, 'id' | 'timestamp'> = {
-        dataUrl: dataUrl,
+        imageUrl: urlData.publicUrl,
+        storagePath: filePath,
         formatName: theme.format.name,
-        theme: themeToSave, // SALVANDO O TEMA LIMPO
+        theme: themeToSave, 
       };
       
       await addSavedImage(newImage);
 
     } catch (err) {
       console.error("Failed to save poster to gallery", err);
-      showError("Erro ao salvar a arte na galeria. (Tente remover imagens de fundo ou logo grandes)");
+      showError("Erro ao salvar a arte na galeria. (Verifique as permissões do Storage 'saved_arts')");
     } finally {
       setIsSaving(false);
     }

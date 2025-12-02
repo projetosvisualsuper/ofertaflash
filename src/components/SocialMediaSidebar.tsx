@@ -34,11 +34,11 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
   };
   
   const handleShare = async () => {
-    let dataUrlToShare: string | undefined;
+    let imageUrlToShare: string | undefined;
     let fileName: string;
     
     if (previewImage) {
-      dataUrlToShare = previewImage.dataUrl;
+      imageUrlToShare = previewImage.imageUrl; // Usando imageUrl
       fileName = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}.png`;
     } else {
       // Se não houver imagem salva selecionada, pedimos ao usuário para selecionar uma.
@@ -46,14 +46,14 @@ const SocialMediaSidebar: React.FC<SocialMediaSidebarProps> = ({ theme, setTheme
       return;
     }
 
-    if (!dataUrlToShare) {
+    if (!imageUrlToShare) {
         showError("Nenhuma imagem disponível para compartilhamento.");
         return;
     }
 
     try {
-        // Converte Data URL para Blob
-        const response = await fetch(dataUrlToShare);
+        // Fetch the image from the URL
+        const response = await fetch(imageUrlToShare);
         const blob = await response.blob();
         const file = new File([blob], fileName, { type: 'image/png' });
 
