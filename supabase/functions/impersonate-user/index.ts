@@ -12,32 +12,37 @@ serve(async (req) => {
   }
 
   try {
-    // Etapa de segurança: Verifique se o cabeçalho de autorização existe antes de usá-lo.
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Cabeçalho de autorização ausente.' }), { status: 401, headers: corsHeaders });
     }
 
-    // 1. Crie um cliente Supabase para verificar a permissão do chamador
+    // 1. Crie um cliente para validar o JWT do chamador
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // 2. Verifique se o usuário que está fazendo a chamada é um administrador
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Não autorizado' }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ error: 'Token de usuário inválido.' }), { status: 401, headers: corsHeaders });
     }
 
-    const { data: callerProfile, error: profileError } = await supabaseClient
+    // 2. Crie um cliente de serviço para verificar a role do chamador (bypass RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { data: callerProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', user.id) // Usando o ID verificado do token
       .single();
 
     if (profileError || callerProfile?.role !== 'admin') {
+      console.error('Profile error or not admin:', profileError, callerProfile);
       return new Response(JSON.stringify({ error: 'Acesso negado. Apenas administradores podem personificar usuários.' }), { status: 403, headers: corsHeaders });
     }
 
@@ -47,14 +52,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'ID ou email do usuário alvo ausente.' }), { status: 400, headers: corsHeaders });
     }
 
-    // Crie um cliente de serviço para realizar ações de administrador
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    // Gere o link mágico para o usuário alvo
-    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+    // Use o mesmo cliente de serviço para gerar o link
+    const { data, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmailToImpersonate,
       options: {
@@ -62,8 +61,8 @@ serve(async (req) => {
       },
     });
 
-    if (error) {
-      throw error;
+    if (linkError) {
+      throw linkError;
     }
 
     return new Response(JSON.stringify({ signInLink: data.properties.action_link }), {
