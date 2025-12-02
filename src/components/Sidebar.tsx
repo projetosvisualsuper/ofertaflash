@@ -6,12 +6,12 @@ import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
 import { FONT_PRESETS } from '../config/fontPresets';
 import { HEADER_ART_PRESETS } from '../config/headerArtPresets';
-import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import HeaderTemplatesTab from './HeaderTemplatesTab';
 import { INITIAL_THEME } from '../state/initialState';
 import { useProductDatabase } from '../hooks/useProductDatabase';
 import { showSuccess, showError } from '../utils/toast';
 import { useAuth } from '../context/AuthContext'; // Importando useAuth
+import { useCustomThemes } from '../hooks/useCustomThemes'; // NOVO HOOK
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -67,17 +67,18 @@ const InputWithReset: React.FC<InputWithResetProps> = React.memo(({
 
 
 const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProducts, formats, handleFormatChange }) => {
-  const { profile } = useAuth(); // Usando useAuth
+  const { profile, session } = useAuth(); // Usando useAuth
   const isFreePlan = profile?.role === 'free';
   
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
-  const [customThemes, setCustomThemes] = useLocalStorageState<ThemePreset[]>('ofertaflash_custom_themes', []);
+  
+  const { customThemes, addCustomTheme, deleteCustomTheme } = useCustomThemes(session?.user?.id); // USANDO HOOK DO SUPABASE
   const [newThemeName, setNewThemeName] = useState('');
   
-  const { registeredProducts } = useProductDatabase();
+  const { registeredProducts } = useProductDatabase(session?.user?.id);
   const [searchTerm, setSearchTerm] = useState('');
 
   const currentHeaderElements = useMemo(() => 
@@ -244,7 +245,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     });
   };
 
-  const handleSaveCustomTheme = () => {
+  const handleSaveCustomTheme = async () => {
     if (isFreePlan) {
         showError("Funcionalidade de salvar temas é exclusiva para planos Premium e Pro.");
         return;
@@ -271,25 +272,31 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       unitRightEm: theme.unitRightEm,
       headerImage: theme.headerImage,
       headerImageMode: theme.headerImageMode,
+      useLogoOnHero: theme.useLogoOnHero,
       headerImageOpacity: theme.headerImageOpacity,
       logo: theme.logo,
       backgroundImage: theme.backgroundImage,
       layoutCols: theme.layoutCols,
       headerElements: theme.headerElements,
     };
-    const newPreset: ThemePreset = {
-      id: crypto.randomUUID(),
+    const newPreset: Omit<ThemePreset, 'id'> = {
       name: newThemeName.trim(),
       theme: themeToSave,
     };
-    setCustomThemes(prev => [...prev, newPreset]);
-    setNewThemeName('');
-    showSuccess(`Tema "${newThemeName.trim()}" salvo com sucesso!`);
+    
+    const result = await addCustomTheme(newPreset);
+
+    if (result) {
+        setNewThemeName('');
+        showSuccess(`Tema "${newThemeName.trim()}" salvo com sucesso!`);
+    }
   };
 
-  const handleDeleteCustomTheme = (id: string) => {
-    setCustomThemes(prev => prev.filter(t => t.id !== id));
-    showSuccess("Tema excluído.");
+  const handleDeleteCustomTheme = async (id: string) => {
+    if (window.confirm("Tem certeza que deseja excluir este tema?")) {
+        await deleteCustomTheme(id);
+        showSuccess("Tema excluído.");
+    }
   };
 
   const handleGenerateHeadline = async () => {
@@ -319,7 +326,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     setIsGenerating(true);
     const loadingToast = showSuccess('Analisando texto e extraindo produtos...');
     try {
-        const newProducts = parseProductsFromText(bulkText);
+        const newProducts = await parseProductsFromText(bulkText);
         const productsWithLayout = newProducts.map(p => ({...p, layouts: createNewProduct(0).layouts}));
         setProducts(prev => [...prev, ...productsWithLayout]);
         setBulkText("");

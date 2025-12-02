@@ -17,10 +17,10 @@ import ReturnToAdminBanner from './src/components/ReturnToAdminBanner'; // Impor
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
-import { useLocalStorageState } from './src/hooks/useLocalStorageState';
 import { useUserSettings } from './src/hooks/useUserSettings';
 import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
+import { usePosterProducts } from './src/hooks/usePosterProducts'; // NOVO HOOK
 import { Loader2 } from 'lucide-react';
 
 const defaultLayout = {
@@ -67,13 +67,13 @@ const AppContent: React.FC = () => {
   const [activeModule, setActiveModule] = useState('profile');
   
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
-  const [products, setProducts] = useLocalStorageState<Product[]>('ofertaflash_products', INITIAL_PRODUCTS);
+  const { products, setProducts, loading: loadingProducts } = usePosterProducts(userId); // USANDO HOOK DO SUPABASE
   const { savedImages, addSavedImage, deleteImage: deleteSavedImage, loading: loadingSavedImages } = useSavedImages(userId);
   const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && profile) {
+    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && !loadingProducts && profile) {
       let themeUpdated = false;
       
       if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
@@ -124,7 +124,7 @@ const AppContent: React.FC = () => {
       
       setIsReady(true);
     }
-  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, profile, hasPermission, activeModule]);
+  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, loadingProducts, profile, hasPermission, activeModule]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
   

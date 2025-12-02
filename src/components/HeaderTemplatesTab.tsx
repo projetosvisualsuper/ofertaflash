@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { PosterTheme, HeaderTemplate } from '../../types';
 import { HEADER_TEMPLATE_PRESETS } from '../config/headerTemplatePresets';
 import { Save, Trash2, Upload, XCircle, Lock } from 'lucide-react';
-import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import { useAuth } from '../context/AuthContext';
-import { showError } from '../utils/toast';
+import { showError, showSuccess } from '../utils/toast';
+import { useCustomHeaderTemplates } from '../hooks/useCustomHeaderTemplates'; // NOVO HOOK
 
 interface HeaderTemplatesTabProps {
   theme: PosterTheme;
@@ -12,10 +12,10 @@ interface HeaderTemplatesTabProps {
 }
 
 const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme }) => {
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
   
-  const [customTemplates, setCustomTemplates] = useLocalStorageState<HeaderTemplate[]>('ofertaflash_custom_header_templates', []);
+  const { customTemplates, addCustomTemplate, deleteCustomTemplate } = useCustomHeaderTemplates(session?.user?.id); // USANDO HOOK DO SUPABASE
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
 
@@ -65,7 +65,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     }
   };
 
-  const handleSaveTemplate = () => {
+  const handleSaveTemplate = async () => {
     if (isFreePlan) {
         showError("Funcionalidade de salvar templates é exclusiva para planos Premium e Pro.");
         return;
@@ -91,25 +91,29 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
       headerElements: theme.headerElements,
     };
 
-    const newTemplate: HeaderTemplate = {
-      id: crypto.randomUUID(),
+    const newTemplate: Omit<HeaderTemplate, 'id'> = {
       name: newTemplateName.trim(),
       thumbnail: newTemplateThumb,
       theme: themeToSave,
     };
 
-    setCustomTemplates(prev => [...prev, newTemplate]);
-    setNewTemplateName('');
-    setNewTemplateThumb(null);
+    const result = await addCustomTemplate(newTemplate);
+
+    if (result) {
+        setNewTemplateName('');
+        setNewTemplateThumb(null);
+        showSuccess(`Template "${newTemplateName.trim()}" salvo com sucesso!`);
+    }
   };
 
-  const handleDeleteTemplate = (id: string) => {
+  const handleDeleteTemplate = async (id: string) => {
     if (isFreePlan) {
         showError("Funcionalidade de salvar templates é exclusiva para planos Premium e Pro.");
         return;
     }
     if (window.confirm("Tem certeza que deseja excluir este template?")) {
-      setCustomTemplates(prev => prev.filter(t => t.id !== id));
+      await deleteCustomTemplate(id);
+      showSuccess("Template excluído.");
     }
   };
 
