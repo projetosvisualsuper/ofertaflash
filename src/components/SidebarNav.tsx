@@ -41,7 +41,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     <div className="w-64 h-full bg-gray-900 text-white flex flex-col flex-shrink-0">
       <div className="p-4 border-b border-gray-700 flex items-center gap-2">
         <Zap size={24} className="text-yellow-400" />
-        <h1 className="text-xl font-bold tracking-wider">AI Marketing Hub</h1>
+        <h1 className="text-xl font-bold tracking-wider">Criar Ofertas</h1>
       </div>
       
       {profile && (
