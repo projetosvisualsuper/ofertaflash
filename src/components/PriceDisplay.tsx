@@ -32,10 +32,10 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
   const priceDecStyle = { fontSize: isHero ? (landscape ? 3 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') }; // Reduced from 4.5rem/3.5rem to 3rem/3.5rem
   const unitStyle = { fontSize: isHero ? '1.25rem' : (isCompact ? '0.65rem' : '0.75rem') };
   
-  // Estilos para Atacado
+  // Estilos para Atacado: Usando a cor primária do tema para garantir contraste em fundos claros.
   const wholesaleStyle = { 
     fontSize: isHero ? 1.5 * scale + 'rem' : (isCompact ? '0.7rem' : '0.9rem'),
-    color: theme.secondaryColor,
+    color: theme.primaryColor, // Alterado para primaryColor
     fontFamily: theme.fontFamilyDisplay,
   };
 
