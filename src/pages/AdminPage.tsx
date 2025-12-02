@@ -4,9 +4,9 @@ import AdminDashboardPage from './admin/AdminDashboardPage';
 import AdminUserManagementPage from './admin/AdminUserManagementPage';
 import AdminPlanManagementPage from './admin/AdminPlanManagementPage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
-import AdminReportsPage from './admin/AdminReportsPage'; // Importando o novo módulo
+import AdminReportsPage from './admin/AdminReportsPage';
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'settings' | 'reports'; // Adicionando 'reports'
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'settings' | 'reports';
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -19,8 +19,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
-    { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 }, // Novo módulo
-    { id: 'settings', name: 'Configurações', icon: Settings },
+    { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
+    { id: 'settings', name: 'Configurações', icon: Settings }, // Mantido aqui
   ];
 
   const renderContent = () => {
@@ -28,8 +28,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
-      case 'reports': return <AdminReportsPage />; // Renderizando o novo módulo
-      case 'settings': return <AdminSettingsPage />;
+      case 'reports': return <AdminReportsPage />;
+      case 'settings': return <AdminSettingsPage />; // Mantido aqui
       default: return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
     }
   };

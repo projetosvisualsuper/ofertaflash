@@ -21,8 +21,7 @@ const MODULES: { id: string; name: string; icon: React.ElementType; description:
   { id: 'social', name: 'Artes para Redes Sociais', icon: Image, description: 'Crie posts e stories otimizados.', permission: 'access_social_media' },
   { id: 'ads', name: 'Anúncios Áudio/Vídeo', icon: Clapperboard, description: 'Crie anúncios curtos com narração IA.', permission: 'access_ads' },
   { id: 'reports', name: 'Relatórios', icon: BarChart3, description: 'Visualize métricas de uso e desempenho.', permission: 'view_reports' },
-  { id: 'users', name: 'Gerenciamento de Usuários', icon: Users, description: 'Adicione e gerencie perfis de acesso.', permission: 'manage_users' },
-  { id: 'settings', name: 'Configurações', icon: Settings, description: 'Gerencie integrações e chaves.', permission: 'access_settings' },
+  // Os módulos 'users' e 'settings' foram removidos daqui e são acessíveis apenas via Painel Admin.
 ];
 
 const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }) => {
