@@ -11,7 +11,8 @@ interface AdScriptGeneratorProps {
 }
 
 // Hardcoded URL for the Edge Function (replace with your project ID)
-const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/elevenlabs-tts"; // APONTANDO PARA ELEVENLABS
+// MUDANDO PARA CHAMAR A FUNÇÃO DO GOOGLE TTS
+const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/google-tts"; 
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
@@ -77,10 +78,10 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com ElevenLabs TTS...");
+    const loadingToast = showLoading("Gerando áudio com Google TTS...");
 
     try {
-      // Chamada direta à Edge Function da ElevenLabs
+      // Chamada direta à Edge Function do Google TTS
       const response = await fetch(TTS_FUNCTION_URL, {
         method: 'POST',
         headers: {
@@ -94,8 +95,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        // Se houver erro, data.details deve conter a mensagem da ElevenLabs
-        // Garantimos que a mensagem de erro seja uma string, não um objeto
+        // Se houver erro, data.details deve conter a mensagem de erro
         const errorDetail = data.details 
           ? (typeof data.details === 'string' ? data.details : JSON.stringify(data.details)) 
           : data.error || "Erro desconhecido na Edge Function.";
@@ -104,7 +104,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
       const audioBase64 = data.audioContent;
       
-      // O ElevenLabs retorna Base64 puro, que precisa ser decodificado para Blob
+      // O Google TTS retorna Base64 puro, que precisa ser decodificado para Blob
       const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
@@ -113,9 +113,9 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
     } catch (error) {
       console.error("TTS Generation Error:", error);
-      // Mencionando a chave correta para o usuário
+      // Mencionando a chave correta para o usuário (Google TTS usa GOOGLE_TTS_API_KEY)
       const errorMessage = (error as Error).message;
-      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está configurado. Detalhe: ${errorMessage}`, 'error');
+      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave GOOGLE_TTS_API_KEY e se o serviço está configurado. Detalhe: ${errorMessage}`, 'error');
     } finally {
       setIsGeneratingAudio(false);
     }

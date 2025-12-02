@@ -6,26 +6,28 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-const GOOGLE_TTS_API_URL = "https://texttospeech.googleapis.com/v1/text:synthesize";
-const DEFAULT_VOICE = "pt-BR-Standard-A"; // Voz padrão em Português (Brasil)
+// Usando a voz 'Antoni' (Voice ID: ErXwCm9eNvkWKQThBnL5) que é uma voz padrão e confiável para o modelo multilingual.
+const DEFAULT_VOICE_ID = "ErXwCm9eNvkWKQThBnL5"; 
+const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
 serve(async (req) => {
+  // 1. Handle CORS OPTIONS request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // 1. Get API Key from Supabase Secrets
-  const apiKey = Deno.env.get('GOOGLE_TTS_API_KEY');
+  // 2. Get API Key from Supabase Secrets
+  const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
   if (!apiKey) {
-    console.error("TTS Error: GOOGLE_TTS_API_KEY is missing from environment.");
-    return new Response(JSON.stringify({ error: 'GOOGLE_TTS_API_KEY not configured. Please set the secret.' }), {
+    console.error("TTS Error: ELEVENLABS_API_KEY is missing from environment.");
+    return new Response(JSON.stringify({ error: 'ELEVENLABS_API_KEY not configured. Please set the secret.' }), {
       status: 500,
       headers: corsHeaders,
     });
   }
 
   try {
-    const { text, voiceStyle } = await req.json();
+    const { text, voiceId = DEFAULT_VOICE_ID } = await req.json();
 
     if (!text) {
       return new Response(JSON.stringify({ error: 'Missing text parameter' }), {
@@ -34,45 +36,58 @@ serve(async (req) => {
       });
     }
 
-    // 2. Call Google Cloud TTS API
+    // 3. Call ElevenLabs API
     const ttsPayload = {
-      input: { text: text },
-      voice: { languageCode: "pt-BR", name: DEFAULT_VOICE },
-      audioConfig: { audioEncoding: "MP3" },
+      text: text,
+      model_id: "eleven_multilingual_v2", // Modelo que suporta pt-BR
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.8,
+      },
     };
 
-    const ttsResponse = await fetch(`${GOOGLE_TTS_API_URL}?key=${apiKey}`, {
+    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${voiceId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'xi-api-key': apiKey,
       },
       body: JSON.stringify(ttsPayload),
     });
 
     if (!ttsResponse.ok) {
-      const errorJson = await ttsResponse.json();
-      console.error("Google TTS API Error:", ttsResponse.status, errorJson);
-      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with Google TTS', details: errorJson.error?.message || 'Unknown error' }), {
+      const errorText = await ttsResponse.text();
+      console.error("ElevenLabs TTS API Error:", ttsResponse.status, errorText);
+      
+      let details = errorText;
+      try {
+          const errorJson = JSON.parse(errorText);
+          details = errorJson.detail || errorText;
+      } catch (e) {
+          // Ignora erro de parse se não for JSON
+      }
+      
+      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with ElevenLabs', details: details }), {
         status: ttsResponse.status,
         headers: corsHeaders,
       });
     }
 
-    const data = await ttsResponse.json();
+    // 4. Read the audio stream as ArrayBuffer
+    const audioBuffer = await ttsResponse.arrayBuffer();
     
-    if (!data.audioContent) {
-        throw new Error("Google TTS did not return audio content.");
-    }
-
-    // 3. Return the audio content (base64 encoded MP3)
-    return new Response(JSON.stringify({ audioContent: data.audioContent }), {
+    // 5. Convert ArrayBuffer to Base64
+    const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+    
+    // 6. Return the audio content (base64 encoded MP3)
+    return new Response(JSON.stringify({ audioContent: audioBase64 }), {
       headers: corsHeaders,
       status: 200,
     });
 
   } catch (error) {
     console.error("TTS Catch Error:", error);
-    return new Response(JSON.stringify({ error: 'Internal server error during Google TTS generation' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation' }), {
       status: 500,
       headers: corsHeaders,
     });
