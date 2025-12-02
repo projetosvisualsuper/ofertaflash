@@ -13,7 +13,8 @@ import { showSuccess, showError } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
 import { useCustomThemes } from '../hooks/useCustomThemes';
 import { supabase } from '@/src/integrations/supabase/client';
-import ConfirmationModal from './ConfirmationModal'; // Importando o modal
+import ConfirmationModal from './ConfirmationModal';
+import { FRAME_STYLE_PRESETS } from '../config/frameStylePresets'; // NOVO IMPORT
 
 interface SidebarProps {
   theme: PosterTheme;
@@ -93,9 +94,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const { customThemes, addCustomTheme, deleteCustomTheme } = useCustomThemes(session?.user?.id);
   const [newThemeName, setNewThemeName] = useState('');
   
-  const { registeredProducts } = useProductDatabase(session?.user?.id);
-  const [searchTerm, setSearchTerm] = useState('');
-  
   // Estados para o modal de exclusão de tema
   const [isDeleteThemeModalOpen, setIsDeleteThemeModalOpen] = useState(false);
   const [themeToDeleteId, setThemeToDeleteId] = useState<string | null>(null);
@@ -116,6 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     image: baseProduct?.image,
     layouts: {
       'a4': JSON.parse(JSON.stringify(defaultLayout)),
+      'a3': JSON.parse(JSON.stringify(defaultLayout)), // NOVO A3
       'story': JSON.parse(JSON.stringify(defaultLayout)),
       'feed': JSON.parse(JSON.stringify(defaultLayout)),
       'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
@@ -181,6 +180,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         if (p.id === productId) {
           const baseLayouts = p.layouts || {
             'a4': JSON.parse(JSON.stringify(defaultLayout)),
+            'a3': JSON.parse(JSON.stringify(defaultLayout)), // NOVO A3
             'story': JSON.parse(JSON.stringify(defaultLayout)),
             'feed': JSON.parse(JSON.stringify(defaultLayout)),
             'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
@@ -334,6 +334,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       hasFrame: theme.hasFrame,
       frameColor: theme.frameColor,
       frameThickness: theme.frameThickness,
+      frameStyleId: theme.frameStyleId, // NOVO CAMPO
       unitBottomEm: theme.unitBottomEm,
       unitRightEm: theme.unitRightEm,
       headerImage: theme.headerImage,
@@ -723,7 +724,34 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
           </summary>
           <div className="p-2 space-y-3">
               <div className="flex items-center justify-between"><label className="text-xs font-medium text-gray-600">Adicionar Borda</label><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={theme.hasFrame} onChange={(e) => setTheme({ ...theme, hasFrame: e.target.checked })} className="sr-only peer" disabled={isFreePlan} /><div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label></div>
-              {theme.hasFrame && (<div className="space-y-2"><div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div><div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} /></div></div>)}
+              {theme.hasFrame && (
+                <div className="space-y-3">
+                    {/* NOVO: Estilo da Borda */}
+                    <div>
+                        <label className="text-xs font-medium text-gray-600">Estilo da Borda</label>
+                        <div className="grid grid-cols-3 gap-1 mt-1">
+                            {FRAME_STYLE_PRESETS.map(preset => {
+                                const Icon = preset.icon;
+                                return (
+                                    <button 
+                                        key={preset.id} 
+                                        onClick={() => setTheme({ ...theme, frameStyleId: preset.id })} 
+                                        className={`p-2 border rounded flex flex-col items-center ${theme.frameStyleId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`} 
+                                        disabled={isFreePlan}
+                                    >
+                                        <Icon size={20} />
+                                        <span className="text-[10px] mt-1">{preset.name}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <div><label className="text-xs font-medium text-gray-600">Cor da Borda</label><input type="color" value={theme.frameColor} onChange={(e) => setTheme({ ...theme, frameColor: e.target.value })} className="w-full h-8 border rounded cursor-pointer" disabled={isFreePlan} /></div>
+                        <div><label className="text-xs font-medium text-gray-600">Espessura</label><input type="range" min="0.5" max="5" step="0.1" value={theme.frameThickness} onChange={(e) => setTheme({ ...theme, frameThickness: Number(e.target.value) })} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" disabled={isFreePlan} /></div>
+                    </div>
+                </div>
+              )}
           </div>
         </details>
       </div>

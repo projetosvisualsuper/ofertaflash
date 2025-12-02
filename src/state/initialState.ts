@@ -4,6 +4,7 @@ export const POSTER_FORMATS: PosterFormat[] = [
   { id: 'story', name: 'Story / TikTok', aspectRatio: '1080 / 1920', width: 1080, height: 1920, label: '9:16', icon: '📱' },
   { id: 'feed', name: 'Instagram / Quadrado', aspectRatio: '1080 / 1080', width: 1080, height: 1080, label: '1:1', icon: '🟦' },
   { id: 'a4', name: 'Folha A4 / Cartaz', aspectRatio: '2480 / 3508', width: 2480, height: 3508, label: 'A4', icon: '📄' },
+  { id: 'a3', name: 'Cartaz A3', aspectRatio: '3508 / 4961', width: 3508, height: 4961, label: 'A3', icon: '📰' }, // NOVO FORMATO A3
   { id: 'landscape-poster', name: 'Cartaz Paisagem', aspectRatio: '1920 / 1080', width: 1920, height: 1080, label: '16:9', icon: '🖼️' },
   { id: 'tv', name: 'TV / Slides', aspectRatio: '1920 / 1080', width: 1920, height: 1080, label: '16:9', icon: '📺' },
 ];
@@ -25,6 +26,7 @@ const createInitialLayouts = () => ({
   'story': JSON.parse(JSON.stringify(defaultLayout)),
   'feed': JSON.parse(JSON.stringify(defaultLayout)),
   'a4': JSON.parse(JSON.stringify(defaultLayout)),
+  'a3': JSON.parse(JSON.stringify(defaultLayout)), // NOVO A3
   'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
   'tv': JSON.parse(JSON.stringify(defaultLayout)),
 });
@@ -33,6 +35,7 @@ const createInitialHeaderElements = (): Record<string, HeaderAndFooterElements> 
   'story': JSON.parse(JSON.stringify(defaultHeaderElements)),
   'feed': JSON.parse(JSON.stringify(defaultHeaderElements)),
   'a4': JSON.parse(JSON.stringify(defaultHeaderElements)),
+  'a3': JSON.parse(JSON.stringify(defaultHeaderElements)), // NOVO A3
   'landscape-poster': JSON.parse(JSON.stringify(defaultHeaderElements)),
   'tv': JSON.parse(JSON.stringify(defaultHeaderElements)),
 });
@@ -73,10 +76,12 @@ export const INITIAL_THEME: PosterTheme = {
     'story': 2,
     'feed': 2,
     'a4': 2,
+    'a3': 3, // Padrão A3 com 3 colunas
     'landscape-poster': 3,
     'tv': 3,
   },
   format: POSTER_FORMATS[2],
+  logo: undefined,
   priceCardStyle: 'default',
   priceCardBackgroundColor: '#ffffff',
   priceCardTextColor: '#dc2626',
@@ -84,10 +89,12 @@ export const INITIAL_THEME: PosterTheme = {
   headerArtStyleId: 'block',
   fontFamilyDisplay: 'Oswald, sans-serif',
   fontFamilyBody: 'Inter, sans-serif',
+  headerTextColor: '#ffffff',
   headerTitleCase: 'uppercase',
   hasFrame: false,
   frameColor: '#fbbf24',
   frameThickness: 1.5,
+  frameStyleId: 'solid', // NOVO VALOR PADRÃO
   unitBottomEm: -0.5, 
   unitRightEm: -1.5,
   headerImage: undefined,
@@ -95,7 +102,7 @@ export const INITIAL_THEME: PosterTheme = {
   useLogoOnHero: false,
   headerImageOpacity: 0.3,
   headerElements: createInitialHeaderElements(),
-  slideTransitionId: 'slide-in', // Novo valor padrão
+  slideTransitionId: 'slide-in',
   companyInfo: INITIAL_COMPANY_INFO,
 };
 

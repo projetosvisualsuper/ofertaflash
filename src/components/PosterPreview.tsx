@@ -7,7 +7,7 @@ import PosterHeader from './PosterHeader';
 import PriceDisplay from './PriceDisplay';
 import { INITIAL_THEME } from '../state/initialState';
 import SlideContent from './SlideContent';
-import SingleProductShowcase from './SingleProductShowcase'; // Importando o novo componente
+import SingleProductShowcase from './SingleProductShowcase';
 import PosterFooter from './PosterFooter';
 
 export interface PosterPreviewRef {
@@ -86,6 +86,51 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   useImperativeHandle(ref, () => ({
     triggerDownload: handleDownload,
   }));
+  
+  const renderFrame = () => {
+    if (!theme.hasFrame) return null;
+    
+    const baseStyle: React.CSSProperties = {
+      borderStyle: 'solid',
+      borderWidth: `${theme.frameThickness}vmin`,
+      borderColor: theme.frameColor,
+      boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)',
+      pointerEvents: 'none',
+      position: 'absolute',
+      inset: 0,
+      zIndex: 20,
+    };
+    
+    switch (theme.frameStyleId) {
+      case 'dashed':
+        return <div style={{ ...baseStyle, borderStyle: 'dashed' }} />;
+      case 'rounded':
+        return <div style={{ ...baseStyle, borderRadius: `${theme.frameThickness * 2}vmin` }} />;
+      case 'star':
+        // Implementação simples de borda decorativa (pode ser complexa com CSS puro)
+        return (
+          <div style={baseStyle}>
+            <div className="absolute inset-0" style={{ 
+              borderStyle: 'solid', 
+              borderWidth: `${theme.frameThickness}vmin`, 
+              borderColor: theme.frameColor,
+              backgroundImage: `repeating-linear-gradient(45deg, ${theme.frameColor}, ${theme.frameColor} 10px, transparent 10px, transparent 20px)`,
+              opacity: 0.5,
+            }} />
+            <div className="absolute inset-0" style={{ ...baseStyle, borderStyle: 'solid', borderWidth: `${theme.frameThickness / 4}vmin`, boxShadow: 'none' }} />
+          </div>
+        );
+      case 'heart':
+        // Usando uma borda dupla para efeito simples
+        return (
+          <div style={{ ...baseStyle, borderStyle: 'double', borderWidth: `${theme.frameThickness}vmin`, borderRadius: '1vmin' }} />
+        );
+      case 'solid':
+      case 'none':
+      default:
+        return <div style={baseStyle} />;
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full bg-gray-200 p-4 md:p-8 overflow-auto">
@@ -103,7 +148,7 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
               fontFamily: theme.fontFamilyBody,
             }}
           >
-            {theme.hasFrame && (<div className="absolute inset-0 z-20 pointer-events-none" style={{ borderStyle: 'solid', borderWidth: `${theme.frameThickness}vmin`, borderColor: theme.frameColor, boxShadow: 'inset 0 0 15px rgba(0,0,0,0.2)' }}/>)}
+            {renderFrame()} {/* Renderiza a borda com base no estilo */}
             {theme.backgroundImage && (<div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${theme.backgroundImage})` }}/>)}
             <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: (isTvFormat || isSingleProductShowcase) ? `radial-gradient(circle at center, transparent 0%, ${theme.backgroundColor} 100%)` : 'none' }}/>
             <PosterHeader 

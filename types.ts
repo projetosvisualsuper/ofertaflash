@@ -2,6 +2,7 @@ import { HeaderLayoutId } from "./src/config/headerLayoutPresets";
 import { HeaderArtStyleId } from "./src/config/headerArtPresets";
 import { SlideTransitionId } from "./src/config/slideTransitions";
 import { Permission } from "./src/config/constants"; // Novo Import
+import { FrameStyleId } from "./src/config/frameStylePresets"; // NOVO IMPORT
 
 export interface ProductLayout {
   image: { x: number; y: 0; scale: 1 };
@@ -127,6 +128,7 @@ export interface PosterTheme {
   hasFrame: boolean;
   frameColor: string;
   frameThickness: number;
+  frameStyleId: FrameStyleId; // NOVO CAMPO
   unitBottomEm: number;
   unitRightEm: number;
   headerImage?: string;
