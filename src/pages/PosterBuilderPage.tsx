@@ -84,17 +84,31 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         }
       });
 
+      // --- Limpeza do Tema antes de salvar ---
+      const themeToSave = { ...theme };
+      
+      // 1. Remover a imagem de fundo (Base64) se existir
+      if (themeToSave.backgroundImage && themeToSave.backgroundImage.startsWith('data:')) {
+        themeToSave.backgroundImage = undefined;
+      }
+      
+      // 2. Remover o src do logo (Base64) se existir, mantendo o path do storage
+      if (themeToSave.logo && themeToSave.logo.src.startsWith('data:')) {
+        themeToSave.logo.src = ''; // Limpa o src, mas mantém o path se for do storage
+      }
+      // ---------------------------------------
+
       const newImage: Omit<SavedImage, 'id' | 'timestamp'> = {
         dataUrl: dataUrl,
         formatName: theme.format.name,
-        theme: theme, // SALVANDO O TEMA COMPLETO
+        theme: themeToSave, // SALVANDO O TEMA LIMPO
       };
       
       await addSavedImage(newImage);
 
     } catch (err) {
       console.error("Failed to save poster to gallery", err);
-      showError("Erro ao salvar a arte na galeria.");
+      showError("Erro ao salvar a arte na galeria. (Tente remover imagens de fundo ou logo grandes)");
     } finally {
       setIsSaving(false);
     }
