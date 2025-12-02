@@ -157,6 +157,36 @@ serve(async (req) => {
         });
         break;
       }
+      case 'generateProductImage': { // NOVO CASE
+        const { productName } = data;
+        const prompt = `High quality, professional product photo of ${productName} on a clean white background, studio lighting, no text, photorealistic.`;
+
+        response = await ai.models.generateContent({
+          model: "gemini-2.5-flash-image",
+          contents: {
+            parts: [
+              { text: prompt },
+            ],
+          },
+          // Não aplicamos safetySettings aqui, pois o modelo de imagem pode não suportar na Edge Function.
+        });
+        
+        // Processamento da resposta de imagem
+        const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+        
+        if (!imagePart || !imagePart.inlineData) {
+            throw new Error('AI failed to generate image content.');
+        }
+        
+        // Retorna o Base64 e o MIME type diretamente
+        return new Response(JSON.stringify({ 
+            imageBase64: imagePart.inlineData.data,
+            mimeType: imagePart.inlineData.mimeType,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
       default:
         return new Response(JSON.stringify({ error: 'Invalid task' }), {
           status: 400,

@@ -14,12 +14,22 @@ async function invokeGeminiProxy(task: string, data: any) {
   }
   
   // CRITICAL CHECK: Ensure the result object and the nested response exist
-  if (!result || !result.response) {
+  if (!result) {
     console.error(`Edge function returned empty or malformed result for task "${task}":`, result);
-    throw new Error("Edge function returned an empty or malformed response (missing 'response' field).");
+    throw new Error("Edge function returned an empty or malformed response.");
   }
   
-  // The actual Gemini response is nested inside the function's response
+  // Se a Edge Function retornar um objeto com 'imageBase64' (tarefa de imagem), retorna o resultado completo.
+  if (result.imageBase64) {
+      return result;
+  }
+  
+  // Se for uma tarefa de texto, o resultado do Gemini está aninhado em 'response'.
+  if (!result.response) {
+    console.error(`Edge function returned malformed text response for task "${task}":`, result);
+    throw new Error("Edge function returned a malformed text response (missing 'response' field).");
+  }
+  
   return result.response;
 }
 
@@ -98,14 +108,8 @@ export const generateProductImageAndUpload = async (productName: string): Promis
         throw new Error("Usuário não autenticado.");
     }
     
-    // 1. Chamar a Edge Function para gerar a imagem
-    const { data: edgeData, error: edgeError } = await supabase.functions.invoke('generate-product-image', {
-        body: { productName },
-    });
-    
-    if (edgeError) {
-        throw new Error(`Falha na Edge Function: ${edgeError.message}`);
-    }
+    // 1. Chamar a Edge Function (gemini-proxy) para gerar a imagem
+    const edgeData = await invokeGeminiProxy('generateProductImage', { productName });
     
     const { imageBase64, mimeType } = edgeData;
     if (!imageBase64) {
