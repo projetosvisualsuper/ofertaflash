@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Users, DollarSign, Image, TrendingUp, Zap } from 'lucide-react';
+import { BarChart3, Users, DollarSign, Image, TrendingUp, Zap, Loader2 } from 'lucide-react';
 import { useAdminStats } from '../../hooks/useAdminStats';
 
 const AdminReportsPage: React.FC = () => {
