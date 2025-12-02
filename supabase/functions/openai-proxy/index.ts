@@ -27,7 +27,7 @@ async function callOpenAI(endpoint: string, apiKey: string, payload: any) {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
@@ -84,7 +84,11 @@ serve(async (req) => {
             const parsed = JSON.parse(jsonContent);
             // Se o GPT retornou um objeto com uma chave principal (ex: {"products": [...]}), tentamos extrair.
             // Caso contrário, assumimos que o conteúdo é o array.
-            result = { text: JSON.stringify(parsed) };
+            if (parsed.products && Array.isArray(parsed.products)) {
+                result = { text: JSON.stringify(parsed.products) };
+            } else {
+                result = { text: jsonContent };
+            }
         } catch (e) {
             // Se falhar, retornamos o texto bruto para o frontend tentar lidar.
             result = { text: jsonContent };
@@ -125,7 +129,7 @@ serve(async (req) => {
           `Nome: ${p.name}, Preço: R$ ${p.price} / ${p.unit}, De: ${p.oldPrice ? `R$ ${p.oldPrice}` : 'Não aplicável'}, Descrição: ${p.description || 'Nenhuma'}`
         ).join('\n---\n');
 
-        const prompt = `Crie um roteiro de anúncio de áudio/vídeo curto (máximo 30 segundos) para as seguintes ofertas em Português (Brasil). O roteiro deve ser dividido em 3 ou 4 cenas/partes, incluindo uma chamada para ação clara.
+        const prompt = `Crie um roteiro de locução (apenas áudio) curto e direto (máximo 30 segundos) para as seguintes ofertas em Português (Brasil). O texto deve ser contínuo, sem marcadores de cena ou formatação de vídeo, e incluir uma chamada para ação clara no final.
 
         Detalhes dos Produtos:
         ${productDetails}
@@ -135,7 +139,7 @@ serve(async (req) => {
         Schema JSON:
         {
           "headline": "Frase de impacto curta para o anúncio",
-          "script": "O roteiro completo, formatado com quebras de linha e marcadores de cena (ex: [CENA 1: Abertura])",
+          "script": "O texto completo da locução, em um único parágrafo ou com quebras de linha simples para leitura.",
           "suggestions": {
             "music": "Sugestão de estilo musical (ex: Jingle animado, Música de suspense)",
             "voice": "Sugestão de estilo de voz do locutor (ex: Entusiasmado e rápido, Calmo e persuasivo)"
