@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { RegisteredProduct } from '../../types';
-import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Wand2 } from 'lucide-react';
+import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Wand2, Database } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
 import { showSuccess, showError } from '../utils/toast';
-import { generateProductImageAndUpload } from '../../services/openAiService'; // ATUALIZADO
+import { generateProductImageAndUpload } from '../../services/openAiService';
+import ImageSelectorModal from './ImageSelectorModal'; // NOVO IMPORT
 
 interface ProductFormModalProps {
   trigger: React.ReactNode;
@@ -27,7 +28,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
   const [product, setProduct] = useState<Omit<RegisteredProduct, 'id'>>(initialProduct || defaultNewProduct);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Novo estado
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -45,6 +46,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
+        // Nota: Se o usuário fizer upload de um arquivo local, ele será salvo como Data URL.
+        // Isso é OK para o preview, mas não será salvo no Storage até que o produto seja salvo.
         setProduct(prev => ({ ...prev, image: reader.result as string }));
       };
       reader.readAsDataURL(file);
@@ -65,6 +68,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
     const loadingToast = showSuccess(`Gerando imagem para "${product.name}"...`);
     
     try {
+      // generateProductImageAndUpload já salva no Storage e retorna o URL público
       const imageUrl = await generateProductImageAndUpload(product.name);
       setProduct(prev => ({ ...prev, image: imageUrl }));
       showSuccess("Imagem gerada e salva com sucesso!");
@@ -74,6 +78,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
     } finally {
       setIsGeneratingImage(false);
     }
+  };
+  
+  const handleSelectImage = (url: string) => {
+    setProduct(prev => ({ ...prev, image: url }));
   };
 
   const handleSave = async () => {
@@ -151,6 +159,20 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
             <label htmlFor="product-image-upload" className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isGeneratingImage ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
                 <ImageIcon size={14} /> {product.image ? 'Trocar Imagem' : 'Fazer Upload'}
             </label>
+            
+            <ImageSelectorModal 
+              onSelectImage={handleSelectImage}
+              trigger={
+                <button 
+                  type="button"
+                  className="flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 rounded font-bold transition-colors disabled:opacity-50 bg-indigo-100 hover:bg-indigo-200 text-indigo-700"
+                  disabled={isGeneratingImage}
+                >
+                  <Database size={14} />
+                  Banco de Imagens
+                </button>
+              }
+            />
             
             <button 
               onClick={handleGenerateImage}
