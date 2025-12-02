@@ -11,6 +11,7 @@ export const PERMISSIONS = [
   'access_settings',
   'view_reports',
   'manage_users',
+  'manage_orders', // NOVO: Gerenciamento de Pedidos
   'access_admin_panel',
 ] as const;
 
@@ -19,10 +20,10 @@ export type Permission = typeof PERMISSIONS[number];
 // Mapeamento de permissões padrão por Role (apenas como fallback, pois agora usamos plan_configurations)
 export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
   admin: [ 
-    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users', 'access_admin_panel',
+    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users', 'manage_orders', 'access_admin_panel',
   ],
   pro: [ 
-    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users',
+    'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', 'access_ads', 'access_settings', 'view_reports', 'manage_users', 'manage_orders',
   ],
   premium: [ 
     'access_builder', 'manage_products', 'manage_company_info', 'access_signage', 'access_social_media', // Removido 'access_ads'

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Home, Users, Zap, Settings, ArrowLeft, BarChart3 } from 'lucide-react';
+import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, ListOrdered } from 'lucide-react';
 import AdminDashboardPage from './admin/AdminDashboardPage';
 import AdminUserManagementPage from './admin/AdminUserManagementPage';
 import AdminPlanManagementPage from './admin/AdminPlanManagementPage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
 import AdminReportsPage from './admin/AdminReportsPage';
+import AdminOrderManagementPage from './admin/AdminOrderManagementPage'; // NOVO IMPORT
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'settings' | 'reports';
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'orders'; // NOVO MÓDULO 'orders'
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -17,19 +18,21 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
 
   const modules = [
     { id: 'dashboard', name: 'Dashboard', icon: Home },
+    { id: 'orders', name: 'Pedidos', icon: ListOrdered }, // NOVO MÓDULO AQUI
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
-    { id: 'settings', name: 'Configurações', icon: Settings }, // Mantido aqui
+    { id: 'settings', name: 'Configurações', icon: Settings },
   ];
 
   const renderContent = () => {
     switch (activeAdminModule) {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
+      case 'orders': return <AdminOrderManagementPage />; // NOVO RENDER
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
       case 'reports': return <AdminReportsPage />;
-      case 'settings': return <AdminSettingsPage />; // Mantido aqui
+      case 'settings': return <AdminSettingsPage />;
       default: return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
     }
   };
