@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { RegisteredProduct } from '../../types';
-import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Plus, Save, Loader2, XCircle, Image as ImageIcon, Trash2, Wand2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
 import { showSuccess, showError } from '../utils/toast';
+import { generateProductImageAndUpload } from '../../services/geminiService'; // NOVO IMPORT
 
 interface ProductFormModalProps {
   trigger: React.ReactNode;
@@ -17,8 +18,8 @@ const defaultNewProduct: Omit<RegisteredProduct, 'id'> = {
   defaultUnit: 'un',
   description: '',
   image: undefined,
-  wholesalePrice: undefined, // NOVO
-  wholesaleUnit: 'un',       // NOVO
+  wholesalePrice: undefined,
+  wholesaleUnit: 'un',
 };
 
 const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialProduct, onSave, onDelete }) => {
@@ -26,6 +27,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
   const [product, setProduct] = useState<Omit<RegisteredProduct, 'id'>>(initialProduct || defaultNewProduct);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Novo estado
 
   useEffect(() => {
     if (isOpen) {
@@ -51,6 +53,27 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
   
   const handleRemoveImage = () => {
     setProduct(prev => ({ ...prev, image: undefined }));
+  };
+
+  const handleGenerateImage = async () => {
+    if (!product.name.trim()) {
+      showError("Por favor, insira o nome do produto antes de gerar a imagem.");
+      return;
+    }
+    
+    setIsGeneratingImage(true);
+    const loadingToast = showSuccess(`Gerando imagem para "${product.name}"...`);
+    
+    try {
+      const imageUrl = await generateProductImageAndUpload(product.name);
+      setProduct(prev => ({ ...prev, image: imageUrl }));
+      showSuccess("Imagem gerada e salva com sucesso!");
+    } catch (error) {
+      console.error("AI Image Generation Error:", error);
+      showError(`Falha ao gerar imagem: ${(error as Error).message}`);
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
   const handleSave = async () => {
@@ -89,10 +112,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
         
         <div className="space-y-4 py-2">
           <div className="flex gap-4 items-start">
-            {/* Image Upload */}
+            {/* Image Upload / Generation */}
             <div className="w-24 h-24 bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden relative hover:border-indigo-400 transition-colors">
-              <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={handleImageUpload}/>
-              {product.image ? (
+              {isGeneratingImage ? (
+                <Loader2 size={32} className="text-indigo-500 animate-spin" />
+              ) : product.image ? (
                 <img src={product.image} className="w-full h-full object-contain" />
               ) : (
                 <div className="text-center">
@@ -122,11 +146,27 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
             </div>
           </div>
           
-          {product.image && (
-            <button onClick={handleRemoveImage} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 mt-2">
-                <Trash2 size={12} /> Remover Imagem
+          <div className="flex gap-2">
+            <input type="file" id="product-image-upload" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isGeneratingImage} />
+            <label htmlFor="product-image-upload" className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 border rounded cursor-pointer transition-colors ${isGeneratingImage ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
+                <ImageIcon size={14} /> {product.image ? 'Trocar Imagem' : 'Fazer Upload'}
+            </label>
+            
+            <button 
+              onClick={handleGenerateImage}
+              disabled={isGeneratingImage || !product.name.trim()}
+              className="flex-1 flex items-center justify-center gap-1 text-xs py-2 px-3 rounded font-bold transition-colors disabled:opacity-50 bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {isGeneratingImage ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+              {isGeneratingImage ? 'Gerando...' : 'Gerar Imagem IA'}
             </button>
-          )}
+            
+            {product.image && (
+              <button onClick={handleRemoveImage} className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 px-2 py-1 rounded border transition-colors">
+                  <Trash2 size={12} /> Remover
+              </button>
+            )}
+          </div>
 
           {/* Seção de Preços de Varejo */}
           <div className="flex gap-2 pt-2 border-t">
@@ -202,7 +242,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
           
           <button 
             onClick={handleSave}
-            disabled={isLoading || !product.name.trim() || !product.defaultPrice.trim()}
+            disabled={isLoading || isGeneratingImage || !product.name.trim() || !product.defaultPrice.trim()}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
           >
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
