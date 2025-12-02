@@ -18,6 +18,8 @@ export interface Product {
   price: string;
   oldPrice?: string;
   unit: string;
+  wholesalePrice?: string; // NOVO: Preço de Atacado
+  wholesaleUnit?: string; // NOVO: Unidade de Atacado (ex: 3un, cx)
   image?: string;
   layouts: Record<string, ProductLayout>; 
 }
@@ -30,6 +32,8 @@ export interface RegisteredProduct {
   defaultPrice: string;
   defaultOldPrice?: string;
   defaultUnit: string;
+  wholesalePrice?: string; // NOVO
+  wholesaleUnit?: string; // NOVO
   image?: string;
 }
 
