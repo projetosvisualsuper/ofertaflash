@@ -95,7 +95,10 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
       if (!response.ok || data.error) {
         // Se houver erro, data.details deve conter a mensagem da ElevenLabs
-        const errorDetail = data.details || data.error || "Erro desconhecido na Edge Function.";
+        // Garantimos que a mensagem de erro seja uma string, não um objeto
+        const errorDetail = data.details 
+          ? (typeof data.details === 'string' ? data.details : JSON.stringify(data.details)) 
+          : data.error || "Erro desconhecido na Edge Function.";
         throw new Error(errorDetail);
       }
 
@@ -111,7 +114,8 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     } catch (error) {
       console.error("TTS Generation Error:", error);
       // Mencionando a chave correta para o usuário
-      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está configurado. Detalhe: ${(error as Error).message}`, 'error');
+      const errorMessage = (error as Error).message;
+      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está configurado. Detalhe: ${errorMessage}`, 'error');
     } finally {
       setIsGeneratingAudio(false);
     }
