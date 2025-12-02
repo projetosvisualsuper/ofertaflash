@@ -6,6 +6,7 @@ import { showSuccess, showError } from '../utils/toast';
 import { PLAN_NAMES } from '../config/constants';
 import { useAuth } from '../context/AuthContext';
 import AdminEditUserModal from '../components/admin/AdminEditUserModal';
+import ConfirmationModal from '../components/ConfirmationModal'; // NOVO IMPORT
 
 const UserManagementPage: React.FC = () => {
   const [profiles, setProfiles] = useState<AdminProfileView[]>([]);
@@ -15,6 +16,11 @@ const UserManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
   const { hasPermission } = useAuth();
+  
+  // Estado para o modal de confirmação
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [profileToDeactivate, setProfileToDeactivate] = useState<AdminProfileView | null>(null);
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
   const canManageUsers = hasPermission('manage_users');
 
@@ -52,19 +58,32 @@ const UserManagementPage: React.FC = () => {
     fetchProfiles();
   };
 
-  const handleDeactivate = async (profile: AdminProfileView) => {
-    if (window.confirm(`Tem certeza que deseja desativar o usuário ${profile.username || profile.email}?`)) {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', profile.id);
-      
-      if (error) {
-        showError("Falha ao desativar usuário.");
-      } else {
-        showSuccess("Usuário desativado.");
-        fetchProfiles();
-      }
+  // Abre o modal de confirmação
+  const handleDeactivateClick = (profile: AdminProfileView) => {
+    setProfileToDeactivate(profile);
+    setIsConfirmModalOpen(true);
+  };
+
+  // Lógica de desativação após confirmação
+  const handleDeactivate = async () => {
+    if (!profileToDeactivate) return;
+    
+    setIsDeactivating(true);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', profileToDeactivate.id);
+    
+    setIsDeactivating(false);
+    setIsConfirmModalOpen(false);
+    setProfileToDeactivate(null);
+    
+    if (error) {
+      showError("Falha ao desativar usuário.");
+    } else {
+      showSuccess("Usuário desativado.");
+      fetchProfiles();
     }
   };
 
@@ -207,7 +226,7 @@ const UserManagementPage: React.FC = () => {
                           {profile.deleted_at ? (
                             <button onClick={() => handleActivate(profile)} className="text-green-600 hover:text-green-900" title="Ativar Usuário"><UserCheck size={18} /></button>
                           ) : (
-                            <button onClick={() => handleDeactivate(profile)} className="text-red-600 hover:text-red-900" title="Desativar Usuário"><UserX size={18} /></button>
+                            <button onClick={() => handleDeactivateClick(profile)} className="text-red-600 hover:text-red-900" title="Desativar Usuário"><UserX size={18} /></button>
                           )}
                         </>
                       )}
@@ -233,6 +252,18 @@ const UserManagementPage: React.FC = () => {
           onUserUpdated={handleUserUpdated}
         />
       )}
+      
+      {/* Modal de Confirmação de Desativação */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleDeactivate}
+        title="Confirmar Desativação"
+        description={`Tem certeza que deseja desativar o usuário ${profileToDeactivate?.username || profileToDeactivate?.email}? Ele perderá o acesso ao sistema.`}
+        confirmText="Desativar"
+        isConfirming={isDeactivating}
+        variant="danger"
+      />
     </div>
   );
 };
