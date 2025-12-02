@@ -21,6 +21,7 @@ serve(async (req) => {
   // 2. Get API Key from Supabase Secrets
   const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) {
+    console.error("TTS Error: OPENAI_API_KEY is missing from environment.");
     return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured. Please set the secret.' }), {
       status: 500,
       headers: corsHeaders,
@@ -56,7 +57,7 @@ serve(async (req) => {
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
-      console.error("OpenAI API Error:", errorText);
+      console.error("OpenAI TTS API Error:", ttsResponse.status, errorText);
       return new Response(JSON.stringify({ error: 'Failed to synthesize speech with OpenAI', details: errorText }), {
         status: ttsResponse.status,
         headers: corsHeaders,
@@ -76,7 +77,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("TTS Catch Error:", error);
     return new Response(JSON.stringify({ error: 'Internal server error during OpenAI TTS generation' }), {
       status: 500,
       headers: corsHeaders,
