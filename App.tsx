@@ -13,15 +13,16 @@ import LoginPage from './src/pages/LoginPage';
 import AdminPage from './src/pages/AdminPage';
 import ReportsPage from './src/pages/ReportsPage';
 import UpgradeOverlay from './src/components/UpgradeOverlay';
-import ReturnToAdminBanner from './src/components/ReturnToAdminBanner'; // Importando o novo componente
+import ReturnToAdminBanner from './src/components/ReturnToAdminBanner';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
 import { PosterTheme, Product, PosterFormat, SavedImage, Permission } from './types';
 import { useUserSettings } from './src/hooks/useUserSettings';
 import { useProductDatabase } from './src/hooks/useProductDatabase';
 import { useSavedImages } from './src/hooks/useSavedImages';
-import { usePosterProducts } from './src/hooks/usePosterProducts'; // NOVO HOOK
-import { Loader2 } from 'lucide-react';
+import { usePosterProducts } from './src/hooks/usePosterProducts';
+import { useGlobalSettings } from './src/hooks/useGlobalSettings'; // NOVO HOOK
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 const defaultLayout = {
   image: { x: 0, y: 0, scale: 1 },
@@ -67,13 +68,14 @@ const AppContent: React.FC = () => {
   const [activeModule, setActiveModule] = useState('profile');
   
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
-  const { products, setProducts, loading: loadingProducts } = usePosterProducts(userId); // USANDO HOOK DO SUPABASE
+  const { products, setProducts, loading: loadingProducts } = usePosterProducts(userId);
   const { savedImages, addSavedImage, deleteImage: deleteSavedImage, loading: loadingSavedImages } = useSavedImages(userId);
   const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
+  const { settings: globalSettings, loading: loadingGlobalSettings } = useGlobalSettings(); // Usando o hook
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && !loadingProducts && profile) {
+    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && !loadingProducts && !loadingGlobalSettings && profile) {
       let themeUpdated = false;
       
       if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
@@ -124,7 +126,7 @@ const AppContent: React.FC = () => {
       
       setIsReady(true);
     }
-  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, loadingProducts, profile, hasPermission, activeModule]);
+  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, loadingProducts, loadingGlobalSettings, profile, hasPermission, activeModule]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
   
@@ -138,6 +140,27 @@ const AppContent: React.FC = () => {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
           <p className="text-lg text-gray-700">Carregando dados do usuário...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  const isMaintenanceMode = globalSettings.maintenance_mode.enabled;
+  const isAdmin = profile.role === 'admin';
+
+  // Bloqueio de Acesso em Modo Manutenção
+  if (isMaintenanceMode && !isAdmin) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen bg-gray-900 text-white">
+        <div className="text-center p-8 bg-gray-800 rounded-xl shadow-2xl border-4 border-yellow-500">
+          <AlertTriangle size={48} className="text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-2xl font-bold mb-2">Modo Manutenção Ativo</h3>
+          <p className="text-gray-300">
+            O sistema está temporariamente indisponível para manutenção.
+          </p>
+          <p className="text-sm text-gray-400 mt-4">
+            Por favor, tente novamente mais tarde.
+          </p>
         </div>
       </div>
     );
