@@ -209,8 +209,22 @@ serve(async (req) => {
     
     // VERIFICAÇÃO CRÍTICA: Se a resposta do Gemini não tiver texto, algo deu errado na geração.
     if (!response || !response.text || response.text.trim() === "") {
-        console.error("Gemini API returned no text response for task:", task, response);
-        return new Response(JSON.stringify({ error: 'Gemini API returned empty response. Check safety settings or prompt.' }), {
+        // Adiciona log detalhado sobre o motivo do bloqueio, se disponível
+        const blockReason = response.candidates?.[0]?.finishReason;
+        const safetyRatings = response.candidates?.[0]?.safetyRatings;
+        
+        console.error("Gemini API returned no text response for task:", task, { blockReason, safetyRatings });
+        
+        let errorMessage = 'Gemini API returned empty response.';
+        if (blockReason === 'SAFETY') {
+            errorMessage = 'A resposta foi bloqueada pelas configurações de segurança do Gemini. Tente um prompt diferente.';
+        } else if (blockReason === 'RECITATION') {
+            errorMessage = 'A resposta foi bloqueada por recitação de conteúdo protegido.';
+        } else if (blockReason) {
+            errorMessage = `A geração falhou devido a: ${blockReason}.`;
+        }
+
+        return new Response(JSON.stringify({ error: errorMessage }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

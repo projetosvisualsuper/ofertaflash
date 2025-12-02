@@ -77,7 +77,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com Google Cloud TTS...");
+    const loadingToast = showLoading("Gerando áudio com OpenAI TTS...");
 
     try {
       // Chamada direta à Edge Function (sem usar supabase.functions.invoke, pois é mais simples para Deno)
@@ -108,7 +108,8 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
     } catch (error) {
       console.error("TTS Generation Error:", error);
-      updateToast(loadingToast, "Falha ao gerar áudio. Verifique a chave GOOGLE_CLOUD_TTS_API_KEY.", 'error');
+      // CORREÇÃO AQUI: Mencionando a chave correta
+      updateToast(loadingToast, "Falha ao gerar áudio. Verifique a chave OPENAI_API_KEY.", 'error');
     } finally {
       setIsGeneratingAudio(false);
     }
