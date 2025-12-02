@@ -93,10 +93,25 @@ const UserManagementPage: React.FC = () => {
     try {
       // 1. Salvar a sessão atual do admin no localStorage
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
-      } else {
+      if (!session) {
         throw new Error("Não foi possível obter a sessão do administrador.");
+      }
+
+      try {
+        // Tenta salvar a sessão do admin.
+        localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
+      } catch (e) {
+        // Se falhar por falta de espaço (QuotaExceededError)...
+        if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)) {
+          // ...limpa a lista de produtos do cartaz, que é o maior culpado, e tenta novamente.
+          console.warn("LocalStorage quota exceeded. Clearing products to make space for admin token.");
+          showError("Armazenamento local cheio. Limpando produtos do cartaz para continuar.");
+          localStorage.removeItem('ofertaflash_products'); 
+          localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
+        } else {
+          // Se for outro erro, lança-o.
+          throw e;
+        }
       }
 
       // 2. Chamar a Edge Function para gerar o link
