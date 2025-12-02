@@ -42,18 +42,37 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
     }
   }, [theme.format.id, socialFormats, applyFormatPreset]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => { // Tornar a função assíncrona
     if (previewImage) {
-      // Caso 1: Baixar a imagem salva estática
+      // Caso 1: Baixar a imagem salva estática (Forçando download via Blob para cross-origin)
       setIsDownloading(true);
       try {
+        const fileName = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}-${previewImage.id}.png`;
+        
+        // 1. Fetch the cross-origin image as a Blob
+        const response = await fetch(previewImage.imageUrl);
+        if (!response.ok) throw new Error("Falha ao buscar a imagem para download.");
+        const blob = await response.blob();
+        
+        // 2. Create a local URL for the Blob
+        const url = URL.createObjectURL(blob);
+        
         const link = document.createElement('a');
-        link.download = `ofertaflash-${previewImage.formatName.replace(/\s+/g, '-').toLowerCase()}-${previewImage.id}.png`;
-        link.href = previewImage.imageUrl; // Usando imageUrl
+        link.download = fileName;
+        link.href = url;
+        
+        // 3. Trigger download
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        
+        // 4. Clean up
+        URL.revokeObjectURL(url);
+        
         showSuccess(`Download de ${previewImage.formatName} iniciado!`);
       } catch (error) {
-        showError("Erro ao iniciar o download da imagem salva.");
+        console.error("Download Error:", error);
+        showError("Erro ao iniciar o download da imagem salva. Tente novamente.");
       } finally {
         setIsDownloading(false);
       }
