@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Users, DollarSign, Clock, Loader2, UserPlus, Image, Zap } from 'lucide-react';
+import { Home, Users, DollarSign, Clock, Loader2, UserPlus, Image, Zap, BarChart3 } from 'lucide-react';
 import { useAdminStats } from '../../hooks/useAdminStats';
 import { useRecentActivities, Activity } from '../../hooks/useRecentActivities';
 
@@ -101,23 +101,43 @@ const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
-        <h3 className="font-semibold mb-4 border-b pb-2">Atividades Recentes</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        {/* Atividades Recentes */}
+        <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+          <h3 className="font-semibold mb-4 border-b pb-2">Atividades Recentes</h3>
+          
+          {loadingActivities ? (
+            <div className="flex justify-center items-center p-4">
+              <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+              <p className="ml-3 text-gray-600 text-sm">Buscando atividades...</p>
+            </div>
+          ) : activities.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {activities.map(activity => (
+                <ActivityItem key={activity.id} activity={activity} />
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500 text-sm p-4 text-center">Nenhuma atividade recente encontrada.</p>
+          )}
+        </div>
         
-        {loadingActivities ? (
-          <div className="flex justify-center items-center p-4">
-            <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
-            <p className="ml-3 text-gray-600 text-sm">Buscando atividades...</p>
-          </div>
-        ) : activities.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
-            {activities.map(activity => (
-              <ActivityItem key={activity.id} activity={activity} />
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500 text-sm p-4 text-center">Nenhuma atividade recente encontrada.</p>
-        )}
+        {/* Link para Relatórios */}
+        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+            <h3 className="font-semibold text-lg mb-4">Relatórios Detalhados</h3>
+            <p className="text-sm text-gray-600 mb-4">
+                Acesse o módulo de Relatórios para visualizar métricas de engajamento, formatos mais populares e uso de produtos.
+            </p>
+            <button 
+                // Nota: Não podemos mudar o estado do módulo aqui, pois estamos dentro do AdminPage.
+                // Isso seria um link de navegação dentro do AdminPage, mas como não temos o setActiveAdminModule aqui,
+                // deixamos como um botão informativo.
+                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors"
+                onClick={() => alert('Navegue para a aba Relatórios no menu lateral do Hub.')}
+            >
+                <BarChart3 size={16} /> Ver Relatórios
+            </button>
+        </div>
       </div>
     </div>
   );
