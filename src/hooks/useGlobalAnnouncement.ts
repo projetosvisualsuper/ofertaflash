@@ -28,12 +28,34 @@ export function useGlobalAnnouncement() {
       console.error('Error fetching global announcement:', error);
       setAnnouncement(null);
     } else if (data) {
-      // Garante que a mensagem seja um array de strings, dividindo por quebra de linha se for uma string única
-      const messageArray = Array.isArray(data.message) 
-        ? data.message 
-        : (data.message as string).split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      let rawMessage = data.message;
+      let messageArray: string[] = [];
+
+      if (Array.isArray(rawMessage)) {
+        // Caso ideal: já é um array
+        messageArray = rawMessage;
+      } else if (typeof rawMessage === 'string') {
+        // Tenta analisar se é uma string JSON (o que acontece se o PostgREST não analisar o JSONB)
+        try {
+          const parsed = JSON.parse(rawMessage);
+          if (Array.isArray(parsed)) {
+            messageArray = parsed;
+          } else {
+            // Se a análise falhar ou não for um array, trata como uma única linha de texto
+            messageArray = [rawMessage];
+          }
+        } catch (e) {
+          // Se a análise JSON falhar, trata como uma única linha de texto
+          messageArray = [rawMessage];
+        }
+      }
+      
+      // Filtra linhas vazias e garante que todas as mensagens sejam strings
+      const finalMessages = messageArray
+        .map(line => String(line).trim())
+        .filter(line => line.length > 0);
         
-      setAnnouncement({ ...data, message: messageArray } as GlobalAnnouncement);
+      setAnnouncement({ ...data, message: finalMessages } as GlobalAnnouncement);
     } else {
       setAnnouncement(null);
     }
