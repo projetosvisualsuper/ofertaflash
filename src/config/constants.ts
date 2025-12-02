@@ -29,17 +29,17 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<string, Permission[]> = {
     'access_social_media',
     'access_ads',
     'access_settings',
-    'view_reports',
+    'view_reports', // Mantido no Pro
     'manage_users',
   ],
-  premium: [ // Plano Premium
+  premium: [ // Plano Premium (Removendo 'view_reports')
     'access_builder',
     'manage_products',
     'manage_company_info',
     'access_signage',
     'access_social_media',
     'access_ads',
-    'view_reports',
+    // 'view_reports' removido daqui
   ],
   free: [ // Plano Grátis (Acesso Básico)
     'access_builder',

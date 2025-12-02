@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Home, Users, Zap, Settings, ArrowLeft } from 'lucide-react';
+import { Home, Users, Zap, Settings, ArrowLeft, BarChart3 } from 'lucide-react';
 import AdminDashboardPage from './admin/AdminDashboardPage';
 import AdminUserManagementPage from './admin/AdminUserManagementPage';
 import AdminPlanManagementPage from './admin/AdminPlanManagementPage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
+import AdminReportsPage from './admin/AdminReportsPage'; // Importando o novo módulo
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'settings';
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'settings' | 'reports'; // Adicionando 'reports'
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -18,6 +19,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
+    { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 }, // Novo módulo
     { id: 'settings', name: 'Configurações', icon: Settings },
   ];
 
@@ -26,6 +28,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
       case 'dashboard': return <AdminDashboardPage />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
+      case 'reports': return <AdminReportsPage />; // Renderizando o novo módulo
       case 'settings': return <AdminSettingsPage />;
       default: return <AdminDashboardPage />;
     }
