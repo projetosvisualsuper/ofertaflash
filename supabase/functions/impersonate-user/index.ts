@@ -12,11 +12,17 @@ serve(async (req) => {
   }
 
   try {
+    // Etapa de segurança: Verifique se o cabeçalho de autorização existe antes de usá-lo.
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Cabeçalho de autorização ausente.' }), { status: 401, headers: corsHeaders });
+    }
+
     // 1. Crie um cliente Supabase para verificar a permissão do chamador
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      { global: { headers: { Authorization: authHeader } } }
     );
 
     // 2. Verifique se o usuário que está fazendo a chamada é um administrador
