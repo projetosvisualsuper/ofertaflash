@@ -6,10 +6,11 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// URL da API do ElevenLabs
-const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
-// ID de uma voz em Português (ex: 'Antoni' - pode ser ajustado)
-const DEFAULT_VOICE_ID = "pNInz6obpgDQGcFJLoz2"; 
+// URL da API da OpenAI TTS
+const OPENAI_API_URL = "https://api.openai.com/v1/audio/speech";
+// Voz em Português (ex: 'onyx' ou 'nova' são boas opções)
+const DEFAULT_VOICE = "nova"; 
+const DEFAULT_MODEL = "tts-1";
 
 serve(async (req) => {
   // 1. Handle CORS OPTIONS request
@@ -18,9 +19,9 @@ serve(async (req) => {
   }
 
   // 2. Get API Key from Supabase Secrets
-  const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'ELEVENLABS_API_KEY not configured. Please set the secret.' }), {
+    return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured. Please set the secret.' }), {
       status: 500,
       headers: corsHeaders,
     });
@@ -36,30 +37,27 @@ serve(async (req) => {
       });
     }
 
-    // 3. Call ElevenLabs API
+    // 3. Call OpenAI API
     const ttsPayload = {
-      text: text,
-      model_id: "eleven_multilingual_v2", // Modelo multilíngue
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.8,
-      },
+      model: DEFAULT_MODEL,
+      input: text,
+      voice: DEFAULT_VOICE,
+      response_format: "mp3",
     };
 
-    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${DEFAULT_VOICE_ID}`, {
+    const ttsResponse = await fetch(OPENAI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
-        'Accept': 'audio/mpeg', // Esperamos um arquivo de áudio MP3
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify(ttsPayload),
     });
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
-      console.error("ElevenLabs API Error:", errorText);
-      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with ElevenLabs', details: errorText }), {
+      console.error("OpenAI API Error:", errorText);
+      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with OpenAI', details: errorText }), {
         status: ttsResponse.status,
         headers: corsHeaders,
       });
@@ -79,7 +77,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error during OpenAI TTS generation' }), {
       status: 500,
       headers: corsHeaders,
     });

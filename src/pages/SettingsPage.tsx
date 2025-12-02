@@ -37,20 +37,20 @@ const SettingsPage: React.FC = () => {
             </ol>
         </div>
 
-        {/* ElevenLabs API Key */}
+        {/* OpenAI TTS API Key */}
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
             <div className="flex items-center gap-3">
                 <Key size={24} className="text-green-600" />
                 <div>
-                    <p className="font-semibold text-green-800">Chave da API ElevenLabs (Locução)</p>
+                    <p className="font-semibold text-green-800">Chave da API OpenAI (Locução)</p>
                     <p className="text-sm text-gray-700">
                         Necessária para a funcionalidade de geração de áudio (locução) de alta qualidade.
                     </p>
                 </div>
             </div>
              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
-                <li>Crie uma conta e obtenha sua chave de API no <a href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline hover:text-green-800">ElevenLabs</a>.</li>
-                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">ELEVENLABS_API_KEY</code> e cole sua chave.</li>
+                <li>Crie uma conta e obtenha sua chave de API no <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-green-600 underline hover:text-green-800">OpenAI Platform</a>.</li>
+                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">OPENAI_API_KEY</code> e cole sua chave.</li>
             </ol>
         </div>
         
