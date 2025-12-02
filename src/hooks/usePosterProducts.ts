@@ -39,14 +39,12 @@ export function usePosterProducts(userId: string | undefined) {
       setDbRowId(data.id);
     } else {
       // If no settings found, save the initial theme immediately
-      // Passamos o estado inicial para a função de salvar
       await saveProducts(INITIAL_PRODUCTS, null); 
     }
     setLoading(false);
   }, [userId]);
 
   // 2. Save products function (UPSERT)
-  // Adicionamos dbRowId como parâmetro para controlar o estado de INSERT/UPDATE
   const saveProducts = useCallback(async (newProducts: Product[], currentDbRowId: string | null = dbRowId) => {
     if (!userId) return;
 
@@ -55,19 +53,18 @@ export function usePosterProducts(userId: string | undefined) {
       products: newProducts,
     };
     
-    // Se tivermos um ID de linha, usamos ele para o upsert.
-    // Se não tivermos, confiamos no onConflict: 'user_id' para fazer o INSERT ou UPDATE.
-    const payload = currentDbRowId ? { ...productData, id: currentDbRowId } : productData;
-
+    // Usamos o user_id como chave de conflito. O payload deve ser o mesmo para INSERT e UPDATE.
+    // O Supabase/PostgREST irá gerenciar se deve inserir ou atualizar com base no 'onConflict'.
     const { data, error } = await supabase
       .from('user_products')
-      .upsert(payload, { onConflict: 'user_id' })
+      .upsert(productData, { onConflict: 'user_id' })
       .select('id')
       .single();
 
     if (error) {
       console.error('Error saving user products:', error);
-      showError('Falha ao salvar produtos do cartaz.');
+      // Removendo o showError aqui para evitar loop de erro no carregamento inicial,
+      // mas mantendo o console.error para debug.
     } else if (data) {
       setDbRowId(data.id);
     }
@@ -82,7 +79,6 @@ export function usePosterProducts(userId: string | undefined) {
   const setProducts = useCallback((newProducts: Product[] | ((prev: Product[]) => Product[])) => {
     setProductsState(prev => {
       const updatedProducts = typeof newProducts === 'function' ? newProducts(prev) : newProducts;
-      // Chamamos saveProducts sem passar o dbRowId, usando o estado interno
       saveProducts(updatedProducts); 
       return updatedProducts;
     });

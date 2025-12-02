@@ -50,10 +50,12 @@ export function useProductDatabase(userId: string | undefined) {
     }
     
     setLoading(true);
+    
+    // Busca produtos do usuário logado OU produtos com user_id NULL (exemplos públicos)
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .eq('user_id', userId) // Filtra apenas os produtos do usuário logado
+      .or(`user_id.eq.${userId},user_id.is.null`)
       .order('created_at', { ascending: false });
 
     if (error) {
