@@ -1,10 +1,30 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { GoogleGenAI } from "https://esm.sh/@google/genai@0.14.0";
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/genai@0.14.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Configuração de segurança para desativar a filtragem de conteúdo
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -35,6 +55,9 @@ serve(async (req) => {
         parts: [
           { text: prompt },
         ],
+      },
+      config: {
+        safetySettings: safetySettings, // Aplicando safety settings
       },
     });
 
