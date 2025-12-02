@@ -1,10 +1,30 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.14.0";
+import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/genai@0.14.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Configuração de segurança para desativar a filtragem de conteúdo
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,6 +47,9 @@ serve(async (req) => {
         response = await ai.models.generateContent({
           model: "gemini-2.5-flash",
           contents: `Write a catchy, short, and exciting headline (max 8 words) for a retail sales poster about: ${topic}. Language: Portuguese (Brazil). Do not include quotes.`,
+          config: {
+            safetySettings: safetySettings,
+          },
         });
         break;
       }
@@ -63,6 +86,7 @@ serve(async (req) => {
                 required: ["name", "price", "unit"],
               },
             },
+            safetySettings: safetySettings,
           },
         });
         break;
@@ -77,6 +101,9 @@ serve(async (req) => {
                 text: `Background image for a supermarket flyer, texture, marketing background, high quality, 8k, ${prompt}`,
               },
             ],
+          },
+          config: {
+            safetySettings: safetySettings,
           },
         });
         break;
@@ -125,6 +152,7 @@ serve(async (req) => {
               },
               required: ["headline", "script", "suggestions"],
             },
+            safetySettings: safetySettings, // Aplicando safety settings
           },
         });
         break;
@@ -137,7 +165,6 @@ serve(async (req) => {
     }
     
     // VERIFICAÇÃO CRÍTICA: Se a resposta do Gemini não tiver texto, algo deu errado na geração.
-    // Adicionando .trim() para capturar respostas que são apenas espaços em branco.
     if (!response || !response.text || response.text.trim() === "") {
         console.error("Gemini API returned no text response for task:", task, response);
         return new Response(JSON.stringify({ error: 'Gemini API returned empty response. Check safety settings or prompt.' }), {
