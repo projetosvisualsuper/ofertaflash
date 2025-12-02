@@ -21,7 +21,7 @@ const SettingsPage: React.FC = () => {
             <div className="flex items-center gap-3">
                 <Key size={24} className="text-indigo-600" />
                 <div>
-                    <p className="font-semibold text-indigo-800">Chave da API Gemini</p>
+                    <p className="font-semibold text-indigo-800">Chave da API Gemini (Texto e Imagem)</p>
                     <p className="text-sm text-gray-700">
                         Sua chave é usada de forma segura no backend para todas as funcionalidades de IA (texto, roteiro, imagem).
                     </p>
@@ -37,20 +37,21 @@ const SettingsPage: React.FC = () => {
             </ol>
         </div>
 
-        {/* OpenAI TTS API Key */}
+        {/* Google Cloud TTS API Key */}
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
             <div className="flex items-center gap-3">
                 <Key size={24} className="text-green-600" />
                 <div>
-                    <p className="font-semibold text-green-800">Chave da API OpenAI (Locução)</p>
+                    <p className="font-semibold text-green-800">Chave da API Google Cloud TTS (Locução)</p>
                     <p className="text-sm text-gray-700">
-                        Necessária para a funcionalidade de geração de áudio (locução) de alta qualidade.
+                        Necessária para a funcionalidade de geração de áudio de alta qualidade. Esta chave é diferente da chave Gemini.
                     </p>
                 </div>
             </div>
              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
-                <li>Crie uma conta e obtenha sua chave de API no <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-green-600 underline hover:text-green-800">OpenAI Platform</a>.</li>
-                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">OPENAI_API_KEY</code> e cole sua chave.</li>
+                <li>Crie um projeto no <a href="https://cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-green-600 underline hover:text-green-800">Google Cloud Platform (GCP)</a> e ative a <strong>Cloud Text-to-Speech API</strong>.</li>
+                <li>Gere uma <strong>Chave de API</strong> no console do GCP.</li>
+                <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-green-100 p-0.5 rounded">GOOGLE_TTS_API_KEY</code> e cole sua chave.</li>
             </ol>
         </div>
         
