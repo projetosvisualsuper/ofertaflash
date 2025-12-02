@@ -171,7 +171,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         handleFormatChange={handleFormatChange}
       />
       
-      <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
+      <main className="flex-1 bg-gray-100 relative h-full flex items-center justify-center p-4 md:p-8 overflow-hidden">
          {(isDownloading || isSaving) && (
            <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm fixed">
              <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center animate-pulse">
@@ -180,33 +180,38 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
              </div>
            </div>
          )}
-         <div className="flex-1 relative overflow-hidden bg-gray-200/80">
-            <PosterPreview 
-              ref={posterRef}
-              theme={theme} 
-              products={products} 
-              onDownloadStart={() => setIsDownloading(true)}
-              onDownloadEnd={() => setIsDownloading(false)}
-            />
-         </div>
          
-         <div className="mt-8 flex gap-4 justify-center p-4 flex-shrink-0">
-            <button
-              onClick={handleSaveToGallery}
-              disabled={isSaving || isDownloading}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-            >
-              <Save size={20} />
-              {isSaving ? 'Salvando...' : `Salvar Arte (${theme.format.name})`}
-            </button>
-            <button
-              onClick={handleDownload}
-              disabled={isSaving || isDownloading}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-            >
-              <Download size={20} />
-              Baixar {theme.format.name}
-            </button>
+         <div className="flex h-full w-full max-w-7xl items-center justify-center gap-6">
+            {/* Área de Preview */}
+            <div className="flex-1 relative h-full flex items-center justify-center">
+                <PosterPreview 
+                  ref={posterRef}
+                  theme={theme} 
+                  products={products} 
+                  onDownloadStart={() => setIsDownloading(true)}
+                  onDownloadEnd={() => setIsDownloading(false)}
+                />
+            </div>
+            
+            {/* Botões de Ação Lateral */}
+            <div className="flex flex-col gap-4 flex-shrink-0">
+                <button
+                  onClick={handleSaveToGallery}
+                  disabled={isSaving || isDownloading}
+                  className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-48"
+                >
+                  <Save size={20} />
+                  {isSaving ? 'Salvando...' : `Salvar Arte`}
+                </button>
+                <button
+                  onClick={handleDownload}
+                  disabled={isSaving || isDownloading}
+                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-48"
+                >
+                  <Download size={20} />
+                  Baixar {theme.format.label}
+                </button>
+            </div>
          </div>
       </main>
     </div>
