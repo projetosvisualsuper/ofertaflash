@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/genai@0.14.0";
+import * as GenAI from "https://esm.sh/@google/genai@0.14.0"; // Importação completa
+import { Type, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/genai@0.14.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +14,7 @@ const safetySettings = [
     threshold: HarmBlockThreshold.BLOCK_NONE,
   },
   {
+  // ... (restante das configurações de segurança)
     category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
     threshold: HarmBlockThreshold.BLOCK_NONE,
   },
@@ -36,7 +38,7 @@ serve(async (req) => {
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is not set in Supabase secrets.");
     }
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GenAI.GoogleGenAI({ apiKey }); // Usando GenAI.GoogleGenAI
 
     const { task, data } = await req.json();
     let response;
@@ -161,21 +163,32 @@ serve(async (req) => {
         const { productName } = data;
         const prompt = `High quality, professional product photo of ${productName} on a clean white background, studio lighting, no text, photorealistic.`;
 
-        response = await ai.models.generateContent({
-          model: "gemini-2.5-flash-image",
-          contents: {
-            parts: [
-              { text: prompt },
-            ],
-          },
-          // Não aplicamos safetySettings aqui, pois o modelo de imagem pode não suportar na Edge Function.
-        });
+        try {
+            response = await ai.models.generateContent({
+              model: "gemini-2.5-flash-image",
+              contents: {
+                parts: [
+                  { text: prompt },
+                ],
+              },
+              // Não aplicamos safetySettings aqui, pois o modelo de imagem pode não suportar na Edge Function.
+            });
+        } catch (geminiError) {
+            console.error("Gemini Image Generation Error:", geminiError);
+            return new Response(JSON.stringify({ error: `Gemini API failed to generate image: ${geminiError.message}` }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
         
         // Processamento da resposta de imagem
         const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
         
         if (!imagePart || !imagePart.inlineData) {
-            throw new Error('AI failed to generate image content.');
+            return new Response(JSON.stringify({ error: 'AI failed to generate image content or response was blocked.' }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
         }
         
         // Retorna o Base64 e o MIME type diretamente
