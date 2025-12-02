@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield, BarChart3 } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +20,7 @@ const MODULES: { id: string; name: string; icon: React.ElementType; description:
   { id: 'signage', name: 'TV Digital (Slides)', icon: Monitor, description: 'Gere slides e vídeos para telas de TV.', permission: 'access_signage' },
   { id: 'social', name: 'Artes para Redes Sociais', icon: Image, description: 'Crie posts e stories otimizados.', permission: 'access_social_media' },
   { id: 'ads', name: 'Anúncios Áudio/Vídeo', icon: Clapperboard, description: 'Crie anúncios curtos com narração IA.', permission: 'access_ads' },
+  { id: 'reports', name: 'Relatórios', icon: BarChart3, description: 'Visualize métricas de uso e desempenho.', permission: 'view_reports' },
   { id: 'users', name: 'Gerenciamento de Usuários', icon: Users, description: 'Adicione e gerencie perfis de acesso.', permission: 'manage_users' },
   { id: 'settings', name: 'Configurações', icon: Settings, description: 'Gerencie integrações e chaves.', permission: 'access_settings' },
 ];
@@ -37,8 +38,6 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     }
   };
   
-  const visibleModules = MODULES.filter(module => hasPermission(module.permission) || module.id === activeModule);
-
   return (
     <div className="w-64 h-full bg-gray-900 text-white flex flex-col flex-shrink-0">
       <div className="p-4 border-b border-gray-700 flex items-center gap-2">
@@ -53,32 +52,27 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       )}
       
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {visibleModules.map((module) => {
+        {MODULES.map((module) => {
           const isAllowed = hasPermission(module.permission);
           const Icon = module.icon;
           
           const handleClick = () => {
-            if (isAllowed) {
-              setActiveModule(module.id);
-            } else {
-              showError(`Recurso bloqueado. Faça upgrade para o ${PLAN_NAMES.premium} ou ${PLAN_NAMES.pro}.`);
-            }
+            setActiveModule(module.id);
           };
 
           return (
             <button
               key={module.id}
               onClick={handleClick}
-              disabled={!isAllowed} 
               className={`w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 ${
                 activeModule === module.id
                   ? 'bg-indigo-600 text-white shadow-lg'
                   : isAllowed
                     ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    : 'text-gray-500 cursor-not-allowed opacity-70'
+                    : 'text-gray-500 hover:bg-gray-800'
               }`}
             >
-              <Icon size={20} className={isAllowed ? '' : 'text-red-500'} />
+              <Icon size={20} />
               <div className="flex-1">
                 <span className="block text-sm font-semibold leading-tight">{module.name}</span>
                 <span className="block text-xs text-gray-400 leading-tight">{module.description}</span>

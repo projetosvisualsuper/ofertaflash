@@ -10,7 +10,8 @@ import CompanyInfoPage from './src/pages/CompanyInfoPage';
 import UserManagementPage from './src/pages/UserManagementPage';
 import ProfilePage from './src/pages/ProfilePage';
 import LoginPage from './src/pages/LoginPage';
-import AdminPage from './src/pages/AdminPage'; // Importando o AdminPage
+import AdminPage from './src/pages/AdminPage';
+import ReportsPage from './src/pages/ReportsPage';
 import UpgradeOverlay from './src/components/UpgradeOverlay';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { INITIAL_THEME, INITIAL_PRODUCTS, POSTER_FORMATS } from './src/state/initialState';
@@ -52,9 +53,10 @@ const MODULE_PERMISSIONS: Record<string, Permission> = {
   'signage': 'access_signage',
   'social': 'access_social_media',
   'ads': 'access_ads',
+  'reports': 'view_reports',
   'users': 'manage_users',
   'settings': 'access_settings',
-  'admin': 'access_admin_panel', // Permissão para o painel admin
+  'admin': 'access_admin_panel',
 };
 
 const AppContent: React.FC = () => {
@@ -169,6 +171,8 @@ const AppContent: React.FC = () => {
         />;
       case 'ads':
         return <AudioVideoAdPage theme={theme} products={products} />;
+      case 'reports':
+        return <ReportsPage />;
       case 'users':
         return <UserManagementPage />;
       case 'settings':
