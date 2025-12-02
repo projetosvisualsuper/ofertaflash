@@ -25,12 +25,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
 
   const renderContent = () => {
     switch (activeAdminModule) {
-      case 'dashboard': return <AdminDashboardPage />;
+      case 'dashboard': return <AdminDashboardPage setActiveHubModule={setActiveHubModule} />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
       case 'reports': return <AdminReportsPage />; // Renderizando o novo módulo
       case 'settings': return <AdminSettingsPage />;
-      default: return <AdminDashboardPage />;
+      default: return <AdminDashboardPage setActiveHubModule={setActiveHubModule} />;
     }
   };
 

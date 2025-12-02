@@ -3,6 +3,10 @@ import { Home, Users, DollarSign, Clock, Loader2, UserPlus, Image, Zap, BarChart
 import { useAdminStats } from '../../hooks/useAdminStats';
 import { useRecentActivities, Activity } from '../../hooks/useRecentActivities';
 
+interface AdminDashboardPageProps {
+  setActiveHubModule: (module: string) => void;
+}
+
 // Componente auxiliar para formatar a data
 const formatTimeAgo = (timestamp: string) => {
   const now = new Date();
@@ -53,7 +57,7 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
   );
 };
 
-const AdminDashboardPage: React.FC = () => {
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ setActiveHubModule }) => {
   const { stats, loading: loadingStats } = useAdminStats();
   const { activities, loading: loadingActivities } = useRecentActivities();
 
@@ -129,11 +133,8 @@ const AdminDashboardPage: React.FC = () => {
                 Acesse o módulo de Relatórios para visualizar métricas de engajamento, formatos mais populares e uso de produtos.
             </p>
             <button 
-                // Nota: Não podemos mudar o estado do módulo aqui, pois estamos dentro do AdminPage.
-                // Isso seria um link de navegação dentro do AdminPage, mas como não temos o setActiveAdminModule aqui,
-                // deixamos como um botão informativo.
                 className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors"
-                onClick={() => alert('Navegue para a aba Relatórios no menu lateral do Hub.')}
+                onClick={() => setActiveHubModule('reports')}
             >
                 <BarChart3 size={16} /> Ver Relatórios
             </button>
