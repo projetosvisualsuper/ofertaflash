@@ -26,17 +26,17 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
   const landscape = isLandscape || false;
 
   // Dynamic styles based on context
-  const oldPriceStyle = { fontSize: isHero ? '1.5rem' : (isCompact ? '0.9rem' : '1.125rem') }; // Reduced from 1.875rem
-  const rsStyle = { fontSize: isHero ? (landscape ? 2 : 2) * scale + 'rem' : (isCompact ? '0.8rem' : '1rem') }; // Reduced from 2.5rem
-  const priceIntStyle = { fontSize: isHero ? (landscape ? 6 : 7) * scale + 'rem' : (isCompact ? '2rem' : '2.5rem') }; // Reduced from 9rem/7rem to 6rem/7rem
-  const priceDecStyle = { fontSize: isHero ? (landscape ? 3 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') }; // Reduced from 4.5rem/3.5rem to 3rem/3.5rem
+  const oldPriceStyle = { fontSize: isHero ? '1.5rem' : (isCompact ? '0.9rem' : '1.125rem') };
+  const rsStyle = { fontSize: isHero ? (landscape ? 2 : 2) * scale + 'rem' : (isCompact ? '0.8rem' : '1rem') };
+  const priceIntStyle = { fontSize: isHero ? (landscape ? 6 : 7) * scale + 'rem' : (isCompact ? '2rem' : '2.5rem') };
+  const priceDecStyle = { fontSize: isHero ? (landscape ? 3 : 3.5) * scale + 'rem' : (isCompact ? '1rem' : '1.25rem') };
   const unitStyle = { fontSize: isHero ? '1.25rem' : (isCompact ? '0.65rem' : '0.75rem') };
   
-  // Estilos para Atacado: Usando a cor primária do tema e peso de fonte mais leve.
-  const wholesaleStyle = { 
+  // Estilos para Atacado: Usando a cor secundária como fundo e a cor do texto principal para contraste.
+  const wholesaleTextStyle = { 
     fontSize: isHero ? 1.5 * scale + 'rem' : (isCompact ? '0.7rem' : '0.9rem'),
-    color: theme.primaryColor,
-    fontWeight: 500, // Semi-bold para melhor leitura, mas mais leve que o preço principal
+    color: theme.textColor, // Usando a cor do texto principal para garantir contraste com o fundo secundário
+    fontWeight: 500,
   };
 
   const priceContent = (
@@ -80,10 +80,18 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, oldPrice, unit, whol
         </div>
       </div>
       
-      {/* Preço de Atacado (NOVO) */}
+      {/* Preço de Atacado (NOVO) - Com Destaque */}
       {hasWholesale && wholesalePriceFormatted && (
-        <div className={`mt-1 ${isHero ? 'mt-4' : 'mt-1'}`}>
-          <span className="tracking-wider" style={wholesaleStyle}>
+        <div 
+          className={`mt-1 ${isHero ? 'mt-4' : 'mt-1'} w-full`}
+          style={{ 
+            backgroundColor: theme.secondaryColor, 
+            padding: isHero ? '0.5rem 1rem' : '0.25rem 0.5rem',
+            borderRadius: isHero ? '0.5rem' : '0.25rem',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          }}
+        >
+          <span className="font-bold tracking-wider" style={wholesaleTextStyle}>
             LEVE MAIS: R$ {wholesalePriceFormatted} / {wholesaleUnit}
           </span>
         </div>
