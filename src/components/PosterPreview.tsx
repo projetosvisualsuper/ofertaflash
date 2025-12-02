@@ -41,6 +41,11 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
   const isLandscape = theme.format.width > theme.format.height;
   const isStory = theme.format.aspectRatio === '1080 / 1920';
   const fontScale = isStory ? 1.2 : (isLandscape ? 0.9 : 1);
+  
+  // Ajuste de padding para layouts de grade densa (A4/A3 com muitas colunas)
+  const isDenseGrid = !isTvFormat && !isSingleProductShowcase && !isStory && currentLayoutCols >= 3;
+  const contentPadding = isDenseGrid ? '1rem' : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem'));
+  const gridGap = isDenseGrid ? '0.5rem' : '1rem';
 
   const handleDownload = async () => {
     if (posterRef.current) {
@@ -158,8 +163,13 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
               isLandscape={isLandscape} 
               fontScale={fontScale} 
               isStory={isStory} 
+              // Reduz a altura mínima do cabeçalho para layouts densos
+              minHeight={isDenseGrid ? '15%' : (isLandscape ? '25%' : '20%')}
             />
-            <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col" style={{ padding: (isTvFormat || isSingleProductShowcase) ? 0 : (isStory ? '1rem' : (isLandscape ? '1.5rem' : '2rem')) }}>
+            <div 
+              className="flex-1 w-full min-h-0 relative z-10 flex flex-col" 
+              style={{ padding: (isTvFormat || isSingleProductShowcase) ? 0 : contentPadding }}
+            >
               {isTvFormat && product ? (
                 <div className="w-full flex-1 relative flex p-8">
                   <SlideContent 
@@ -174,7 +184,33 @@ const PosterPreview = forwardRef<PosterPreviewRef, PosterPreviewProps>(({ theme,
                   <SingleProductShowcase product={product} theme={theme} />
                 </div>
               ) : (
-                products.length === 0 ? (<div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50"><div className="p-6"><p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p><p className="text-sm text-gray-500">Adicione produtos no menu lateral</p></div></div>) : (<div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${currentLayoutCols}, minmax(0, 1fr))`, gridAutoRows: 'minmax(0, 1fr)', gap: '1rem' }}>{products.map(p => (<ProductCard key={p.id} product={p} theme={theme} layoutCols={currentLayoutCols} isStory={isStory} />))}</div>)
+                products.length === 0 ? (
+                  <div className="flex-1 flex items-center justify-center text-center opacity-50 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
+                    <div className="p-6">
+                      <p className="text-lg font-bold mb-2 text-gray-600">Seu cartaz está vazio</p>
+                      <p className="text-sm text-gray-500">Adicione produtos no menu lateral</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    className="grid flex-1" 
+                    style={{ 
+                      gridTemplateColumns: `repeat(${currentLayoutCols}, minmax(0, 1fr))`, 
+                      gridAutoRows: 'minmax(0, 1fr)', 
+                      gap: gridGap 
+                    }}
+                  >
+                    {products.map(p => (
+                      <ProductCard 
+                        key={p.id} 
+                        product={p} 
+                        theme={theme} 
+                        layoutCols={currentLayoutCols} 
+                        isStory={isStory} 
+                      />
+                    ))}
+                  </div>
+                )
               )}
             </div>
             <PosterFooter 
