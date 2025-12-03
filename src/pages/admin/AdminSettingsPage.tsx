@@ -78,18 +78,19 @@ const AdminSettingsPage: React.FC = () => {
       }
       
       // 2. Desativar anúncios antigos (se houver)
-      // Usamos o update sem where para desativar todos os ativos, garantindo que apenas um esteja ativo.
+      // Usamos .update().select() para garantir que a operação seja concluída corretamente.
       const { error: deactivateError } = await supabase
           .from('global_announcements')
           .update({ is_active: false })
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .select(); // Adicionando select()
           
       if (deactivateError) console.warn("Warning: Failed to deactivate old announcements:", deactivateError);
       
-      // 3. Inserir o novo anúncio ativo (salvando como array de strings)
+      // 3. Inserir o novo anúncio ativo (salvando como array de strings, que é o formato JSONB esperado)
       const { error } = await supabase
         .from('global_announcements')
-        .insert({ message: lines, is_active: true });
+        .insert({ message: lines, is_active: true }); // 'lines' é um array de strings
         
       if (error) throw error;
       
@@ -113,7 +114,8 @@ const AdminSettingsPage: React.FC = () => {
       const { error } = await supabase
         .from('global_announcements')
         .update({ is_active: false })
-        .eq('id', activeAnnouncement.id);
+        .eq('id', activeAnnouncement.id)
+        .select(); // Adicionando select()
         
       if (error) throw error;
       
