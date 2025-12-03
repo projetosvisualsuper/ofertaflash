@@ -97,8 +97,13 @@ export function useProductImages(userId: string | undefined) {
         
       if (error) throw error;
       
+      // Remove do estado local para feedback imediato
       setImages(prev => prev.filter(img => img.path !== path));
       showSuccess("Imagem removida do banco de imagens.");
+      
+      // Força a recarga da lista do Storage para garantir que o cache seja ignorado
+      await fetchImages(); 
+      
     } catch (error) {
       console.error("Error deleting image:", error);
       showError("Falha ao remover a imagem.");
