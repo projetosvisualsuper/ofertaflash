@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Image, Upload, Loader2, Trash2, Search, Check } from 'lucide-react';
+import { Image, Upload, Loader2, Trash2, Search, Check, Save } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../../utils/toast';
 import { useProductImages, ProductImage } from '../../hooks/useProductImages';
