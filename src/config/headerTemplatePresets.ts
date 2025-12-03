@@ -19,7 +19,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'black-friday',
     name: 'Black Friday',
-    thumbnail: 'https://i.imgur.com/8Q0Y4gZ.png', // Imagem de exemplo
+    thumbnail: 'https://via.placeholder.com/1080x300/000000/FFFFFF?text=BLACK+FRIDAY', // Placeholder
     theme: {
       primaryColor: '#000000',
       secondaryColor: '#fcee21',
@@ -33,7 +33,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'hortifruti',
     name: 'Feira Fresca',
-    thumbnail: 'https://i.imgur.com/9X1W5hY.png', // Imagem de exemplo
+    thumbnail: 'https://via.placeholder.com/1080x300/166534/FFFFFF?text=HORTIFRUTI', // Placeholder
     theme: {
       primaryColor: '#166534',
       secondaryColor: '#f97316',
@@ -47,7 +47,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'butcher-shop',
     name: 'Açougue do Chefe',
-    thumbnail: 'https://i.imgur.com/7P2R6jX.png', // Imagem de exemplo
+    thumbnail: 'https://via.placeholder.com/1080x300/b91c1c/FFFFFF?text=AÇOUGUE', // Placeholder
     theme: {
       primaryColor: '#b91c1c',
       secondaryColor: '#f7f2e9',
@@ -64,7 +64,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'bakery',
     name: 'Padaria Delícia',
-    thumbnail: 'https://i.imgur.com/0Z3S7kL.png', // Imagem de exemplo
+    thumbnail: 'https://via.placeholder.com/1080x300/78350f/FFFFFF?text=PADARIA', // Placeholder
     theme: {
       primaryColor: '#78350f',
       secondaryColor: '#fde68a',
@@ -78,7 +78,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'pink-week',
     name: 'Pink Week',
-    thumbnail: 'https://i.imgur.com/1Y4T8mN.png', // Imagem de exemplo
+    thumbnail: 'https://via.placeholder.com/1080x300/db2777/FFFFFF?text=PINK+WEEK', // Placeholder
     theme: {
       primaryColor: '#db2777',
       secondaryColor: '#fbcfe8',
@@ -92,7 +92,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'tech-deals',
     name: 'Ofertas Tech',
-    thumbnail: 'https://i.imgur.com/2Z5U9oP.png', // Imagem de exemplo
+    thumbnail: 'https://via.placeholder.com/1080x300/1e3a8a/FFFFFF?text=OFERTAS+TECH', // Placeholder
     theme: {
       primaryColor: '#1e3a8a',
       secondaryColor: '#0ea5e9',
