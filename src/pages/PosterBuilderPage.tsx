@@ -8,7 +8,8 @@ import { toPng } from 'html-to-image';
 import { showSuccess, showError } from '../utils/toast';
 import { dataURLtoBlob } from '../utils/cn'; // Importando a função auxiliar
 import { supabase } from '@/src/integrations/supabase/client';
-import WooCommerceBanner from '../components/WooCommerceBanner'; // NOVO IMPORT
+import WooCommerceBanner from '../components/WooCommerceBanner';
+import WooCommerceCarousel from '../components/WooCommerceCarousel'; // NOVO IMPORT
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -217,9 +218,14 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
                     </button>
                 </div>
                 
-                {/* Área Amarela: Banner do WooCommerce (flex-1 para ocupar o restante) */}
-                <div className="flex-1 min-h-0 overflow-y-auto">
+                {/* Área Amarela: Banner do WooCommerce (flex-shrink-0 para não crescer) */}
+                <div className="flex-shrink-0 mb-4">
                     <WooCommerceBanner />
+                </div>
+                
+                {/* NOVO: Carrossel de Destaques (flex-1 para ocupar o restante) */}
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                    <WooCommerceCarousel />
                 </div>
             </div>
          </div>
