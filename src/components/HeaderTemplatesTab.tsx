@@ -99,13 +99,36 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
         showError("A Galeria de Templates Prontos é exclusiva para planos Premium e Pro.");
         return;
     }
-    setTheme(prevTheme => ({
-      ...prevTheme,
-      ...templateTheme,
-      // Explicitly reset header image unless the preset provides one.
-      headerImage: templateTheme.headerImage || undefined,
-      headerImageMode: templateTheme.headerImageMode || 'none',
-    }));
+    
+    // Se o template global/preset tiver uma miniatura (que agora é a imagem do cabeçalho)
+    if (templateTheme.thumbnail) {
+        setTheme(prevTheme => ({
+            ...prevTheme,
+            // Mantém as cores e textos atuais do usuário
+            ...templateTheme, // Mescla as propriedades mínimas salvas (headerImageMode, etc.)
+            
+            // Sobrescreve a imagem do cabeçalho com a miniatura salva
+            headerImage: templateTheme.thumbnail, 
+            headerImageMode: 'hero', // Força o modo hero
+            
+            // Garante que as cores e textos do usuário sejam mantidos se não estiverem no templateTheme
+            primaryColor: templateTheme.primaryColor || prevTheme.primaryColor,
+            secondaryColor: templateTheme.secondaryColor || prevTheme.secondaryColor,
+            headerTextColor: templateTheme.headerTextColor || prevTheme.headerTextColor,
+            headerElements: templateTheme.headerElements || prevTheme.headerElements,
+            
+            // Limpa o fundo geral para evitar conflito
+            backgroundImage: undefined,
+        }));
+    } else {
+        // Se for um preset hardcoded sem thumbnail (como os antigos), aplica o tema completo
+        setTheme(prevTheme => ({
+            ...prevTheme,
+            ...templateTheme,
+            headerImage: templateTheme.headerImage || undefined,
+            headerImageMode: templateTheme.headerImageMode || 'none',
+        }));
+    }
   };
 
   // For applying user-saved custom templates
@@ -117,7 +140,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     setTheme(prevTheme => ({
       ...prevTheme,
       ...template.theme,
-      headerImage: template.thumbnail, // Use the thumbnail as the hero image
+      headerImage: template.thumbnail, // Use a thumbnail como a imagem principal
       headerImageMode: 'hero',
       useLogoOnHero: false, // Default to not showing logo over image
     }));
@@ -148,19 +171,13 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
       return;
     }
 
+    // Salva o tema mínimo para forçar o comportamento de imagem de cabeçalho
     const themeToSave: Partial<PosterTheme> = {
+      headerImageMode: 'hero',
+      headerLayoutId: 'text-only',
       primaryColor: theme.primaryColor,
       secondaryColor: theme.secondaryColor,
       headerTextColor: theme.headerTextColor,
-      fontFamilyDisplay: theme.fontFamilyDisplay,
-      headerArtStyleId: theme.headerArtStyleId,
-      headerTitleCase: theme.headerTitleCase,
-      headerLayoutId: theme.headerLayoutId,
-      headerImage: theme.headerImage,
-      headerImageMode: theme.headerImageMode,
-      useLogoOnHero: theme.useLogoOnHero,
-      headerImageOpacity: theme.headerImageOpacity,
-      logo: theme.logo,
       headerElements: theme.headerElements,
     };
 

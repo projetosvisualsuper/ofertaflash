@@ -1,40 +1,32 @@
 import React, { useState, useMemo } from 'react';
-import { LayoutTemplate, Plus, Loader2, Trash2, Save, XCircle, Image as ImageIcon, Type, Brush, CaseUpper, CaseLower } from 'lucide-react';
+import { LayoutTemplate, Plus, Loader2, Trash2, Save, XCircle, Image as ImageIcon } from 'lucide-react';
 import { useGlobalHeaderTemplates } from '../../hooks/useGlobalHeaderTemplates';
 import { useAuth } from '../../context/AuthContext';
-import { PosterTheme, HeaderTemplate, HeaderAndFooterElements, HeaderElement, HeaderImageMode } from '../../../types';
+import { PosterTheme, HeaderTemplate } from '../../../types';
 import { showSuccess, showError } from '../../utils/toast';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import { HEADER_LAYOUT_PRESETS } from '../../config/headerLayoutPresets';
-import { HEADER_ART_PRESETS } from '../../config/headerArtPresets';
-import { FONT_PRESETS } from '../../config/fontPresets';
 import { INITIAL_THEME } from '../../state/initialState';
 
 // Componente auxiliar para renderizar a pré-visualização do template
 const TemplatePreview: React.FC<{ template: HeaderTemplate; onDelete: (id: string) => void; isDeleting: boolean }> = ({ template, onDelete, isDeleting }) => {
-    const { primaryColor, secondaryColor, headerTextColor } = template.theme;
+    // Usamos a miniatura como a imagem de fundo para o preview
+    const thumbnailSrc = template.thumbnail;
 
     return (
         <div className="relative group bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
             <div 
                 className="w-full h-24 flex items-center justify-center"
                 style={{ 
-                    backgroundColor: primaryColor || '#333', 
-                    backgroundImage: template.thumbnail ? `url(${template.thumbnail})` : 'none',
+                    backgroundColor: '#f3f4f6', // Cor de fundo neutra
+                    backgroundImage: thumbnailSrc ? `url(${thumbnailSrc})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     position: 'relative',
                 }}
             >
-                {/* Overlay de cor secundária para dar um toque de design */}
-                <div 
-                    className="absolute inset-0 opacity-30" 
-                    style={{ backgroundColor: secondaryColor || '#fff' }}
-                />
                 {/* Nome do Template no centro */}
                 <span 
-                    className="relative z-10 text-center text-sm font-bold p-1 rounded"
-                    style={{ color: headerTextColor || '#fff', textShadow: '0 0 5px rgba(0,0,0,0.5)' }}
+                    className="relative z-10 text-center text-sm font-bold p-1 rounded bg-black/50 text-white"
                 >
                     {template.name}
                 </span>
@@ -56,23 +48,6 @@ const TemplatePreview: React.FC<{ template: HeaderTemplate; onDelete: (id: strin
     );
 };
 
-// Estado inicial para o tema do template (focado apenas nas propriedades do cabeçalho)
-const initialTemplateTheme: Partial<PosterTheme> = {
-    primaryColor: '#4f46e5',
-    secondaryColor: '#facc15',
-    headerTextColor: '#ffffff',
-    fontFamilyDisplay: 'Oswald, sans-serif',
-    headerArtStyleId: 'block',
-    headerLayoutId: 'text-only',
-    headerTitleCase: 'uppercase',
-    headerImage: undefined,
-    headerImageMode: 'none',
-    headerImageOpacity: 0.5,
-    useLogoOnHero: false,
-    // Usamos o formato 'a4' como base para os textos padrão
-    headerElements: INITIAL_THEME.headerElements,
-};
-
 const AdminGlobalTemplatesPage: React.FC = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -83,36 +58,9 @@ const AdminGlobalTemplatesPage: React.FC = () => {
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Estado local para as configurações do template
-  const [templateTheme, setTemplateTheme] = useState<Partial<PosterTheme>>(initialTemplateTheme);
-  
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<HeaderTemplate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Usamos 'a4' como formato de referência para editar os textos
-  const currentFormatId = 'a4'; 
-  const currentHeaderElements = templateTheme.headerElements?.[currentFormatId] || INITIAL_THEME.headerElements[currentFormatId];
-
-  const handleThemeChange = (key: keyof Partial<PosterTheme>, value: any) => {
-    setTemplateTheme(prev => ({ ...prev, [key]: value }));
-  };
-  
-  const handleHeaderElementChange = (element: keyof HeaderAndFooterElements, property: keyof HeaderElement, value: string | number) => {
-    setTemplateTheme(prevTheme => {
-      const newHeaderElements = { ...prevTheme.headerElements };
-      if (!newHeaderElements) return prevTheme;
-      
-      newHeaderElements[currentFormatId] = {
-        ...newHeaderElements[currentFormatId],
-        [element]: {
-          ...newHeaderElements[currentFormatId][element],
-          [property]: value,
-        },
-      };
-      return { ...prevTheme, headerElements: newHeaderElements };
-    });
-  };
 
   const handleThumbUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -127,32 +75,30 @@ const AdminGlobalTemplatesPage: React.FC = () => {
 
   const handleSaveTemplate = async () => {
     if (!newTemplateName.trim() || !newTemplateThumb) {
-      showError("Nome e Miniatura são obrigatórios.");
+      showError("Nome e Imagem do Cabeçalho são obrigatórios.");
       return;
     }
     
     setIsSaving(true);
     
-    // 1. Criar o objeto de tema parcial para salvar
+    // O tema salvo deve ser mínimo, apenas o suficiente para forçar o comportamento desejado
     const themeToSave: Partial<PosterTheme> = {
-      primaryColor: templateTheme.primaryColor,
-      secondaryColor: templateTheme.secondaryColor,
-      headerTextColor: templateTheme.headerTextColor,
-      fontFamilyDisplay: templateTheme.fontFamilyDisplay,
-      headerArtStyleId: templateTheme.headerArtStyleId,
-      headerLayoutId: templateTheme.headerLayoutId,
-      headerTitleCase: templateTheme.headerTitleCase,
-      headerImage: templateTheme.headerImage,
-      headerImageMode: templateTheme.headerImageMode,
-      useLogoOnHero: templateTheme.useLogoOnHero,
-      headerImageOpacity: templateTheme.headerImageOpacity,
-      // Salvamos apenas os elementos de cabeçalho do formato 'a4' como referência
-      headerElements: { [currentFormatId]: currentHeaderElements },
+      // A miniatura (newTemplateThumb) será usada como headerImage no applyCustomTemplate
+      // Definimos o modo como 'hero' e o layout como 'text-only' para garantir que a imagem domine
+      headerImageMode: 'hero',
+      headerLayoutId: 'text-only',
+      // Cores neutras de fallback
+      primaryColor: INITIAL_THEME.primaryColor,
+      secondaryColor: INITIAL_THEME.secondaryColor,
+      headerTextColor: INITIAL_THEME.headerTextColor,
+      // Salvamos os textos padrão para que o template tenha um título inicial
+      headerElements: INITIAL_THEME.headerElements,
     };
 
     const newTemplate: Omit<HeaderTemplate, 'id'> = {
       name: newTemplateName.trim(),
-      thumbnail: newTemplateThumb,
+      // A miniatura é a imagem do cabeçalho
+      thumbnail: newTemplateThumb, 
       theme: themeToSave,
     };
 
@@ -161,7 +107,6 @@ const AdminGlobalTemplatesPage: React.FC = () => {
     if (result) {
         setNewTemplateName('');
         setNewTemplateThumb(null);
-        setTemplateTheme(initialTemplateTheme); // Resetar o formulário
     }
     setIsSaving(false);
   };
@@ -196,23 +141,14 @@ const AdminGlobalTemplatesPage: React.FC = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Coluna de Cadastro */}
+        {/* Coluna de Cadastro (Simplificada) */}
         <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-md h-fit space-y-4">
           <h3 className="text-xl font-semibold text-gray-800 border-b pb-2">Cadastrar Novo Template</h3>
           
-          {/* Preview do Tema Atual */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 block">Preview de Cores</label>
-            <div 
-                className="w-full h-16 flex items-center justify-center rounded-lg border"
-                style={{ 
-                    backgroundColor: templateTheme.primaryColor, 
-                    color: templateTheme.headerTextColor,
-                    boxShadow: `0 0 0 4px ${templateTheme.secondaryColor} inset`,
-                }}
-            >
-                <span className="font-bold text-sm">Preview de Cores</span>
-            </div>
+          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-sm font-medium text-yellow-800">
+                <span className="font-bold">Instrução:</span> Salve apenas a imagem do cabeçalho e o nome. Ao ser aplicado, o template usará esta imagem e manterá as cores e textos atuais do usuário.
+            </p>
           </div>
           
           <div>
@@ -228,15 +164,15 @@ const AdminGlobalTemplatesPage: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 block">Miniatura (Thumbnail)</label>
+            <label className="text-sm font-medium text-gray-700 block">Imagem do Cabeçalho (Miniatura)</label>
             <input type="file" id="admin-template-thumb-upload" accept="image/*" className="hidden" onChange={handleThumbUpload} disabled={isSaving} />
             <label htmlFor="admin-template-thumb-upload" className={`w-full flex items-center justify-center gap-2 text-sm py-2 px-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${isSaving ? 'bg-gray-200 text-gray-500' : 'hover:bg-gray-100'}`}>
               <ImageIcon size={16} />
-              {newTemplateThumb ? 'Trocar Miniatura' : 'Selecionar Miniatura (1:1)'}
+              {newTemplateThumb ? 'Trocar Imagem' : 'Selecionar Imagem (1:1 ou 16:9)'}
             </label>
             {newTemplateThumb && (
-              <div className="mt-2 relative w-24 h-24 rounded-md overflow-hidden border">
-                <img src={newTemplateThumb} alt="Preview" className="w-full h-full object-cover" />
+              <div className="mt-2 relative w-full h-32 rounded-md overflow-hidden border flex items-center justify-center bg-gray-100">
+                <img src={newTemplateThumb} alt="Preview" className="max-w-full max-h-full object-contain" />
                 <button onClick={() => setNewTemplateThumb(null)} className="absolute top-1 right-1 bg-white/70 rounded-full p-0.5 text-red-600 hover:bg-white" disabled={isSaving}>
                   <XCircle size={16} />
                 </button>
@@ -244,42 +180,6 @@ const AdminGlobalTemplatesPage: React.FC = () => {
             )}
           </div>
           
-          {/* Controles de Design */}
-          <details className="space-y-3 border-t pt-4" open>
-            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Brush size={16}/> Cores e Fontes</summary>
-            <div className="grid grid-cols-2 gap-4">
-                <div><label className="text-xs font-medium text-gray-600">Cor Primária</label><input type="color" value={templateTheme.primaryColor} onChange={(e) => handleThemeChange('primaryColor', e.target.value)} className="w-full h-8 border rounded cursor-pointer" /></div>
-                <div><label className="text-xs font-medium text-gray-600">Cor Secundária</label><input type="color" value={templateTheme.secondaryColor} onChange={(e) => handleThemeChange('secondaryColor', e.target.value)} className="w-full h-8 border rounded cursor-pointer" /></div>
-                <div><label className="text-xs font-medium text-gray-600">Texto Cabeçalho</label><input type="color" value={templateTheme.headerTextColor} onChange={(e) => handleThemeChange('headerTextColor', e.target.value)} className="w-full h-8 border rounded cursor-pointer" /></div>
-                <div><label className="text-xs font-medium text-gray-600">Fonte Título</label><select value={templateTheme.fontFamilyDisplay} onChange={(e) => handleThemeChange('fontFamilyDisplay', e.target.value)} className="w-full border rounded px-2 py-1 text-sm bg-white"><option value="" disabled>Selecione...</option>{FONT_PRESETS.map(font => <option key={font.id} value={font.fontFamily}>{font.name}</option>)}</select></div>
-            </div>
-          </details>
-          
-          {/* Controles de Layout */}
-          <details className="space-y-3 border-t pt-4" open>
-            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><LayoutTemplate size={16}/> Layout e Arte</summary>
-            <div><label className="text-xs font-medium text-gray-600">Layout do Logo</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_LAYOUT_PRESETS.map(preset => (<button key={preset.id} onClick={() => handleThemeChange('headerLayoutId', preset.id)} className={`p-2 border rounded flex flex-col items-center ${templateTheme.headerLayoutId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
-            <div><label className="text-xs font-medium text-gray-600">Estilo de Arte</label><div className="grid grid-cols-4 gap-1 mt-1">{HEADER_ART_PRESETS.map(preset => (<button key={preset.id} onClick={() => handleThemeChange('headerArtStyleId', preset.id)} className={`p-2 border rounded flex flex-col items-center ${templateTheme.headerArtStyleId === preset.id ? 'bg-indigo-100 border-indigo-500' : 'bg-white'}`}><preset.icon size={20} /><span className="text-[10px] mt-1">{preset.name}</span></button>))}</div></div>
-            <div className="flex justify-between items-center"><label className="text-xs font-medium text-gray-600">Caixa do Título</label><div className="flex border rounded-md overflow-hidden"><button onClick={() => handleThemeChange('headerTitleCase', 'uppercase')} className={`p-1 ${templateTheme.headerTitleCase === 'uppercase' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Caixa Alta"><CaseUpper size={16}/></button><button onClick={() => handleThemeChange('headerTitleCase', 'capitalize')} className={`p-1 ${templateTheme.headerTitleCase === 'capitalize' ? 'bg-indigo-600 text-white' : 'bg-white hover:bg-gray-100'}`} title="Capitalizado"><CaseLower size={16}/></button></div></div>
-          </details>
-          
-          {/* Controles de Texto (A4 como referência) */}
-          <details className="space-y-3 border-t pt-4" open>
-            <summary className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"><Type size={16}/> Textos Padrão (A4)</summary>
-            <div>
-                <label className="text-xs font-medium text-gray-600">Título Principal</label>
-                <input type="text" value={currentHeaderElements.headerTitle.text} onChange={(e) => handleHeaderElementChange('headerTitle', 'text', e.target.value)} className="w-full border rounded px-2 py-1 text-sm outline-none" placeholder="SUPER OFERTAS" />
-            </div>
-            <div>
-                <label className="text-xs font-medium text-gray-600">Subtítulo</label>
-                <input type="text" value={currentHeaderElements.headerSubtitle.text} onChange={(e) => handleHeaderElementChange('headerSubtitle', 'text', e.target.value)} className="w-full border rounded px-2 py-1 text-sm outline-none" placeholder="SÓ HOJE" />
-            </div>
-            <div>
-                <label className="text-xs font-medium text-gray-600">Texto do Rodapé</label>
-                <input type="text" value={currentHeaderElements.footerText.text} onChange={(e) => handleHeaderElementChange('footerText', 'text', e.target.value)} className="w-full border rounded px-2 py-1 text-sm outline-none" placeholder="Ofertas válidas..." />
-            </div>
-          </details>
-
           <button
             onClick={handleSaveTemplate}
             disabled={isSaving || !newTemplateName.trim() || !newTemplateThumb}
