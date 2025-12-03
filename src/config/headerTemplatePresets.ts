@@ -19,7 +19,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'black-friday',
     name: 'Black Friday',
-    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_blackfriday.png',
+    thumbnail: 'https://i.imgur.com/8Q0Y4gZ.png', // Imagem de exemplo
     theme: {
       primaryColor: '#000000',
       secondaryColor: '#fcee21',
@@ -33,7 +33,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'hortifruti',
     name: 'Feira Fresca',
-    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_feira.png',
+    thumbnail: 'https://i.imgur.com/9X1W5hY.png', // Imagem de exemplo
     theme: {
       primaryColor: '#166534',
       secondaryColor: '#f97316',
@@ -47,7 +47,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'butcher-shop',
     name: 'Açougue do Chefe',
-    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_acougue.png',
+    thumbnail: 'https://i.imgur.com/7P2R6jX.png', // Imagem de exemplo
     theme: {
       primaryColor: '#b91c1c',
       secondaryColor: '#f7f2e9',
@@ -64,7 +64,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'bakery',
     name: 'Padaria Delícia',
-    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_padaria.png',
+    thumbnail: 'https://i.imgur.com/0Z3S7kL.png', // Imagem de exemplo
     theme: {
       primaryColor: '#78350f',
       secondaryColor: '#fde68a',
@@ -78,7 +78,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'pink-week',
     name: 'Pink Week',
-    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_pink.png',
+    thumbnail: 'https://i.imgur.com/1Y4T8mN.png', // Imagem de exemplo
     theme: {
       primaryColor: '#db2777',
       secondaryColor: '#fbcfe8',
@@ -92,7 +92,7 @@ export const HEADER_TEMPLATE_PRESETS: HeaderTemplate[] = [
   {
     id: 'tech-deals',
     name: 'Ofertas Tech',
-    thumbnail: 'https://assets.aistudio.google.com/generative-ai-studio/templates/Marketing/ofertaflash_template_tech.png',
+    thumbnail: 'https://i.imgur.com/2Z5U9oP.png', // Imagem de exemplo
     theme: {
       primaryColor: '#1e3a8a',
       secondaryColor: '#0ea5e9',
