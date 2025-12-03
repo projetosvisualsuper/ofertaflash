@@ -8,6 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import AdminEditUserModal from '../components/admin/AdminEditUserModal';
 import ConfirmationModal from '../components/ConfirmationModal'; // NOVO IMPORT
 
+// Hardcoded URL for the Edge Function
+const IMPERSONATE_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/impersonate-user"; 
+
 const UserManagementPage: React.FC = () => {
   const [profiles, setProfiles] = useState<AdminProfileView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,18 +123,28 @@ const UserManagementPage: React.FC = () => {
       localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
 
       // 2. Chamar a Edge Function para gerar o link de login mágico
-      const { data: edgeData, error } = await supabase.functions.invoke('impersonate-user', {
-        body: { 
-          userEmailToImpersonate: profile.email,
-          // Envia a URL de origem atual (ex: https://ofertaflash.vercel.app/)
-          redirectTo: window.location.origin, 
+      // Usamos fetch em vez de supabase.functions.invoke para ter controle total sobre a URL e headers
+      const response = await fetch(IMPERSONATE_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`, // Envia o token do admin
         },
+        body: JSON.stringify({ 
+          userEmailToImpersonate: profile.email,
+          redirectTo: window.location.origin, 
+        }),
       });
-
-      if (error) throw error;
       
-      // A Edge Function retorna o link de login mágico em edgeData.signInLink
-      const signInLink = edgeData.signInLink;
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        const errorMessage = data.error || "Erro desconhecido na Edge Function.";
+        console.error("Impersonate Edge Function Error:", errorMessage);
+        throw new Error(errorMessage);
+      }
+      
+      const signInLink = data.signInLink;
       if (!signInLink) {
           throw new Error("A Edge Function não retornou o link de login.");
       }
@@ -141,7 +154,7 @@ const UserManagementPage: React.FC = () => {
 
     } catch (error) {
       console.error("Falha ao personificar usuário:", error);
-      showError("Erro ao tentar acessar o painel do cliente. Verifique o console.");
+      showError(`Erro ao tentar acessar o painel do cliente. Detalhe: ${(error as Error).message}`);
       localStorage.removeItem('admin_impersonation_token'); // Limpa em caso de erro
     } finally {
       setImpersonatingId(null);
