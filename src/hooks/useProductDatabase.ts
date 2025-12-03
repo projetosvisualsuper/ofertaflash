@@ -94,7 +94,8 @@ export function useProductDatabase(userId: string | undefined) {
 
     if (error) {
       console.error('Error adding product:', error);
-      showError(`Falha ao cadastrar o produto "${product.name}".`);
+      console.error('Supabase Error Details:', error); // Log detalhado
+      showError(`Falha ao cadastrar o produto "${product.name}". Detalhe: ${error.message}`);
       return null;
     }
     
