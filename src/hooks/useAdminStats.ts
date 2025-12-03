@@ -17,8 +17,8 @@ export interface AdminStats {
   active_users: number;
   paid_subscriptions: number;
   recent_signups_7d: number;
-  format_usage: FormatUsage[]; // Novo
-  plan_usage: PlanUsage[]; // Novo
+  format_usage: FormatUsage[];
+  plan_usage: PlanUsage[];
 }
 
 const initialStats: AdminStats = {
@@ -38,37 +38,23 @@ export function useAdminStats() {
     setLoading(true);
     
     try {
-      // 1. Buscar dados principais (single row view)
-      const { data: mainData, error: mainError } = await supabase
-        .from('admin_dashboard_stats')
-        .select('*')
-        .single();
+      const { data, error } = await supabase.functions.invoke('admin-reports', {
+        method: 'GET',
+      });
 
-      if (mainError && mainError.code !== 'PGRST116') throw mainError;
+      if (error) throw error;
       
-      // 2. Buscar uso de formatos
-      const { data: formatData, error: formatError } = await supabase
-        .from('admin_format_usage_view')
-        .select('*');
-        
-      if (formatError) throw formatError;
-      
-      // 3. Buscar uso por plano
-      const { data: planData, error: planError } = await supabase
-        .from('admin_plan_usage_view')
-        .select('*');
-        
-      if (planError) throw planError;
+      const { mainStats, formatUsage, planUsage } = data;
 
-      const mainStats = mainData || initialStats;
+      const mainData = mainStats || initialStats;
 
       setStats({
-        total_users: parseInt(mainStats.total_users as any, 10) || 0,
-        active_users: parseInt(mainStats.active_users as any, 10) || 0,
-        paid_subscriptions: parseInt(mainStats.paid_subscriptions as any, 10) || 0,
-        recent_signups_7d: parseInt(mainStats.recent_signups_7d as any, 10) || 0,
-        format_usage: formatData as FormatUsage[],
-        plan_usage: planData as PlanUsage[],
+        total_users: parseInt(mainData.total_users as any, 10) || 0,
+        active_users: parseInt(mainData.active_users as any, 10) || 0,
+        paid_subscriptions: parseInt(mainData.paid_subscriptions as any, 10) || 0,
+        recent_signups_7d: parseInt(mainData.recent_signups_7d as any, 10) || 0,
+        format_usage: formatUsage as FormatUsage[],
+        plan_usage: planUsage as PlanUsage[],
       });
 
     } catch (error) {
