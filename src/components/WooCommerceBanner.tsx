@@ -79,16 +79,16 @@ const WooCommerceBanner: React.FC = () => {
   return (
     <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2">
       <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
-        <ShoppingCart size={14} /> Ofertas da Sua Loja
+        <ShoppingCart size={14} /> Produtos para Comunicação
       </h3>
+      <p className="text-[10px] text-indigo-700 text-center px-2">
+        Transforme suas ofertas em vendas — veja nossos produtos para comunicação!
+      </p>
       <div className="space-y-2">
         {products.map(p => (
           <ProductCard key={p.id} product={p} />
         ))}
       </div>
-      <p className="text-[10px] text-indigo-600 text-center pt-1">
-        Anuncie seus produtos mais recentes aqui!
-      </p>
     </div>
   );
 };
