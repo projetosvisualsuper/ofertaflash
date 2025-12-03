@@ -100,15 +100,17 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
         return;
     }
     
-    // Se o template global/preset tiver uma miniatura (que agora é a imagem do cabeçalho)
-    if (templateTheme.thumbnail) {
+    // Verifica se o template tem uma imagem de cabeçalho (thumbnail ou headerImage)
+    const hasHeaderImage = templateTheme.thumbnail || templateTheme.headerImage;
+
+    if (hasHeaderImage) {
         setTheme(prevTheme => ({
             ...prevTheme,
-            // Mescla as propriedades mínimas salvas (cores, textos, etc.)
+            // Mescla as propriedades do template
             ...templateTheme, 
             
             // FORÇA O COMPORTAMENTO DE IMAGEM DE CABEÇALHO
-            headerImage: templateTheme.thumbnail, 
+            headerImage: templateTheme.thumbnail || templateTheme.headerImage, 
             headerImageMode: 'hero', // Modo Hero para garantir que a imagem seja a principal
             headerArtStyleId: 'block', // Desativa a arte geométrica
             
@@ -122,12 +124,12 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             backgroundImage: undefined,
         }));
     } else {
-        // Se for um preset hardcoded sem thumbnail (como os antigos), aplica o tema completo
+        // Se não tiver imagem, aplica o tema normalmente (pode usar arte geométrica)
         setTheme(prevTheme => ({
             ...prevTheme,
             ...templateTheme,
-            headerImage: templateTheme.headerImage || undefined,
-            headerImageMode: templateTheme.headerImageMode || 'none',
+            headerImage: undefined,
+            headerImageMode: 'none',
         }));
     }
   };
@@ -140,10 +142,15 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     }
     setTheme(prevTheme => ({
       ...prevTheme,
+      // Mescla o tema mínimo salvo (cores, textos, etc.)
       ...template.theme,
+      
+      // Sobrescreve com a imagem salva
       headerImage: template.thumbnail, // Use a thumbnail como a imagem principal
       headerImageMode: 'hero',
+      headerArtStyleId: 'block', // Garante que a arte geométrica seja desativada
       useLogoOnHero: false, // Default to not showing logo over image
+      backgroundImage: undefined, // Limpa o fundo geral
     }));
   };
 
@@ -180,6 +187,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
       secondaryColor: theme.secondaryColor,
       headerTextColor: theme.headerTextColor,
       headerElements: theme.headerElements,
+      headerArtStyleId: 'block', // Garante que o template salvo desative a arte geométrica
     };
 
     const newTemplate: Omit<HeaderTemplate, 'id'> = {
