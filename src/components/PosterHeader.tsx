@@ -99,7 +99,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   };
 
   const renderGeometricArt = () => {
-    // Se houver uma imagem de cabeçalho, NUNCA renderize a arte geométrica.
+    // Se houver uma imagem de cabeçalho definida, NUNCA renderize a arte geométrica.
     if (theme.headerImage) { 
       return null;
     }
@@ -109,7 +109,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
     switch (theme.headerArtStyleId) {
       case 'slash':
         return (
-          <div className="absolute inset-0" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 75%, 0 100%)' }}>
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor, clipPath: 'polygon(0 0, 100% 0, 100% 75%, 0 100%)' }}>
             <div className={contentWrapperClass} style={{ paddingBottom: '2rem' }}>
               <HeaderContent />
             </div>
@@ -135,7 +135,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         );
       case 'peak':
         return (
-          <div className="absolute inset-0" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)' }}>
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor, clipPath: 'polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)' }}>
             <div className="absolute inset-0 opacity-20" style={{ backgroundColor: theme.secondaryColor, clipPath: 'polygon(100% 0, 100% 75%, 50% 100%, 75% 50%)' }}></div>
             <div className={contentWrapperClass} style={{ paddingBottom: '4rem' }}>
               <HeaderContent />
@@ -157,7 +157,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         );
       case 'steps':
         return (
-          <div className="absolute inset-0" style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 65%, 75% 65%, 75% 80%, 50% 80%, 50% 95%, 25% 95%, 25% 100%, 0% 100%)' }}>
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor, clipPath: 'polygon(0% 0%, 100% 0%, 100% 65%, 75% 65%, 75% 80%, 50% 80%, 50% 95%, 25% 95%, 25% 100%, 0% 100%)' }}>
             <div className="absolute w-1/4 h-1/5 bottom-0 right-0 opacity-20" style={{ backgroundColor: theme.secondaryColor, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 100%)' }}></div>
             <div className={contentWrapperClass} style={{ paddingBottom: '4rem' }}>
               <HeaderContent />
@@ -166,7 +166,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         );
       case 'brush':
         return (
-          <div className="absolute inset-0" style={{ maskImage: `url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 500 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 H500 V100 C 450,120 400,80 350,110 C 300,140 250,90 200,120 C 150,150 100,100 50,130 C 0,160 -50,110 0,80 Z" fill="black" /></svg>')`, maskSize: '100% 100%', maskRepeat: 'no-repeat' }}>
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor, maskImage: `url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 500 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 H500 V100 C 450,120 400,80 350,110 C 300,140 250,90 200,120 C 150,150 100,100 50,130 C 0,160 -50,110 0,80 Z" fill="black" /></svg>')`, maskSize: '100% 100%', maskRepeat: 'no-repeat' }}>
             <div className={contentWrapperClass} style={{ paddingBottom: '2rem' }}>
               <HeaderContent />
             </div>
@@ -174,7 +174,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
         );
       case 'circles':
         return (
-          <div className="relative w-full h-full overflow-hidden">
+          <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: theme.primaryColor }}>
             <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full opacity-20" style={{ backgroundColor: theme.secondaryColor }}></div>
             <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full opacity-20" style={{ backgroundColor: theme.secondaryColor }}></div>
             <div className="absolute inset-0 flex items-center justify-center p-8">
@@ -185,7 +185,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       case 'block':
       default:
         return (
-          <div className="absolute inset-0">
+          <div className="absolute inset-0" style={{ backgroundColor: theme.primaryColor }}>
             <div className="absolute bottom-0 left-0 w-full h-1" style={{ backgroundColor: theme.secondaryColor }}></div>
             <div className={contentWrapperClass}>
               <HeaderContent />
@@ -221,7 +221,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
 
   const renderPrimaryColorOverlay = () => {
     if (!isBackgroundMode) return null;
-    const overlayOpacity = 1 - theme.headerImageOpacity; // Opacidade inversa para garantir que a cor primária seja visível
+    const overlayOpacity = 0.5; 
 
     return (
       <div 
@@ -236,15 +236,14 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
 
   return (
     <header 
-      className="relative z-10 w-full flex-shrink-0 overflow-hidden"
+      className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: minHeight || (isLandscape ? '25%' : '20%'), 
-        // Aplica a cor primária como fundo base, resolvendo o problema do cabeçalho branco
-        backgroundColor: theme.primaryColor,
+        backgroundColor: 'transparent',
       }}
     >
       {/* Renderiza a arte geométrica SOMENTE se não houver imagem de cabeçalho */}
-      {theme.headerImage ? null : renderGeometricArt()}
+      {renderGeometricArt()}
       
       {/* Renderiza a imagem de cabeçalho (z-index 10 ou 20) */}
       {renderHeaderImage()}
@@ -253,22 +252,15 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       {renderPrimaryColorOverlay()}
       
       {/* Renderiza o conteúdo de texto e logo (z-index 30) */}
-      {theme.headerImage && !isHeroImageMode ? (
+      {theme.headerImage && !isHeroImageMode && (
         // Se houver imagem, e NÃO for modo HERO, renderiza o conteúdo de texto por cima (z-index 30)
         <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
           <HeaderContent />
         </div>
-      ) : (
-        // Se não houver imagem, o HeaderContent já foi renderizado dentro de renderGeometricArt
-        // Se for modo HERO, o texto é suprimido (HeaderContent retorna null)
-        // Se for arte geométrica, o conteúdo já está dentro da arte.
-        // Se for block (padrão sem arte), precisamos garantir que o conteúdo seja renderizado.
-        !theme.headerImage && theme.headerArtStyleId === 'block' && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center p-8">
-                <HeaderContent />
-            </div>
-        )
       )}
+      
+      {/* Se não houver imagem, o HeaderContent já foi renderizado dentro de renderGeometricArt */}
+      {/* Se for modo HERO, o texto é suprimido (HeaderContent retorna null) */}
     </header>
   );
 };

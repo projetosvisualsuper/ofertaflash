@@ -5,8 +5,8 @@ import { Save, Trash2, Upload, XCircle, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { showError, showSuccess } from '../utils/toast';
 import { useCustomHeaderTemplates } from '../hooks/useCustomHeaderTemplates';
-import { useGlobalHeaderTemplates } from '../hooks/useGlobalHeaderTemplates';
-import ConfirmationModal from './ConfirmationModal';
+import { useGlobalHeaderTemplates } from '../hooks/useGlobalHeaderTemplates'; // NOVO IMPORT
+import ConfirmationModal from './ConfirmationModal'; // Importando o modal
 
 interface HeaderTemplatesTabProps {
   theme: PosterTheme;
@@ -19,8 +19,8 @@ const TemplatePreview: React.FC<{ template: HeaderTemplate; isCustom: boolean; o
     // Templates globais e presets hardcoded são bloqueados para Free
     const isLocked = isFreePlan && !isCustom; 
 
-    // Se for um template baseado em imagem (como Açougue do Chefe), usamos a imagem como fundo da miniatura.
-    const isImageTemplate = template.theme.headerImage || (template.thumbnail && !template.thumbnail.includes('placeholder'));
+    // Se for um template global/preset, usamos a miniatura do template.
+    // Se for um template customizado, usamos a miniatura salva pelo usuário.
     const thumbnailSrc = template.thumbnail;
 
     return (
@@ -32,29 +32,32 @@ const TemplatePreview: React.FC<{ template: HeaderTemplate; isCustom: boolean; o
                 }`}
                 disabled={isLocked}
             >
-                {/* Área de Pré-visualização de Cor/Imagem (Bloco Superior) */}
+                {/* Área de Pré-visualização de Cor/Imagem */}
                 <div 
-                    className="w-full aspect-[4/1.5] flex items-center justify-center"
+                    className="w-full h-24 flex items-center justify-center"
                     style={{ 
-                        // Se for template de imagem, usa a imagem como fundo. Caso contrário, usa a cor primária.
                         backgroundColor: primaryColor || '#333', 
-                        backgroundImage: isImageTemplate ? `url(${thumbnailSrc})` : 'none',
+                        backgroundImage: thumbnailSrc ? `url(${thumbnailSrc})` : 'none',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         position: 'relative',
                     }}
                 >
-                    {/* Se for template de cor, adiciona um toque da cor secundária */}
-                    {!isImageTemplate && (
-                        <div 
-                            className="absolute inset-0 opacity-30" 
-                            style={{ backgroundColor: secondaryColor || '#fff' }}
-                        />
-                    )}
+                    {/* Overlay de cor secundária para dar um toque de design */}
+                    <div 
+                        className="absolute inset-0 opacity-30" 
+                        style={{ backgroundColor: secondaryColor || '#fff' }}
+                    />
+                    {/* Nome do Template no centro */}
+                    <span 
+                        className="relative z-10 text-center text-sm font-bold p-1 rounded"
+                        style={{ color: headerTextColor || '#fff', textShadow: '0 0 5px rgba(0,0,0,0.5)' }}
+                    >
+                        {template.name}
+                    </span>
                 </div>
                 
-                {/* Área do Nome (Bloco Inferior Branco) */}
-                <div className="p-2 text-center bg-white border-t">
+                <div className="p-2 text-center">
                     <p className="text-xs font-semibold text-gray-800 group-hover:text-indigo-700 truncate">{template.name}</p>
                 </div>
             </button>
@@ -78,7 +81,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const isFreePlan = profile?.role === 'free';
   
   const { customTemplates, addCustomTemplate, deleteCustomTemplate } = useCustomHeaderTemplates(session?.user?.id);
-  const { globalTemplates, loading: loadingGlobalTemplates } = useGlobalHeaderTemplates(false);
+  const { globalTemplates, loading: loadingGlobalTemplates } = useGlobalHeaderTemplates(false); // Busca templates globais
   
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
@@ -100,6 +103,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     const templateTheme = template.theme;
     
     // 1. Determinar se é um template baseado em imagem (hero) ou em design (arte geométrica/cor)
+    // Se o template tiver uma imagem de cabeçalho definida no tema OU se a thumbnail for uma imagem real (não placeholder)
     const isImageTemplate = templateTheme.headerImage || (template.thumbnail && !template.thumbnail.includes('placeholder'));
 
     if (isImageTemplate) {
