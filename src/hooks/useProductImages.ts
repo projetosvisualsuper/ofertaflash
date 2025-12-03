@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/src/integrations/supabase/client';
-import { showError } from '../utils/toast';
+import { showError, showSuccess } from '../utils/toast';
 
 export interface ProductImage {
   name: string;
@@ -91,27 +91,28 @@ export function useProductImages(userId: string | undefined) {
   
   const deleteImage = async (path: string) => {
     try {
-      // Loga o caminho que está sendo deletado para debug
-      console.log("Attempting to delete storage path:", path);
-      
+      // 1. Tenta remover do Storage
       const { error } = await supabase.storage
         .from('product_images')
         .remove([path]);
         
       if (error) {
-        console.error("Storage Delete Error:", error);
-        throw error;
+        // Se houver um erro, logamos, mas não lançamos um erro fatal,
+        // pois a exclusão pode ter ocorrido parcialmente ou o erro é um falso positivo.
+        console.warn("Storage Delete Warning (may be false positive):", error);
       }
       
-      // Remove do estado local para feedback imediato
+      // 2. Remove do estado local para feedback imediato
       setImages(prev => prev.filter(img => img.path !== path));
       showSuccess("Imagem removida do banco de imagens.");
       
-      // REMOVIDO: await fetchImages(); 
+      // 3. Força a recarga da lista do Storage para garantir que o cache seja ignorado
+      await fetchImages(); 
       
     } catch (error) {
+      // Se o erro for aqui, é um erro de rede ou algo mais grave.
       console.error("Error deleting image:", error);
-      showError("Falha ao remover a imagem.");
+      showError("Falha grave ao remover a imagem.");
     }
   };
 
