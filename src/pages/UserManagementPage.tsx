@@ -116,26 +116,31 @@ const UserManagementPage: React.FC = () => {
         throw new Error("Não foi possível obter a sessão do administrador.");
       }
 
-      // Tenta salvar a sessão do admin. Se falhar, o erro QuotaExceededError será lançado,
-      // mas como os dados grandes foram migrados, isso é improvável.
+      // Salva a sessão do admin para poder restaurá-la depois
       localStorage.setItem('admin_impersonation_token', JSON.stringify(session));
 
-      // 2. Chamar a Edge Function para gerar o link
-      const { data, error } = await supabase.functions.invoke('impersonate-user', {
+      // 2. Chamar a Edge Function para gerar o link de login mágico
+      const { data: edgeData, error } = await supabase.functions.invoke('impersonate-user', {
         body: { 
-          userIdToImpersonate: profile.id,
           userEmailToImpersonate: profile.email,
         },
       });
 
       if (error) throw error;
+      
+      // A Edge Function retorna o link de login mágico em edgeData.signInLink
+      const signInLink = edgeData.signInLink;
+      if (!signInLink) {
+          throw new Error("A Edge Function não retornou o link de login.");
+      }
 
       // 3. Redirecionar para o link de login mágico
-      window.location.href = data.signInLink;
+      // Isso fará com que o navegador complete o fluxo de login e defina a sessão do usuário alvo.
+      window.location.href = signInLink;
 
     } catch (error) {
       console.error("Falha ao personificar usuário:", error);
-      showError("Erro ao tentar acessar o painel do cliente.");
+      showError("Erro ao tentar acessar o painel do cliente. Verifique o console.");
       localStorage.removeItem('admin_impersonation_token'); // Limpa em caso de erro
     } finally {
       setImpersonatingId(null);

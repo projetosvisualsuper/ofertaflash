@@ -48,10 +48,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Target user email is missing' }), { status: 400, headers: corsHeaders });
     }
 
+    // Gera o link de login mágico
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: userEmailToImpersonate,
       options: {
+        // Redireciona para a raiz do aplicativo
         redirectTo: '/',
       },
     });
