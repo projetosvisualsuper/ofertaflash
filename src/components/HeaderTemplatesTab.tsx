@@ -104,12 +104,13 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     if (templateTheme.thumbnail) {
         setTheme(prevTheme => ({
             ...prevTheme,
-            // Mantém as cores e textos atuais do usuário
-            ...templateTheme, // Mescla as propriedades mínimas salvas (headerImageMode, etc.)
+            // Mescla as propriedades mínimas salvas (cores, textos, etc.)
+            ...templateTheme, 
             
-            // Sobrescreve a imagem do cabeçalho com a miniatura salva
+            // FORÇA O COMPORTAMENTO DE IMAGEM DE CABEÇALHO
             headerImage: templateTheme.thumbnail, 
-            headerImageMode: 'hero', // Força o modo hero
+            headerImageMode: 'hero', // Modo Hero para garantir que a imagem seja a principal
+            headerArtStyleId: 'block', // Desativa a arte geométrica
             
             // Garante que as cores e textos do usuário sejam mantidos se não estiverem no templateTheme
             primaryColor: templateTheme.primaryColor || prevTheme.primaryColor,
