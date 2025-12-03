@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { PosterTheme, HeaderTemplate } from '../../types';
 import { HEADER_TEMPLATE_PRESETS } from '../config/headerTemplatePresets';
-import { Save, Trash2, Upload, XCircle, Lock } from 'lucide-react';
+import { Save, Trash2, Upload, XCircle, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { showError, showSuccess } from '../utils/toast';
 import { useCustomHeaderTemplates } from '../hooks/useCustomHeaderTemplates';
+import { useGlobalHeaderTemplates } from '../hooks/useGlobalHeaderTemplates'; // NOVO IMPORT
 import ConfirmationModal from './ConfirmationModal'; // Importando o modal
 
 interface HeaderTemplatesTabProps {
@@ -15,7 +16,12 @@ interface HeaderTemplatesTabProps {
 // Componente auxiliar para renderizar a pré-visualização do template
 const TemplatePreview: React.FC<{ template: HeaderTemplate; isCustom: boolean; onApply: () => void; onDelete?: () => void; isFreePlan: boolean }> = ({ template, isCustom, onApply, onDelete, isFreePlan }) => {
     const { primaryColor, secondaryColor, headerTextColor } = template.theme;
-    const isLocked = isFreePlan && !isCustom; // Bloqueia presets prontos para Free
+    // Templates globais e presets hardcoded são bloqueados para Free
+    const isLocked = isFreePlan && !isCustom; 
+
+    // Se for um template global/preset, usamos a miniatura do template.
+    // Se for um template customizado, usamos a miniatura salva pelo usuário.
+    const thumbnailSrc = template.thumbnail;
 
     return (
         <div className="relative group">
@@ -26,12 +32,12 @@ const TemplatePreview: React.FC<{ template: HeaderTemplate; isCustom: boolean; o
                 }`}
                 disabled={isLocked}
             >
-                {/* Área de Pré-visualização de Cor */}
+                {/* Área de Pré-visualização de Cor/Imagem */}
                 <div 
                     className="w-full h-24 flex items-center justify-center"
                     style={{ 
                         backgroundColor: primaryColor || '#333', 
-                        backgroundImage: template.theme.headerImage ? `url(${template.theme.headerImage})` : 'none',
+                        backgroundImage: thumbnailSrc ? `url(${thumbnailSrc})` : 'none',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         position: 'relative',
@@ -75,12 +81,17 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
   const isFreePlan = profile?.role === 'free';
   
   const { customTemplates, addCustomTemplate, deleteCustomTemplate } = useCustomHeaderTemplates(session?.user?.id);
+  const { globalTemplates, loading: loadingGlobalTemplates } = useGlobalHeaderTemplates(false); // Busca templates globais
+  
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateThumb, setNewTemplateThumb] = useState<string | null>(null);
   
   // Estados para o modal de exclusão
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [templateToDeleteId, setTemplateToDeleteId] = useState<string | null>(null);
+
+  // Combina templates hardcoded e templates globais do DB
+  const allReadyTemplates = [...HEADER_TEMPLATE_PRESETS, ...globalTemplates];
 
   // For applying default templates from the gallery
   const applyPresetTemplate = (templateTheme: Partial<PosterTheme>) => {
@@ -92,7 +103,6 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
       ...prevTheme,
       ...templateTheme,
       // Explicitly reset header image unless the preset provides one.
-      // This fixes the bug where the header would be blank after switching from a custom template.
       headerImage: templateTheme.headerImage || undefined,
       headerImageMode: templateTheme.headerImageMode || 'none',
     }));
@@ -183,7 +193,7 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
     showSuccess("Template excluído.");
   };
 
-  const saveTemplateClasses = isFreePlan ? 'opacity-50 cursor-not-allowed' : '';
+  const saveTemplateClasses = isFreePlan ? 'opacity-50 pointer-events-none' : '';
 
   return (
     <div className="space-y-6">
@@ -253,17 +263,23 @@ const HeaderTemplatesTab: React.FC<HeaderTemplatesTabProps> = ({ theme, setTheme
             Galeria de Templates Prontos
             {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
         </h3>
-        <div className={`grid grid-cols-2 gap-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
-          {HEADER_TEMPLATE_PRESETS.map(template => (
-            <TemplatePreview
-              key={template.id}
-              template={template}
-              isCustom={false}
-              onApply={() => applyPresetTemplate(template.theme)}
-              isFreePlan={isFreePlan}
-            />
-          ))}
-        </div>
+        {loadingGlobalTemplates ? (
+            <div className="flex justify-center items-center h-24">
+                <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+            </div>
+        ) : (
+            <div className={`grid grid-cols-2 gap-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
+              {allReadyTemplates.map(template => (
+                <TemplatePreview
+                  key={template.id}
+                  template={template}
+                  isCustom={false}
+                  onApply={() => applyPresetTemplate(template.theme)}
+                  isFreePlan={isFreePlan}
+                />
+              ))}
+            </div>
+        )}
       </div>
       
       {/* Modal de Confirmação de Exclusão de Template */}
