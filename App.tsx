@@ -37,6 +37,7 @@ const createInitialLayouts = () => ({
   'story': JSON.parse(JSON.stringify(defaultLayout)),
   'feed': JSON.parse(JSON.stringify(defaultLayout)),
   'a4': JSON.parse(JSON.stringify(defaultLayout)),
+  'a3': JSON.parse(JSON.stringify(defaultLayout)),
   'landscape-poster': JSON.parse(JSON.stringify(defaultLayout)),
   'tv': JSON.parse(JSON.stringify(defaultLayout)),
 });
@@ -45,6 +46,7 @@ const createInitialLogoLayouts = (base: any) => ({
     'story': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'feed': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'a4': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
+    'a3': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'landscape-poster': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
     'tv': { scale: base.scale || 1, x: base.x || 0, y: base.y || 0 },
 });
@@ -68,7 +70,6 @@ const AppContent: React.FC = () => {
   const userId = session?.user?.id;
   
   // Usando useLocalStorageState para persistir o módulo ativo
-  // ALTERADO: Módulo inicial agora é 'poster'
   const [activeModule, setActiveModule] = useLocalStorageState('activeModule', 'poster');
   
   const { theme, setTheme, loading: loadingTheme } = useUserSettings(userId);
@@ -76,12 +77,18 @@ const AppContent: React.FC = () => {
   const { savedImages, addSavedImage, deleteImage: deleteSavedImage, loading: loadingSavedImages } = useSavedImages(userId);
   const { loading: loadingRegisteredProducts } = useProductDatabase(userId);
   const { settings: globalSettings, loading: loadingGlobalSettings } = useGlobalSettings();
+  
+  // O estado isReady agora depende apenas do carregamento do tema e dos produtos do cartaz
   const [isReady, setIsReady] = useState(false);
 
+  // Verifica se os dados essenciais (tema e produtos do cartaz) foram carregados
+  const essentialDataLoaded = !loadingTheme && !loadingProducts && !!profile;
+
   useEffect(() => {
-    if (!loadingTheme && !loadingRegisteredProducts && !loadingSavedImages && !loadingProducts && !loadingGlobalSettings && profile) {
+    if (essentialDataLoaded) {
       let themeUpdated = false;
       
+      // --- Lógica de Migração de Tema ---
       if (!theme.headerElements || typeof theme.layoutCols !== 'object' || theme.layoutCols === null || !theme.companyInfo) {
         themeUpdated = true;
         setTheme(prevTheme => ({
@@ -109,6 +116,7 @@ const AppContent: React.FC = () => {
           });
       }
 
+      // --- Lógica de Migração de Produtos ---
       if (products.some(p => !p.layouts)) {
         setProducts(prevProducts => 
           prevProducts.map(p => 
@@ -117,9 +125,9 @@ const AppContent: React.FC = () => {
         );
       }
       
+      // --- Verificação de Permissão do Módulo Ativo ---
       const currentModulePermission = MODULE_PERMISSIONS[activeModule];
       
-      // Verifica se o módulo ativo atual é permitido. Se não for, redireciona para o primeiro permitido.
       if (!hasPermission(currentModulePermission)) {
         const firstAllowedModule = Object.entries(MODULE_PERMISSIONS).find(([_, permission]) => hasPermission(permission));
         if (firstAllowedModule) {
@@ -129,9 +137,12 @@ const AppContent: React.FC = () => {
         }
       }
       
+      // Se a migração for necessária, o setTheme/setProducts irá disparar um novo ciclo.
+      // Definimos isReady como true apenas quando os dados essenciais estiverem carregados E a migração tiver sido processada.
+      // Como a migração é síncrona (apenas atualiza o estado local e salva em background), podemos definir isReady aqui.
       setIsReady(true);
     }
-  }, [theme, products, setTheme, setProducts, loadingTheme, loadingRegisteredProducts, loadingSavedImages, loadingProducts, loadingGlobalSettings, profile, hasPermission, activeModule, setActiveModule]);
+  }, [essentialDataLoaded, theme, products, setTheme, setProducts, profile, hasPermission, activeModule, setActiveModule]);
 
   const formats: PosterFormat[] = POSTER_FORMATS;
   
@@ -139,6 +150,7 @@ const AppContent: React.FC = () => {
     return <LoginPage />;
   }
 
+  // Se os dados essenciais (Auth, Theme, Products) não estiverem prontos, mostre o carregamento.
   if (!isReady || !profile) {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-gray-100">
