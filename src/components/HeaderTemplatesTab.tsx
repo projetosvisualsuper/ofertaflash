@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PosterTheme, HeaderTemplate } from '../../types';
 import { HEADER_TEMPLATE_PRESETS } from '../config/headerTemplatePresets';
 import { Save, Trash2, Upload, XCircle, Lock, Loader2 } from 'lucide-react';
-import { useAuth } from '../context/useAuth';
+import { useAuth } from '../context/AuthContext';
 import { showError, showSuccess } from '../utils/toast';
 import { useCustomHeaderTemplates } from '../hooks/useCustomHeaderTemplates';
 import { useGlobalHeaderTemplates } from '../hooks/useGlobalHeaderTemplates';
