@@ -48,7 +48,13 @@ const TemplatePreview: React.FC<{ template: HeaderTemplate; isCustom: boolean; o
                         className="absolute inset-0 opacity-30" 
                         style={{ backgroundColor: secondaryColor || '#fff' }}
                     />
-                    {/* Nome do Template no centro - REMOVIDO */}
+                    {/* Nome do Template no centro */}
+                    <span 
+                        className="relative z-10 text-center text-sm font-bold p-1 rounded"
+                        style={{ color: headerTextColor || '#fff', textShadow: '0 0 5px rgba(0,0,0,0.5)' }}
+                    >
+                        {template.name}
+                    </span>
                 </div>
                 
                 <div className="p-2 text-center">
