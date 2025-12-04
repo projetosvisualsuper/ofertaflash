@@ -7,7 +7,7 @@ export function useWooCommerceProducts() {
   const [products, setProducts] = useState<WooProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isMounted = useRef(true); // Referência para rastrear se o componente está montado
+  const isMounted = useRef(true);
 
   useEffect(() => {
     isMounted.current = true;
@@ -17,23 +17,32 @@ export function useWooCommerceProducts() {
   }, []);
 
   const fetchProducts = useCallback(async () => {
-    if (!isMounted.current) return; // Proteção extra
+    if (!isMounted.current) return;
     
     setLoading(true);
     setError(null);
     
-    try {
-      const { data, error: invokeError } = await supabase.functions.invoke('woocommerce-proxy', {
+    let data: any = null;
+    let invokeError: any = null;
+
+    // 1. Chamada da Edge Function (sem try/catch externo para capturar o erro do SDK)
+    const result = await supabase.functions.invoke('woocommerce-proxy', {
         method: 'GET',
-      });
+    });
+    
+    data = result.data;
+    invokeError = result.error;
 
-      if (!isMounted.current) return;
+    if (!isMounted.current) return;
 
+    try {
       if (invokeError) {
-        throw new Error(invokeError.message);
+        // Se o SDK retornou um erro de invocação (rede, CORS, etc.)
+        throw new Error(invokeError.message); 
       }
       
       if (data.error) {
+        // Se a Edge Function retornou um erro (status 400/500)
         throw new Error(data.error);
       }
       
@@ -50,6 +59,11 @@ export function useWooCommerceProducts() {
           userMessage = 'Erro: Chaves de API do WooCommerce não configuradas no Supabase Secrets.';
       } else if (errorMessage.includes('WooCommerce API failed')) {
           userMessage = 'Erro de comunicação com a API do WooCommerce. Verifique a URL e as chaves.';
+      } else if (errorMessage.includes('Failed to fetch')) {
+          userMessage = 'Erro de rede ao tentar conectar com o WooCommerce. Verifique a URL.';
+      } else if (invokeError) {
+          // Captura erros de invocação que não foram tratados acima
+          userMessage = `Erro de conexão com o servidor: ${invokeError.message}`;
       }
       
       setError(userMessage);
