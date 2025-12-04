@@ -15,7 +15,7 @@ interface PlanUpgradeModalProps {
 
 // Mapeamento de Permissões para Português (BR)
 const PERMISSION_TRANSLATIONS: Record<Permission | string, string> = {
-    'access_builder': 'Acesso ao Builder',
+    'access_builder': 'Acesso a Criar Ofertas',
     'manage_products': 'Gerenciamento de Produtos',
     'manage_company_info': 'Gerenciamento de Info da Empresa',
     'access_signage': 'Acesso a TV Digital (Slides)',
