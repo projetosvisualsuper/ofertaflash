@@ -82,6 +82,11 @@ const SettingsPage: React.FC = () => {
              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 pl-2">
                 <li>Obtenha sua chave de API no painel de desenvolvedor da <a href="https://elevenlabs.io/" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline hover:text-purple-800">ElevenLabs</a>.</li>
                 <li>No Supabase, adicione um novo segredo com o nome <code className="font-mono bg-purple-100 p-0.5 rounded">ELEVENLABS_API_KEY</code> e cole sua chave.</li>
+                <li><span className="font-bold text-red-600">IMPORTANTE:</span> Como suas vozes padrão são em Inglês, você precisa de uma voz que suporte Português (pt-BR) e o modelo `eleven_multilingual_v2`. Adicione um segundo segredo:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                        <li><code className="font-mono bg-purple-100 p-0.5 rounded">ELEVENLABS_VOICE_ID</code>: Cole a ID da voz que você deseja usar para a locução em Português.</li>
+                    </ul>
+                </li>
             </ol>
         </div>
         

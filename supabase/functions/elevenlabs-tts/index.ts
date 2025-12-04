@@ -8,8 +8,8 @@ const corsHeaders = {
 
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
 
-// Voice ID padrão para o modelo multilingual (Adam)
-const DEFAULT_VOICE_ID = "pNInz6obpgDQGcFJFTif"; 
+// Voice ID padrão para o modelo multilingual (Adam) - Usado como fallback
+const FALLBACK_VOICE_ID = "pNInz6obpgDQGcFJFTif"; 
 
 serve(async (req) => {
   // 1. Handle CORS OPTIONS request
@@ -17,8 +17,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // 2. Get API Key from Supabase Secrets
+  // 2. Get API Key and Voice ID from Supabase Secrets
   const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
+  // Prioriza a Voice ID definida pelo usuário, caso contrário, usa o fallback
+  const voiceId = Deno.env.get('ELEVENLABS_VOICE_ID') || FALLBACK_VOICE_ID; 
+  
   if (!apiKey) {
     console.error("TTS Error: ELEVENLABS_API_KEY is missing from environment.");
     return new Response(JSON.stringify({ error: 'ELEVENLABS_API_KEY not configured. Please set the secret.' }), {
@@ -46,8 +49,8 @@ serve(async (req) => {
       },
     };
 
-    // Usando a Voice ID padrão
-    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${DEFAULT_VOICE_ID}`, {
+    // Usando a Voice ID (do Secret ou Fallback)
+    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${voiceId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,10 +71,10 @@ serve(async (req) => {
           // Ignora erro de parse se não for JSON
       }
       
-      // Se falhar, retorna a mensagem de erro detalhada
+      // Se falhar, retorna a mensagem de erro detalhada, incluindo a Voice ID usada
       return new Response(JSON.stringify({ 
           error: 'Failed to synthesize speech with ElevenLabs', 
-          details: `Verifique se a Voice ID (${DEFAULT_VOICE_ID}) está disponível na sua conta. Detalhe: ${details}` 
+          details: `Verifique se a Voice ID (${voiceId}) está disponível na sua conta. Detalhe: ${details}` 
       }), {
         status: ttsResponse.status,
         headers: corsHeaders,
