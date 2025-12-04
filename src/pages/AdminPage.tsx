@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, ListOrdered, Image, LayoutTemplate } from 'lucide-react';
+import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, ListOrdered, Image, LayoutTemplate, LogIn } from 'lucide-react';
 import AdminDashboardPage from './admin/AdminDashboardPage';
 import AdminUserManagementPage from './admin/AdminUserManagementPage';
 import AdminPlanManagementPage from './admin/AdminPlanManagementPage';
 import AdminSettingsPage from './admin/AdminSettingsPage';
 import AdminReportsPage from './admin/AdminReportsPage';
 import AdminImageUploadPage from './admin/AdminImageUploadPage';
-import AdminGlobalTemplatesPage from './admin/AdminGlobalTemplatesPage'; // NOVO IMPORT
+import AdminGlobalTemplatesPage from './admin/AdminGlobalTemplatesPage';
+import AdminLoginBannerSettingsPage from './admin/AdminLoginBannerSettingsPage'; // NOVO IMPORT
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates'; // 'orders' removido
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner'; // 'orders' removido
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -23,9 +24,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
     { id: 'images', name: 'Banco de Imagens', icon: Image },
-    { id: 'global-templates', name: 'Templates Globais', icon: LayoutTemplate }, // NOVO MÓDULO
+    { id: 'global-templates', name: 'Templates Globais', icon: LayoutTemplate },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
     { id: 'settings', name: 'Configurações', icon: Settings },
+    { id: 'login-banner', name: 'Banner de Login', icon: LogIn }, // NOVO MÓDULO
   ];
 
   const renderContent = () => {
@@ -35,9 +37,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
       case 'images': return <AdminImageUploadPage />;
-      case 'global-templates': return <AdminGlobalTemplatesPage />; // NOVO COMPONENTE
+      case 'global-templates': return <AdminGlobalTemplatesPage />;
       case 'reports': return <AdminReportsPage />;
       case 'settings': return <AdminSettingsPage />;
+      case 'login-banner': return <AdminLoginBannerSettingsPage />; // NOVO COMPONENTE
       default: return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
     }
   };
