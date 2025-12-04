@@ -128,7 +128,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] bg-white rounded-xl p-6">
+      <DialogContent className="sm:max-w-[1000px] bg-white rounded-xl p-6">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-center text-indigo-600 flex items-center justify-center gap-2">
             <Zap size={32} />
@@ -157,7 +157,8 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                 } flex flex-col`}
               >
                 <h4 className="text-2xl font-bold mb-2" style={{ color: isCurrent ? '#4f46e5' : '#1f2937' }}>{plan.name}</h4>
-                <p className="text-4xl font-black mb-4">{plan.price}</p>
+                {/* Ajuste de tamanho da fonte para caber em uma linha */}
+                <p className="text-3xl font-black mb-4">{plan.price}</p>
                 
                 <div className="flex-1 space-y-2 mb-6">
                   {plan.features.map((feature, index) => (
@@ -185,7 +186,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                     'Plano Atual'
                   ) : isUpgrade ? (
                     <>
-                      Fazer Upgrade (Mercado Pago) <ExternalLink size={16} />
+                      Fazer Upgrade <ExternalLink size={16} />
                     </>
                   ) : (
                     'Selecionar Plano'
