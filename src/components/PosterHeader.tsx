@@ -220,18 +220,14 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   };
 
   const renderPrimaryColorOverlay = () => {
+    // Se for modo background, a cor primária é o fundo do header, e a imagem é o overlay.
+    // Se for modo hero, a imagem é o fundo, e não precisamos de overlay de cor primária.
     if (!isBackgroundMode) return null;
-    const overlayOpacity = 0.5; 
-
-    return (
-      <div 
-        className="absolute inset-0 z-20"
-        style={{
-          backgroundColor: theme.primaryColor,
-          opacity: overlayOpacity,
-        }}
-      />
-    );
+    
+    // No modo background, a imagem é a textura, e a cor primária é o fundo.
+    // Se a imagem tiver opacidade, ela se mistura com a cor primária.
+    // Não precisamos de um overlay de cor primária, pois a cor primária já é o fundo do <header>.
+    return null; 
   };
 
   return (
@@ -239,7 +235,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       className="relative z-10 w-full flex-shrink-0"
       style={{ 
         minHeight: minHeight || (isLandscape ? '25%' : '20%'), 
-        backgroundColor: 'transparent',
+        // Se houver imagem de cabeçalho, a cor primária deve ser o fundo base.
+        backgroundColor: theme.headerImage ? theme.primaryColor : 'transparent',
       }}
     >
       {/* Renderiza a arte geométrica SOMENTE se não houver imagem de cabeçalho */}
@@ -247,9 +244,6 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
       
       {/* Renderiza a imagem de cabeçalho (z-index 10 ou 20) */}
       {renderHeaderImage()}
-      
-      {/* Renderiza o overlay de cor primária (apenas em modo background) */}
-      {renderPrimaryColorOverlay()}
       
       {/* Renderiza o conteúdo de texto e logo (z-index 30) */}
       {theme.headerImage && !isHeroImageMode && (
