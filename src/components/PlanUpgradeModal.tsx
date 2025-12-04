@@ -4,7 +4,7 @@ import { Zap, Check, Loader2, ArrowRight, ExternalLink } from 'lucide-react';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import { Profile } from '../../types';
 import { supabase } from '@/src/integrations/supabase/client';
-import { showSuccess, showError } from '../utils/toast';
+import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { usePlanConfigurations } from '../hooks/usePlanConfigurations'; // NOVO IMPORT
 
 interface PlanUpgradeModalProps {
@@ -38,7 +38,10 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
 
   // Função de simulação de upgrade (mantida para o Plano Grátis)
   const handleSimulateUpgrade = async (newRole: string) => {
-    if (newRole === currentPlan) return;
+    if (newRole === currentPlan) {
+        setIsLoading(false); // Adicionado: Redefine se o plano for o mesmo
+        return;
+    }
 
     setIsLoading(true);
     
@@ -105,8 +108,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
         const errorMessage = (error as Error).message;
         console.error("Checkout Error:", errorMessage);
         updateToast(loadingToast, `Falha ao iniciar o checkout: ${errorMessage}`, 'error');
-    } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Adicionado: Redefine o estado de carregamento em caso de erro
     }
   };
   
