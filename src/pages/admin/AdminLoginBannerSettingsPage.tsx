@@ -60,11 +60,12 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
     
     const idToUpdate = existingData?.id;
     
+    // CORREÇÃO: Usando snake_case para banner_color no payload
     const dataToSave = {
         title: localSettings.title,
         subtitle: localSettings.subtitle,
         features: localSettings.features.filter(f => f.trim().length > 0), // Filtra recursos vazios
-        bannerColor: localSettings.bannerColor,
+        banner_color: localSettings.bannerColor, // Mapeamento corrigido
         updated_at: new Date().toISOString(),
     };
 

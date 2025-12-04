@@ -26,7 +26,7 @@ export function useLoginBannerSettings() {
       // Busca o primeiro (e único) registro
       const { data, error } = await supabase
         .from('login_banner_settings')
-        .select('title, subtitle, features, bannerColor') // Incluindo bannerColor
+        .select('title, subtitle, features, banner_color') // Buscando banner_color (snake_case)
         .limit(1)
         .single();
 
@@ -41,7 +41,7 @@ export function useLoginBannerSettings() {
           subtitle: data.subtitle || defaultSettings.subtitle,
           // Garante que features seja um array de strings
           features: Array.isArray(data.features) ? data.features.filter(f => typeof f === 'string') : defaultSettings.features,
-          bannerColor: data.bannerColor || defaultSettings.bannerColor, // Usando a cor salva ou padrão
+          bannerColor: data.banner_color || defaultSettings.bannerColor, // Mapeando banner_color para bannerColor
         });
       }
       setLoading(false);
