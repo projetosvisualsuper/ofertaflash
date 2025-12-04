@@ -11,8 +11,7 @@ interface AdScriptGeneratorProps {
 }
 
 // Hardcoded URL for the Edge Function (replace with your project ID)
-// CORRIGINDO PARA APONTAR PARA A FUNÇÃO DA ELEVENLABS
-const TTS_FUNCTION_URL = "https://otezhjcvagcikwagjgem.supabase.co/functions/v1/elevenlabs-tts"; 
+const TTS_FUNCTION_URL = "https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/elevenlabs-tts"; 
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
@@ -115,7 +114,13 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       console.error("TTS Generation Error:", error);
       // Corrigindo a mensagem de erro para a chave correta
       const errorMessage = (error as Error).message;
-      updateToast(loadingToast, `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se a Voice ID padrão está disponível. Detalhe: ${errorMessage}`, 'error');
+      
+      // Mensagem de erro atualizada para refletir a nova Voice ID padrão (Adam)
+      const userFriendlyError = errorMessage.includes('Voice ID') 
+        ? `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se a Voice ID padrão (Adam) está disponível. Detalhe: ${errorMessage}`
+        : `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está ativo. Detalhe: ${errorMessage}`;
+        
+      updateToast(loadingToast, userFriendlyError, 'error');
     } finally {
       setIsGeneratingAudio(false);
     }

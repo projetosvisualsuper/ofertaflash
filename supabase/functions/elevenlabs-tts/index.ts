@@ -6,8 +6,10 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Removendo o Voice ID para usar o padrão da conta
 const ELEVENLABS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech";
+
+// Voice ID padrão para o modelo multilingual (Adam)
+const DEFAULT_VOICE_ID = "pNInz6obpgDQGcFJFTif"; 
 
 serve(async (req) => {
   // 1. Handle CORS OPTIONS request
@@ -35,7 +37,6 @@ serve(async (req) => {
       });
     }
     
-    // 3. Call ElevenLabs API (usando o endpoint sem Voice ID)
     const ttsPayload = {
       text: text,
       model_id: "eleven_multilingual_v2", // Modelo que suporta pt-BR
@@ -45,27 +46,8 @@ serve(async (req) => {
       },
     };
 
-    // O endpoint agora é ELEVENLABS_API_URL + /:voice_id
-    // Precisamos de um Voice ID. Se não pudermos usar um fixo, precisamos que o usuário forneça um.
-    // Voltando à ideia de usar um ID, mas vamos usar o ID que o usuário forneceu inicialmente,
-    // pois se ele for um clone de voz, ele pode ser o único que funciona.
-    
-    // REVERTENDO: O endpoint /v1/text-to-speech exige um Voice ID.
-    // Se o ID padrão (Adam) não funcionou, e o ID do usuário falhou, o problema é a chave API.
-    
-    // Vamos reverter para o ID do usuário, mas com uma nota de que a chave API deve ser verificada.
-    // Se o ID do usuário for um clone de voz, ele pode ser o único que funciona.
-    
-    // Vamos tentar o ID do usuário novamente, mas com a certeza de que o problema é a chave.
-    // Se a chave estiver correta, o problema é o ID.
-    
-    // A Edge Function precisa de um Voice ID no URL. Se o ID do usuário falhar, o problema é a chave.
-    
-    // Vamos usar um ID de voz padrão que é conhecido por funcionar com o modelo multilingual.
-    // Se o ID "Adam" falhou, vamos tentar o ID "Rachel" (21m00Tz4R8PpnVzPzV0S)
-    const FALLBACK_VOICE_ID = "21m00Tz4R8PpnVzPzV0S"; // Rachel
-    
-    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${FALLBACK_VOICE_ID}`, {
+    // Usando a Voice ID padrão
+    const ttsResponse = await fetch(`${ELEVENLABS_API_URL}/${DEFAULT_VOICE_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,7 +68,11 @@ serve(async (req) => {
           // Ignora erro de parse se não for JSON
       }
       
-      return new Response(JSON.stringify({ error: 'Failed to synthesize speech with ElevenLabs', details: details }), {
+      // Se falhar, retorna a mensagem de erro detalhada
+      return new Response(JSON.stringify({ 
+          error: 'Failed to synthesize speech with ElevenLabs', 
+          details: `Verifique se a Voice ID (${DEFAULT_VOICE_ID}) está disponível na sua conta. Detalhe: ${details}` 
+      }), {
         status: ttsResponse.status,
         headers: corsHeaders,
       });
