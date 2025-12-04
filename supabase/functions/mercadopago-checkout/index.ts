@@ -58,7 +58,6 @@ serve(async (req) => {
     }
     
     // 4. Cria o payload da Preferência de Assinatura (Preapproval)
-    // Usamos o external_reference para armazenar o userId e o planRole
     const externalReference = `${userId}_${planRole}`;
     
     const preapprovalPayload = {
@@ -69,7 +68,7 @@ serve(async (req) => {
             transaction_amount: priceValue,
             currency_id: "BRL",
         },
-        back_url: "https://ofertaflash.vercel.app/profile", // Redireciona para o perfil após o checkout
+        back_url: "https://ofertaflash.vercel.app/profile",
         external_reference: externalReference, 
         notification_url: `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler`,
     };
@@ -85,16 +84,30 @@ serve(async (req) => {
     });
 
     if (!mpResponse.ok) {
-        const errorBody = await mpResponse.json();
+        // Tenta ler o corpo do erro do Mercado Pago
+        let errorBody;
+        try {
+            errorBody = await mpResponse.json();
+        } catch (e) {
+            errorBody = { message: await mpResponse.text() };
+        }
+        
         console.error("Mercado Pago API Error:", errorBody);
-        throw new Error(`Mercado Pago API failed: ${mpResponse.status} - ${errorBody.message || 'Unknown error'}`);
+        
+        // Retorna o erro detalhado para o frontend
+        return new Response(JSON.stringify({ 
+            error: `Mercado Pago API failed (${mpResponse.status}): ${errorBody.message || 'Unknown error'}` 
+        }), {
+            status: mpResponse.status, // Retorna o status code real do MP
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
     
     const preapproval = await mpResponse.json();
 
     // 6. Retorna o link de checkout
     return new Response(JSON.stringify({ 
-        checkoutLink: preapproval.init_point, // Link para redirecionamento
+        checkoutLink: preapproval.init_point,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
