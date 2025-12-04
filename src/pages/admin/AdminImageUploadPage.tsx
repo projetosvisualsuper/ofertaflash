@@ -10,6 +10,14 @@ import { useAuth } from '../../context/AuthContext';
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
+// Função auxiliar para sanitizar o nome do arquivo
+const sanitizeFileName = (fileName: string) => {
+    const nameWithoutExt = fileName.split('.').slice(0, -1).join('.');
+    const safeName = nameWithoutExt.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
+    const fileExtension = fileName.split('.').pop();
+    return `${safeName}.${fileExtension}`;
+};
+
 const AdminImageUploadPage: React.FC = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -49,14 +57,13 @@ const AdminImageUploadPage: React.FC = () => {
 
     setIsUploading(true);
     
-    // Cria um nome de arquivo seguro e determinístico (sem UUID)
-    const safeName = imageName.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
-    const fileExtension = fileToUpload.name.split('.').pop();
-    // O caminho agora é determinístico: shared/nome-da-imagem.ext
-    const filePath = `${PUBLIC_IMAGE_DIR}/${safeName}.${fileExtension}`;
+    // 1. Criar um nome de arquivo seguro baseado no nome original do arquivo
+    const safeFileName = sanitizeFileName(fileToUpload.name);
+    // O caminho agora é determinístico: shared/nome-do-arquivo-original.ext
+    const filePath = `${PUBLIC_IMAGE_DIR}/${safeFileName}`;
 
     try {
-      // 1. Upload para o Storage (no diretório 'shared')
+      // 2. Upload para o Storage (no diretório 'shared')
       // Usamos upsert: true para sobrescrever se o arquivo com o mesmo nome já existir.
       const { error: uploadError } = await supabase.storage
         .from('product_images')
@@ -69,7 +76,7 @@ const AdminImageUploadPage: React.FC = () => {
       
       showSuccess(`Imagem "${imageName}" cadastrada com sucesso no banco compartilhado!`);
       
-      // 2. Limpar e recarregar
+      // 3. Limpar e recarregar
       setImageName('');
       setFileToUpload(null);
       fetchImages();

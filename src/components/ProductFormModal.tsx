@@ -30,6 +30,14 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 // Diretório compartilhado para imagens de produto
 const SHARED_IMAGE_DIR = 'shared';
 
+// Função auxiliar para sanitizar o nome do arquivo
+const sanitizeFileName = (fileName: string) => {
+    const nameWithoutExt = fileName.split('.').slice(0, -1).join('.');
+    const safeName = nameWithoutExt.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
+    const fileExtension = fileName.split('.').pop();
+    return `${safeName}.${fileExtension}`;
+};
+
 const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialProduct, onSave, onDelete }) => {
   const isEditing = !!initialProduct;
   const [product, setProduct] = useState<Omit<RegisteredProduct, 'id'>>(initialProduct || defaultNewProduct);
@@ -61,27 +69,22 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ trigger, initialPro
         return;
     }
     
-    if (!product.name.trim()) {
-        showError("Por favor, preencha o nome do produto antes de fazer o upload da imagem.");
-        return;
-    }
+    // 1. Criar um nome de arquivo seguro baseado no nome original do arquivo
+    const safeFileName = sanitizeFileName(file.name);
+    // O caminho agora é determinístico: shared/nome-do-arquivo-original.ext
+    const filePath = `${SHARED_IMAGE_DIR}/${safeFileName}`;
 
     setIsLoading(true);
-    
-    // 1. Criar um nome de arquivo seguro e determinístico (sem UUID)
-    const safeName = product.name.trim().replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
-    const fileExtension = file.name.split('.').pop();
-    // O caminho agora é determinístico: shared/nome-do-produto.ext
-    const filePath = `${SHARED_IMAGE_DIR}/${safeName}.${fileExtension}`;
 
     try {
       // 2. Upload para o Storage (no diretório 'shared')
       // Usamos upsert: true para sobrescrever se o arquivo com o mesmo nome já existir.
+      // Isso garante que o mesmo arquivo de imagem não seja duplicado no Storage.
       const { error: uploadError } = await supabase.storage
         .from('product_images')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true, // Sobrescreve se o nome for o mesmo
+          upsert: true, 
         });
 
       if (uploadError) throw uploadError;
