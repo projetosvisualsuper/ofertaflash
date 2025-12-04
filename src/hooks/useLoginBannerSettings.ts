@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/src/integrations/supabase/client';
 
 export interface LoginBannerSettings {
@@ -17,35 +17,35 @@ export function useLoginBannerSettings() {
   const [settings, setSettings] = useState<LoginBannerSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
 
-  const fetchSettings = useCallback(async () => {
-    setLoading(true);
-    
-    // Busca o primeiro (e único) registro
-    const { data, error } = await supabase
-      .from('login_banner_settings')
-      .select('title, subtitle, features')
-      .limit(1)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 = No rows found
-      console.error('Error fetching login banner settings:', error);
-      // Em caso de erro, usamos os valores padrão
-    }
-
-    if (data) {
-      setSettings({
-        title: data.title || defaultSettings.title,
-        subtitle: data.subtitle || defaultSettings.subtitle,
-        // Garante que features seja um array de strings
-        features: Array.isArray(data.features) ? data.features.filter(f => typeof f === 'string') : defaultSettings.features,
-      });
-    }
-    setLoading(false);
-  }, [fetchSettings]);
-
   useEffect(() => {
+    const fetchSettings = async () => {
+      setLoading(true);
+      
+      // Busca o primeiro (e único) registro
+      const { data, error } = await supabase
+        .from('login_banner_settings')
+        .select('title, subtitle, features')
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = No rows found
+        console.error('Error fetching login banner settings:', error);
+        // Em caso de erro, usamos os valores padrão
+      }
+
+      if (data) {
+        setSettings({
+          title: data.title || defaultSettings.title,
+          subtitle: data.subtitle || defaultSettings.subtitle,
+          // Garante que features seja um array de strings
+          features: Array.isArray(data.features) ? data.features.filter(f => typeof f === 'string') : defaultSettings.features,
+        });
+      }
+      setLoading(false);
+    };
+
     fetchSettings();
-  }, [fetchSettings]);
+  }, []); // Array de dependências vazio para rodar apenas na montagem
 
   return { settings, loading };
 }
