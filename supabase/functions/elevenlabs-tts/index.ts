@@ -95,7 +95,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("TTS Catch Error:", error);
-    return new Response(JSON.stringify({ error: 'Internal server error during ElevenLabs TTS generation', details: error.message }), {
+    // Retorno de erro simplificado para evitar recursão no frontend
+    return new Response(JSON.stringify({ 
+        error: 'Internal server error during ElevenLabs TTS generation', 
+        details: error.message || 'Erro interno desconhecido.' 
+    }), {
       status: 500,
       headers: corsHeaders,
     });
