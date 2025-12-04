@@ -61,8 +61,6 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
     const idToUpdate = existingData?.id;
     
     const dataToSave = {
-        // Inclui o ID apenas se estivermos atualizando
-        ...(idToUpdate && { id: idToUpdate }),
         title: localSettings.title,
         subtitle: localSettings.subtitle,
         features: localSettings.features.filter(f => f.trim().length > 0), // Filtra recursos vazios
@@ -70,11 +68,22 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
         updated_at: new Date().toISOString(),
     };
 
-    // 2. Usar upsert. Se idToUpdate existir, ele fará o UPDATE. Se não, fará o INSERT (e o DB gerará o ID).
-    // Usamos 'id' como chave de conflito, o que é seguro se 'id' for a PK.
-    const { error: saveError } = await supabase
-      .from('login_banner_settings')
-      .upsert(dataToSave, { onConflict: 'id' });
+    let saveError = null;
+
+    if (idToUpdate) {
+        // 2. Se o ID existir, fazemos um UPDATE
+        const { error } = await supabase
+            .from('login_banner_settings')
+            .update(dataToSave)
+            .eq('id', idToUpdate);
+        saveError = error;
+    } else {
+        // 3. Se o ID não existir, fazemos um INSERT
+        const { error } = await supabase
+            .from('login_banner_settings')
+            .insert(dataToSave);
+        saveError = error;
+    }
 
     setIsSaving(false);
 
@@ -83,8 +92,8 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
       showError('Falha ao salvar configurações do banner.');
     } else {
       showSuccess('Configurações do banner de login salvas com sucesso!');
-      // Força o recarregamento das configurações para atualizar o estado local com o novo ID (se for um INSERT)
-      // Embora o hook useLoginBannerSettings só recarregue no mount, o sucesso já foi dado.
+      // Força o recarregamento para garantir que o hook useLoginBannerSettings pegue o novo ID (se for INSERT)
+      // Embora o hook não tenha uma função de recarga, o próximo fetch deve funcionar.
     }
   };
 
