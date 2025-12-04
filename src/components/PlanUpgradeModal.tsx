@@ -70,7 +70,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
     }
   };
   
-  // Função para simular o redirecionamento para o Asaas
+  // Função para simular o redirecionamento para o Mercado Pago
   const handleCheckout = (planRole: string) => {
     if (planRole === 'free') {
         // Permite o downgrade/seleção do plano grátis via simulação
@@ -79,13 +79,12 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
     }
     
     // Em uma aplicação real, você chamaria uma Edge Function aqui para:
-    // 1. Criar um cliente no Asaas (se não existir)
-    // 2. Criar uma assinatura ou cobrança única para o plano
-    // 3. Retornar o link de pagamento do Asaas e redirecionar o usuário.
+    // 1. Criar uma preferência de pagamento no Mercado Pago
+    // 2. Retornar o link de checkout e redirecionar o usuário.
     
-    const checkoutLink = `https://asaas.com/checkout/simulado?plan=${planRole}&user=${profile.id}`;
+    const checkoutLink = `https://mercadopago.com.br/checkout/simulado?plan=${planRole}&user=${profile.id}`;
     
-    alert(`Simulação de Checkout Asaas para o plano ${PLAN_NAMES[planRole]}.\n\nEm uma aplicação real, você seria redirecionado para:\n${checkoutLink}\n\nApós o pagamento, o Asaas Webhook atualizaria seu plano automaticamente.`);
+    alert(`Simulação de Checkout Mercado Pago para o plano ${PLAN_NAMES[planRole]}.\n\nEm uma aplicação real, você seria redirecionado para:\n${checkoutLink}\n\nApós o pagamento, o Mercado Pago Webhook atualizaria seu plano automaticamente.`);
     
     // Simula o redirecionamento (apenas para demonstração)
     window.open(checkoutLink, '_blank');
@@ -186,7 +185,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
                     'Plano Atual'
                   ) : isUpgrade ? (
                     <>
-                      Fazer Upgrade (Asaas) <ExternalLink size={16} />
+                      Fazer Upgrade (Mercado Pago) <ExternalLink size={16} />
                     </>
                   ) : (
                     'Selecionar Plano'
