@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import OpenAI from "npm:openai";
 
 const corsHeaders = {
@@ -24,8 +24,8 @@ serve(async (req) => {
     });
 
     const result = await openai.audio.speech.create({
-      // Usando o modelo sugerido pelo usuário
-      model: "gpt-4o-mini-tts", 
+      // CORREÇÃO: Usando o modelo padrão 'tts-1'
+      model: "tts-1", 
       voice: "alloy",
       input: text,
       format: "mp3",
