@@ -3,7 +3,7 @@ import { ShoppingCart, Loader2, ExternalLink, AlertTriangle, Settings } from 'lu
 import { useWooCommerceProducts } from '../hooks/useWooCommerceProducts';
 import { WooProduct } from '../../types';
 
-const ProductCard: React.FC<{ product: WooProduct }> = ({ product }) => {
+const ProductCard: React.FC<{ product: WooProduct }> = React.memo(({ product }) => {
     // Garante que o preço seja um número e formatado para 2 casas decimais
     const rawPrice = parseFloat(product.sale_price || product.regular_price || product.price);
     const priceFormatted = isNaN(rawPrice) ? '0.00' : rawPrice.toFixed(2).replace('.', ',');
@@ -41,7 +41,7 @@ const ProductCard: React.FC<{ product: WooProduct }> = ({ product }) => {
             <ExternalLink size={12} className="text-gray-400 ml-1 shrink-0" />
         </a>
     );
-};
+});
 
 const WooCommerceBanner: React.FC = () => {
   const { products, loading, error } = useWooCommerceProducts();
@@ -56,6 +56,7 @@ const WooCommerceBanner: React.FC = () => {
   }
   
   if (error) {
+    // Se houver erro, renderiza o bloco de erro de forma estável
     return (
       <div className="p-4 bg-red-50 rounded-xl shadow-inner border border-red-200">
         <div className="flex items-center gap-2 mb-2">

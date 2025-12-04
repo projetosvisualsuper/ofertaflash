@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError } from '../utils/toast';
 import { WooProduct } from '../../types';
@@ -7,8 +7,18 @@ export function useWooCommerceProducts() {
   const [products, setProducts] = useState<WooProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMounted = useRef(true); // Referência para rastrear se o componente está montado
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const fetchProducts = useCallback(async () => {
+    if (!isMounted.current) return; // Proteção extra
+    
     setLoading(true);
     setError(null);
     
@@ -16,6 +26,8 @@ export function useWooCommerceProducts() {
       const { data, error: invokeError } = await supabase.functions.invoke('woocommerce-proxy', {
         method: 'GET',
       });
+
+      if (!isMounted.current) return;
 
       if (invokeError) {
         throw new Error(invokeError.message);
@@ -28,6 +40,8 @@ export function useWooCommerceProducts() {
       setProducts(data.products || []);
 
     } catch (err) {
+      if (!isMounted.current) return;
+      
       const errorMessage = (err as Error).message;
       console.error('WooCommerce Fetch Error:', errorMessage);
       
@@ -39,11 +53,11 @@ export function useWooCommerceProducts() {
       }
       
       setError(userMessage);
-      // Removendo showError daqui para evitar a repetição de toasts
-      // O componente WooCommerceBanner já exibe o erro usando o estado 'error'
       setProducts([]);
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
