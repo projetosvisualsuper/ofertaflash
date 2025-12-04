@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
 import { INITIAL_THEME, POSTER_FORMATS } from '../state/initialState';
-import { Download, Save } from 'lucide-react';
+import { Download, Save, Image as ImageIcon } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { showSuccess, showError } from '../utils/toast';
 import { dataURLtoBlob } from '../utils/cn'; // Importando a função auxiliar
@@ -20,18 +20,17 @@ interface PosterBuilderPageProps {
   addSavedImage: (image: Omit<SavedImage, 'id' | 'timestamp'>) => Promise<void>;
 }
 
-// Encontra os formatos de redes sociais
-const SOCIAL_MEDIA_FORMATS = POSTER_FORMATS.filter(f => f.id === 'story' || f.id === 'feed');
+// Filtra o formato 'tv' para que ele não apareça no Poster Builder
+const builderFormats = POSTER_FORMATS.filter(f => f.id !== 'tv');
+const defaultFormat = builderFormats.find(f => f.id === 'a4') || builderFormats[0];
 
 export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats, addSavedImage }: PosterBuilderPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const posterRef = useRef<PosterPreviewRef>(null);
-  const tempPosterRef = useRef<HTMLDivElement>(null); // Novo ref para renderização temporária
-
-  // Filtra o formato 'tv' para que ele não apareça no Poster Builder
-  const builderFormats = formats.filter(f => f.id !== 'tv');
-  const defaultFormat = builderFormats.find(f => f.id === 'a4') || builderFormats[0];
+  
+  // Estado para controlar qual formato será salvo na galeria (padrão: formato ativo)
+  const [saveFormatId, setSaveFormatId] = useState(theme.format.id);
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -55,6 +54,11 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         }));
     }
   }, [theme.format.id, setTheme, defaultFormat]);
+  
+  // Sincroniza o formato de salvamento com o formato ativo, a menos que o usuário tenha selecionado outro
+  useEffect(() => {
+    setSaveFormatId(theme.format.id);
+  }, [theme.format.id]);
 
   const handleDownload = () => {
     if (posterRef.current) {
@@ -70,17 +74,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         format: format,
     };
     
-    // 2. Renderizar o PosterPreview com o tema temporário no ref temporário
-    // Nota: O PosterPreview precisa ser renderizado no DOM para que o toPng funcione.
-    // O componente PosterPreview já está sendo renderizado no DOM principal,
-    // mas precisamos garantir que ele use o formato correto para a exportação.
-    
-    // Para evitar a complexidade de renderizar um componente invisível,
-    // vamos usar o ref principal (posterRef.current) e forçar a renderização
-    // do formato desejado, mas isso exigiria alterar o estado global (theme),
-    // o que causaria piscar na tela.
-    
-    // SOLUÇÃO: Usar o ref principal, mas salvar o formato original e restaurá-lo.
+    // Salva o formato original para restauração
     const originalFormat = currentTheme.format;
     
     // Temporariamente muda o formato do tema global (isso fará o preview piscar)
@@ -184,29 +178,23 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         setIsSaving(false);
         return;
     }
+    
+    // Encontra o formato selecionado para salvar
+    const formatToSave = builderFormats.find(f => f.id === saveFormatId);
+    
+    if (!formatToSave) {
+        showError("Formato de salvamento inválido.");
+        setIsSaving(false);
+        return;
+    }
 
-    let successCount = 0;
-    let errorCount = 0;
-    
-    // Salva o formato ativo primeiro (se não for um dos sociais)
-    if (!SOCIAL_MEDIA_FORMATS.some(f => f.id === theme.format.id)) {
-        const success = await generateAndSaveImage(theme.format, theme, products, userId);
-        if (success) successCount++; else errorCount++;
-    }
-    
-    // Salva os formatos de redes sociais (Story e Feed)
-    for (const format of SOCIAL_MEDIA_FORMATS) {
-        const success = await generateAndSaveImage(format, theme, products, userId);
-        if (success) successCount++; else errorCount++;
-    }
+    // Salva APENAS o formato selecionado
+    const success = await generateAndSaveImage(formatToSave, theme, products, userId);
 
     setIsSaving(false);
     
-    if (successCount > 0) {
-        showSuccess(`${successCount} artes salvas na galeria de Redes Sociais!`);
-    }
-    if (errorCount > 0) {
-        showError(`${errorCount} artes falharam ao salvar. Verifique o console.`);
+    if (success) {
+        showSuccess(`Arte salva na galeria de Redes Sociais no formato ${formatToSave.name}!`);
     }
   };
 
@@ -216,6 +204,8 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
       format: newFormat,
     }));
   }, [setTheme]);
+
+  const selectedSaveFormat = builderFormats.find(f => f.id === saveFormatId);
 
   return (
     <div className="flex flex-col md:flex-row h-full w-full overflow-hidden font-sans">
@@ -233,7 +223,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
            <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm fixed">
              <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center animate-pulse">
                <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p className="font-semibold text-gray-800">{isSaving ? 'Salvando Artes na Galeria...' : 'Gerando Imagem em Alta Resolução...'}</p>
+               <p className="font-semibold text-gray-800">{isSaving ? 'Salvando Arte na Galeria...' : 'Gerando Imagem em Alta Resolução...'}</p>
              </div>
            </div>
          )}
@@ -254,16 +244,36 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
             {/* Botões de Ação Lateral e Banner */}
             <div className="flex flex-col flex-shrink-0 w-48 h-full"> {/* Adicionado h-full para ocupar a altura total */}
                 
-                {/* Área Vermelha: Botões de Ação */}
-                <div className="flex flex-col gap-4 flex-shrink-0 mb-4">
+                {/* Área de Salvamento */}
+                <div className="flex flex-col gap-2 flex-shrink-0 mb-4 p-3 bg-white rounded-xl shadow-md border border-gray-200">
+                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                        <ImageIcon size={14} /> Salvar Formato:
+                    </label>
+                    <select
+                        value={saveFormatId}
+                        onChange={(e) => setSaveFormatId(e.target.value)}
+                        className="w-full border rounded-lg px-2 py-1 text-sm bg-white focus:ring-indigo-500 outline-none"
+                        disabled={isSaving || isDownloading}
+                    >
+                        {builderFormats.map(fmt => (
+                            <option key={fmt.id} value={fmt.id}>
+                                {fmt.name} ({fmt.label})
+                            </option>
+                        ))}
+                    </select>
+                    
                     <button
                       onClick={handleSaveToGallery}
                       disabled={isSaving || isDownloading}
-                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
+                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-all disabled:opacity-50 w-full mt-2"
                     >
-                      <Save size={20} />
-                      {isSaving ? 'Salvando...' : `Salvar Artes (SM)`}
+                      <Save size={16} />
+                      {isSaving ? 'Salvando...' : `Salvar Arte`}
                     </button>
+                </div>
+                
+                {/* Botão de Download */}
+                <div className="flex flex-col gap-4 flex-shrink-0 mb-4">
                     <button
                       onClick={handleDownload}
                       disabled={isSaving || isDownloading}
