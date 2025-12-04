@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogClose } from '../ui/dialog';
 import { Zap, Check, Loader2, ArrowRight, ExternalLink } from 'lucide-react';
 import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/constants';
 import { Profile } from '../../types';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
-import { usePlanConfigurations } from '../hooks/usePlanConfigurations'; // NOVO IMPORT
+import { usePlanConfigurations } from '../hooks/usePlanConfigurations';
 
 interface PlanUpgradeModalProps {
   profile: Profile;
@@ -90,7 +90,13 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
             },
         });
 
-        if (error) throw error;
+        if (error) {
+            // Se o SDK retornar um erro de invocação (non-2xx status code)
+            // Tentamos extrair a mensagem de erro do corpo da resposta da Edge Function, se disponível.
+            const edgeFunctionError = (error as any).context?.body?.error || error.message;
+            throw new Error(edgeFunctionError);
+        }
+        
         if (data.error) throw new Error(data.error);
         
         const checkoutLink = data.checkoutLink;
@@ -104,7 +110,20 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
     } catch (error) {
         const errorMessage = (error as Error).message;
         console.error("Checkout Error:", errorMessage);
-        updateToast(loadingToast, `Falha ao iniciar o checkout: ${errorMessage}`, 'error');
+        
+        let userMessage = "Falha ao iniciar o checkout. Verifique as chaves de API no Supabase Secrets.";
+        
+        if (errorMessage.includes('Mercado Pago API failed')) {
+            userMessage = `Erro na API do Mercado Pago. Verifique o Access Token e as permissões. Detalhe: ${errorMessage}`;
+        } else if (errorMessage.includes('not configured in Supabase Secrets')) {
+            userMessage = 'Erro: MERCADOPAGO_ACCESS_TOKEN não configurado no Supabase Secrets.';
+        } else if (errorMessage.includes('Plan configuration not found')) {
+            userMessage = 'Erro: Configuração do plano não encontrada no banco de dados.';
+        } else {
+            userMessage = errorMessage;
+        }
+        
+        updateToast(loadingToast, userMessage, 'error');
         setIsLoading(false);
     }
   };

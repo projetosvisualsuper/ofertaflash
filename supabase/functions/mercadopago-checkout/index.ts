@@ -111,7 +111,7 @@ serve(async (req) => {
         
         // Retorna o erro detalhado para o frontend
         return new Response(JSON.stringify({ 
-            error: `Mercado Pago API failed (${mpResponse.status}): ${errorBody.message || 'Unknown error'}` 
+            error: `Mercado Pago API failed (${mpResponse.status}): ${errorBody.message || 'Unknown error'}. Verifique o Access Token e as permissões.` 
         }), {
             status: mpResponse.status, // Retorna o status code real do MP
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
