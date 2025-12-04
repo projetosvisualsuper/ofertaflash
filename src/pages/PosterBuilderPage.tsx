@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import PosterPreview, { PosterPreviewRef } from '../components/PosterPreview';
 import { Product, PosterTheme, PosterFormat, SavedImage } from '../../types';
-import { INITIAL_THEME } from '../state/initialState';
+import { INITIAL_THEME, POSTER_FORMATS } from '../state/initialState';
 import { Download, Save } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { showSuccess, showError } from '../utils/toast';
 import { dataURLtoBlob } from '../utils/cn'; // Importando a função auxiliar
 import { supabase } from '@/src/integrations/supabase/client';
 import WooCommerceBanner from '../components/WooCommerceBanner';
-import WooCommerceCarousel from '../components/WooCommerceCarousel'; // NOVO IMPORT
+import WooCommerceCarousel from '../components/WooCommerceCarousel';
 
 interface PosterBuilderPageProps {
   theme: PosterTheme;
@@ -20,11 +20,14 @@ interface PosterBuilderPageProps {
   addSavedImage: (image: Omit<SavedImage, 'id' | 'timestamp'>) => Promise<void>;
 }
 
+// Encontra os formatos de redes sociais
+const SOCIAL_MEDIA_FORMATS = POSTER_FORMATS.filter(f => f.id === 'story' || f.id === 'feed');
+
 export default function PosterBuilderPage({ theme, setTheme, products, setProducts, formats, addSavedImage }: PosterBuilderPageProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const posterRef = useRef<PosterPreviewRef>(null);
-  const posterCanvasRef = useRef<HTMLDivElement>(null); // Ref para o elemento DOM do PosterPreview
+  const tempPosterRef = useRef<HTMLDivElement>(null); // Novo ref para renderização temporária
 
   // Filtra o formato 'tv' para que ele não apareça no Poster Builder
   const builderFormats = formats.filter(f => f.id !== 'tv');
@@ -59,24 +62,40 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
     }
   };
   
-  const handleSaveToGallery = async () => {
-    const posterElement = document.getElementById('poster-canvas');
-    if (!posterElement) return;
-
-    setIsSaving(true);
-    const userResponse = await supabase.auth.getUser();
-    const userId = userResponse.data.user?.id;
+  // Função auxiliar para gerar e salvar uma imagem para um formato específico
+  const generateAndSaveImage = useCallback(async (format: PosterFormat, currentTheme: PosterTheme, currentProducts: Product[], userId: string) => {
+    // 1. Criar um tema temporário com o formato desejado
+    const tempTheme: PosterTheme = {
+        ...currentTheme,
+        format: format,
+    };
     
-    if (!userId) {
-        showError("Usuário não autenticado. Por favor, faça login novamente.");
-        setIsSaving(false);
-        return;
-    }
+    // 2. Renderizar o PosterPreview com o tema temporário no ref temporário
+    // Nota: O PosterPreview precisa ser renderizado no DOM para que o toPng funcione.
+    // O componente PosterPreview já está sendo renderizado no DOM principal,
+    // mas precisamos garantir que ele use o formato correto para a exportação.
+    
+    // Para evitar a complexidade de renderizar um componente invisível,
+    // vamos usar o ref principal (posterRef.current) e forçar a renderização
+    // do formato desejado, mas isso exigiria alterar o estado global (theme),
+    // o que causaria piscar na tela.
+    
+    // SOLUÇÃO: Usar o ref principal, mas salvar o formato original e restaurá-lo.
+    const originalFormat = currentTheme.format;
+    
+    // Temporariamente muda o formato do tema global (isso fará o preview piscar)
+    setTheme(tempTheme);
+    
+    // Espera o DOM atualizar
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const posterElement = document.getElementById('poster-canvas');
+    if (!posterElement) throw new Error("Poster canvas element not found.");
 
     try {
-      // 1. Gerar a imagem PNG em Base64
-      const targetWidth = theme.format.width;
-      const targetHeight = theme.format.height;
+      // 3. Gerar a imagem PNG em Base64
+      const targetWidth = format.width;
+      const targetHeight = format.height;
       const scale = targetWidth / posterElement.offsetWidth;
       const sourceHeight = posterElement.offsetWidth * (targetHeight / targetWidth);
 
@@ -98,12 +117,11 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
         }
       });
       
-      // 2. Converter Base64 para Blob
+      // 4. Converter Base64 para Blob e Upload para o Supabase Storage
       const imageBlob = dataURLtoBlob(dataUrl);
-      const fileName = `art-${theme.format.id}-${crypto.randomUUID()}.png`;
-      const filePath = `${userId}/${fileName}`; // Caminho: [UID]/[nome-do-arquivo].png
+      const fileName = `art-${format.id}-${crypto.randomUUID()}.png`;
+      const filePath = `${userId}/${fileName}`;
 
-      // 3. Upload para o Supabase Storage (Bucket 'saved_arts')
       const { error: uploadError } = await supabase.storage
         .from('saved_arts')
         .upload(filePath, imageBlob, {
@@ -111,47 +129,84 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
           upsert: true,
         });
 
-      if (uploadError) {
-        // Loga o erro detalhado do Storage
-        console.error("Storage Upload Error:", uploadError);
-        throw new Error(`Falha no upload: ${uploadError.message}`);
-      }
+      if (uploadError) throw new Error(`Falha no upload (${format.name}): ${uploadError.message}`);
 
-      // 4. Obter URL pública
+      // 5. Obter URL pública
       const { data: urlData } = supabase.storage
         .from('saved_arts')
         .getPublicUrl(filePath);
         
-      if (!urlData.publicUrl) throw new Error("Falha ao obter URL pública do Storage.");
+      if (!urlData.publicUrl) throw new Error(`Falha ao obter URL pública (${format.name}).`);
 
-      // 5. Limpeza do Tema antes de salvar no DB
-      const themeToSave = { ...theme };
-      
-      // Garantir que Base64 não seja salvo no tema (embora já tenhamos feito isso no Sidebar, é uma boa prática)
+      // 6. Limpeza do Tema antes de salvar no DB (remove Base64)
+      const themeToSave = { ...tempTheme };
       if (themeToSave.backgroundImage && themeToSave.backgroundImage.startsWith('data:')) {
         themeToSave.backgroundImage = undefined;
       }
       if (themeToSave.logo && themeToSave.logo.src.startsWith('data:')) {
         themeToSave.logo.src = '';
       }
-      // ---------------------------------------
 
-      // 6. Salvar o registro no DB com o URL e o path
+      // 7. Salvar o registro no DB
       const newImage: Omit<SavedImage, 'id' | 'timestamp'> = {
         imageUrl: urlData.publicUrl,
         storagePath: filePath,
-        formatName: theme.format.name,
+        formatName: format.name,
         theme: themeToSave, 
       };
       
       await addSavedImage(newImage);
+      return true;
 
     } catch (err) {
-      console.error("Failed to save poster to gallery", err);
-      // Mostra a mensagem de erro detalhada para o usuário
-      showError(`Erro ao salvar a arte na galeria. Detalhe: ${(err as Error).message}`);
+      console.error(`Failed to save poster for ${format.name}`, err);
+      showError(`Erro ao salvar ${format.name}: ${(err as Error).message}`);
+      return false;
     } finally {
-      setIsSaving(false);
+      // 8. Restaurar o formato original do tema
+      setTheme(prevTheme => ({
+          ...prevTheme,
+          format: originalFormat,
+      }));
+      // Espera o DOM restaurar
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }, [addSavedImage, setTheme]);
+
+
+  const handleSaveToGallery = async () => {
+    setIsSaving(true);
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
+    
+    if (!userId) {
+        showError("Usuário não autenticado. Por favor, faça login novamente.");
+        setIsSaving(false);
+        return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Salva o formato ativo primeiro (se não for um dos sociais)
+    if (!SOCIAL_MEDIA_FORMATS.some(f => f.id === theme.format.id)) {
+        const success = await generateAndSaveImage(theme.format, theme, products, userId);
+        if (success) successCount++; else errorCount++;
+    }
+    
+    // Salva os formatos de redes sociais (Story e Feed)
+    for (const format of SOCIAL_MEDIA_FORMATS) {
+        const success = await generateAndSaveImage(format, theme, products, userId);
+        if (success) successCount++; else errorCount++;
+    }
+
+    setIsSaving(false);
+    
+    if (successCount > 0) {
+        showSuccess(`${successCount} artes salvas na galeria de Redes Sociais!`);
+    }
+    if (errorCount > 0) {
+        showError(`${errorCount} artes falharam ao salvar. Verifique o console.`);
     }
   };
 
@@ -178,7 +233,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
            <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm fixed">
              <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center animate-pulse">
                <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p className="font-semibold text-gray-800">{isSaving ? 'Salvando Arte na Galeria...' : 'Gerando Imagem em Alta Resolução...'}</p>
+               <p className="font-semibold text-gray-800">{isSaving ? 'Salvando Artes na Galeria...' : 'Gerando Imagem em Alta Resolução...'}</p>
              </div>
            </div>
          )}
@@ -186,6 +241,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
          <div className="flex h-full w-full max-w-7xl items-center justify-center gap-6">
             {/* Área de Preview */}
             <div className="flex-1 relative h-full flex items-center justify-center">
+                {/* O PosterPreview principal agora é o elemento que será capturado */}
                 <PosterPreview 
                   ref={posterRef}
                   theme={theme} 
@@ -206,7 +262,7 @@ export default function PosterBuilderPage({ theme, setTheme, products, setProduc
                       className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 w-full"
                     >
                       <Save size={20} />
-                      {isSaving ? 'Salvando...' : `Salvar Arte`}
+                      {isSaving ? 'Salvando...' : `Salvar Artes (SM)`}
                     </button>
                     <button
                       onClick={handleDownload}

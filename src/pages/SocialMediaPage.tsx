@@ -34,6 +34,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
   useEffect(() => {
     const isSocialFormat = socialFormats.some(f => f.id === theme.format.id);
     
+    // Se o formato atual não for um formato social, define o padrão como 'feed'
     if (!isSocialFormat) {
       const defaultFormat = socialFormats.find(f => f.id === 'feed');
       if (defaultFormat) {
@@ -153,6 +154,7 @@ export default function SocialMediaPage({ theme, setTheme, products, setProducts
         deleteImage={deleteImage}
         handleSelectImageForPreview={handleSelectImageForPreview}
         previewImage={previewImage}
+        activeFormatName={theme.format.name} // Passando o nome do formato ativo para filtro
       />
       
       <main className="flex-1 bg-gray-100 relative h-full flex flex-col">
