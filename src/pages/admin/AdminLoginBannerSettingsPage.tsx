@@ -79,9 +79,15 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
         saveError = error;
     } else {
         // 3. Se o ID não existir, fazemos um INSERT
+        // Geramos o ID no cliente para garantir que não seja nulo
+        const insertData = {
+            ...dataToSave,
+            id: crypto.randomUUID(), // Gerando UUID no cliente
+        };
+        
         const { error } = await supabase
             .from('login_banner_settings')
-            .insert(dataToSave);
+            .insert(insertData);
         saveError = error;
     }
 
@@ -92,8 +98,7 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
       showError('Falha ao salvar configurações do banner.');
     } else {
       showSuccess('Configurações do banner de login salvas com sucesso!');
-      // Força o recarregamento para garantir que o hook useLoginBannerSettings pegue o novo ID (se for INSERT)
-      // Embora o hook não tenha uma função de recarga, o próximo fetch deve funcionar.
+      // Força o recarregamento para garantir que o hook useLoginBannerSettings pegue o novo ID
     }
   };
 
