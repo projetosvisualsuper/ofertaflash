@@ -38,7 +38,9 @@ export function useWooCommerceProducts() {
 
       if (invokeError) {
         // Se o SDK retornou um erro de invocação (rede, CORS, etc.)
-        throw new Error(invokeError.message); 
+        // Se for o erro genérico, tentamos extrair a mensagem de erro da Edge Function
+        const edgeFunctionError = data?.error || invokeError.message;
+        throw new Error(edgeFunctionError); 
       }
       
       if (data.error) {
@@ -59,13 +61,20 @@ export function useWooCommerceProducts() {
       // Tratamento de erros específicos
       if (errorMessage.includes('not configured in Supabase Secrets')) {
           userMessage = 'Erro: Chaves de API do WooCommerce não configuradas no Supabase Secrets.';
-      } else if (errorMessage.includes('WooCommerce API failed')) {
-          userMessage = 'Erro de comunicação com a API do WooCommerce. Verifique a URL e as chaves.';
+      } else if (errorMessage.includes('WooCommerce API returned status 401')) {
+          userMessage = 'Erro 401: Chaves de API inválidas ou sem permissão de Leitura.';
+      } else if (errorMessage.includes('WooCommerce API returned status 404')) {
+          userMessage = 'Erro 404: URL do WooCommerce incorreta ou endpoint da API não encontrado.';
+      } else if (errorMessage.includes('WooCommerce API returned status')) {
+          // Captura qualquer outro erro de status retornado pela Edge Function
+          userMessage = `Erro de API do WooCommerce: ${errorMessage}`;
       } else if (errorMessage.includes('Failed to fetch')) {
           userMessage = 'Erro de rede ao tentar conectar com o WooCommerce. Verifique a URL.';
-      } else if (invokeError) {
-          // Captura erros de invocação que não foram tratados acima
-          userMessage = `Erro de conexão com o servidor: ${invokeError.message}`;
+      } else if (errorMessage.includes('Edge Function returned a non-2xx status code')) {
+          // Se ainda for o erro genérico, mantemos a mensagem de erro de conexão
+          userMessage = 'Erro de conexão com o servidor. Verifique a URL e as chaves no Supabase Secrets.';
+      } else {
+          userMessage = errorMessage;
       }
       
       setError(userMessage);
