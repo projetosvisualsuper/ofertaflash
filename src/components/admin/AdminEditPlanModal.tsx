@@ -37,6 +37,8 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
   };
   
   const handleSave = async () => {
+    console.log("Attempting to save plan:", localPlan); // Log de execução
+    
     if (!localPlan.name.trim() || !localPlan.price.trim()) {
       showError("Nome e Preço são obrigatórios.");
       return;
@@ -50,6 +52,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           price: localPlan.price,
           permissions: localPlan.permissions,
         });
+        // Se onSave for bem-sucedido (o hook usePlanConfigurations deve mostrar o toast de sucesso)
         onClose();
     } catch (error) {
         // O erro já deve ser tratado e exibido pelo hook usePlanConfigurations
