@@ -112,12 +112,26 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
 
     } catch (error) {
       console.error("TTS Generation Error:", error);
-      // Corrigindo a mensagem de erro para a chave correta
-      const errorMessage = (error as Error).message;
+      
+      // Tratamento de erro seguro para evitar recursão
+      let errorMessage = "Erro desconhecido ao processar áudio.";
+      if (error instanceof Error) {
+          errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+          // Tenta extrair a mensagem de objetos que se parecem com Error
+          errorMessage = String((error as any).message);
+      } else {
+          // Se for um objeto complexo, tenta stringify de forma segura
+          try {
+              errorMessage = JSON.stringify(error);
+          } catch (e) {
+              errorMessage = "Erro de serialização. Verifique o console.";
+          }
+      }
       
       // Mensagem de erro atualizada para refletir a nova Voice ID padrão (Adam)
       const userFriendlyError = errorMessage.includes('Voice ID') 
-        ? `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se a Voice ID padrão (Adam) está disponível. Detalhe: ${errorMessage}`
+        ? `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se a Voice ID configurada está disponível. Detalhe: ${errorMessage}`
         : `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está ativo. Detalhe: ${errorMessage}`;
         
       updateToast(loadingToast, userFriendlyError, 'error');
