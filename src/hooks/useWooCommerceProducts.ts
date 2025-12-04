@@ -39,7 +39,8 @@ export function useWooCommerceProducts() {
       }
       
       setError(userMessage);
-      showError(userMessage);
+      // Removendo showError daqui para evitar a repetição de toasts
+      // O componente WooCommerceBanner já exibe o erro usando o estado 'error'
       setProducts([]);
     } finally {
       setLoading(false);
