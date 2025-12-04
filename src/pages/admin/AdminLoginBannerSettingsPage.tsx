@@ -43,13 +43,14 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
     
     setIsSaving(true);
     
-    // 1. Buscar o ID do registro (deve haver apenas um)
+    // 1. Buscar o ID do registro existente (se houver)
     const { data: existingData, error: fetchError } = await supabase
       .from('login_banner_settings')
       .select('id')
       .limit(1)
       .single();
       
+    // Ignoramos PGRST116 (No rows found)
     if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching existing ID:', fetchError);
         showError('Falha ao buscar ID de configuração.');
@@ -60,17 +61,20 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
     const idToUpdate = existingData?.id;
     
     const dataToSave = {
+        // Inclui o ID apenas se estivermos atualizando
+        ...(idToUpdate && { id: idToUpdate }),
         title: localSettings.title,
         subtitle: localSettings.subtitle,
         features: localSettings.features.filter(f => f.trim().length > 0), // Filtra recursos vazios
-        bannerColor: localSettings.bannerColor, // NOVO CAMPO
+        bannerColor: localSettings.bannerColor,
         updated_at: new Date().toISOString(),
     };
 
-    // 2. Upsert (se o ID existir, atualiza; se não, insere)
+    // 2. Usar upsert. Se idToUpdate existir, ele fará o UPDATE. Se não, fará o INSERT (e o DB gerará o ID).
+    // Usamos 'id' como chave de conflito, o que é seguro se 'id' for a PK.
     const { error: saveError } = await supabase
       .from('login_banner_settings')
-      .upsert(idToUpdate ? { id: idToUpdate, ...dataToSave } : dataToSave, { onConflict: 'id' });
+      .upsert(dataToSave, { onConflict: 'id' });
 
     setIsSaving(false);
 
@@ -79,7 +83,8 @@ const AdminLoginBannerSettingsPage: React.FC = () => {
       showError('Falha ao salvar configurações do banner.');
     } else {
       showSuccess('Configurações do banner de login salvas com sucesso!');
-      // O hook irá recarregar automaticamente na próxima vez que a página de login for acessada.
+      // Força o recarregamento das configurações para atualizar o estado local com o novo ID (se for um INSERT)
+      // Embora o hook useLoginBannerSettings só recarregue no mount, o sucesso já foi dado.
     }
   };
 
