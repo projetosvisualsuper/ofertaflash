@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
-import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw, Lock } from 'lucide-react';
+import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw, Lock, Copy } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/openAiService'; // ATUALIZADO
 import { THEME_PRESETS, ThemePreset } from '../config/themePresets';
 import { HEADER_LAYOUT_PRESETS } from '../config/headerLayoutPresets';
@@ -130,6 +130,20 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
       'tv': JSON.parse(JSON.stringify(defaultLayout)),
     }
   });
+  
+  // Função auxiliar para duplicar um produto existente no cartaz
+  const duplicateProduct = (productToDuplicate: Product) => {
+    const newProduct: Product = {
+      ...productToDuplicate,
+      id: crypto.randomUUID(), // Novo ID
+      name: `${productToDuplicate.name} (Cópia)`,
+      // Garante que os layouts sejam copiados profundamente
+      layouts: JSON.parse(JSON.stringify(productToDuplicate.layouts)),
+    };
+    
+    setProducts(prev => [...prev, newProduct]);
+    showSuccess(`Produto "${newProduct.name}" duplicado com sucesso!`);
+  };
 
   const addProduct = (baseProduct?: RegisteredProduct) => {
     setProducts(prev => [
@@ -931,7 +945,10 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                         <div className="flex-1"><label className="text-[10px] text-gray-500 uppercase font-bold">Unid. Atacado</label><input className="w-full border rounded px-2 py-1 text-sm outline-none" value={product.wholesaleUnit || ''} onChange={(e) => handleProductChange(product.id, 'wholesaleUnit', e.target.value)} placeholder="3un, cx, fardo"/></div>
                       </div>
                    </div>
-                   <button onClick={() => removeProduct(product.id)} className="text-gray-400 hover:text-red-500" title="Remover"><Trash2 size={16} /></button>
+                   <div className="flex flex-col gap-1 ml-2">
+                      <button onClick={() => duplicateProduct(product)} className="text-gray-400 hover:text-indigo-500 p-1" title="Duplicar Produto"><Copy size={16} /></button>
+                      <button onClick={() => removeProduct(product.id)} className="text-gray-400 hover:text-red-500 p-1" title="Remover"><Trash2 size={16} /></button>
+                   </div>
                 </summary>
                 <div className="border-t bg-white p-3 space-y-4">
                   <h4 className="text-xs font-bold uppercase text-gray-500 flex items-center gap-2"><SlidersHorizontal size={14}/> Layout Individual ({theme.format.name})</h4>
