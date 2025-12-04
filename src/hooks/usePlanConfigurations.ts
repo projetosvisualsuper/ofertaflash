@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/src/integrations/supabase/client';
-import { showError } from '../utils/toast';
+import { showError, showSuccess } from '../utils/toast';
 import { Permission } from '../../types';
 
 export interface PlanConfiguration {
@@ -52,9 +52,11 @@ export function usePlanConfigurations(isAdmin: boolean) {
     if (error) {
       console.error('Error updating plan configuration:', error);
       showError(`Falha ao atualizar o plano ${role}.`);
+      throw new Error(`Falha ao atualizar o plano ${role}.`); // Lança erro para o modal capturar
     } else {
       showSuccess(`Plano ${updates.name || role} atualizado com sucesso!`);
-      fetchPlans(); // Recarrega a lista
+      // AGUARDA o recarregamento dos dados antes de resolver a promessa
+      await fetchPlans(); 
     }
   };
 
