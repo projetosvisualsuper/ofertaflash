@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX } from 'lucide-react';
-import { generateAdScript } from '../../services/openAiService';
+import { generateAdScript, generateAudioFromText } from '../../services/openAiService';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { supabase } from '@/src/integrations/supabase/client';
 
@@ -9,9 +9,6 @@ interface AdScriptGeneratorProps {
   products: Product[];
   theme: PosterTheme;
 }
-
-// Hardcoded URL for the Edge Function (replace with your project ID)
-const TTS_FUNCTION_URL = "https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/elevenlabs-tts"; 
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
@@ -77,35 +74,11 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com ElevenLabs...");
+    const loadingToast = showLoading("Gerando áudio com OpenAI TTS...");
 
     try {
-      // Chamada direta à Edge Function da ElevenLabs
-      const response = await fetch(TTS_FUNCTION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          text: adScript.script,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        // Se houver erro, data.details deve conter a mensagem de erro
-        const errorDetail = data.details 
-          ? (typeof data.details === 'string' ? data.details : JSON.stringify(data.details)) 
-          : data.error || "Erro desconhecido na Edge Function.";
-        throw new Error(errorDetail);
-      }
-
-      const audioBase64 = data.audioContent;
-      
-      // O ElevenLabs retorna Base64 puro, que precisa ser decodificado para Blob
-      const audioBlob = new Blob([Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0))], { type: 'audio/mp3' });
-      const url = URL.createObjectURL(audioBlob);
+      // Chamada da nova função de serviço
+      const url = await generateAudioFromText(adScript.script);
       setAudioUrl(url);
       
       updateToast(loadingToast, "Áudio gerado com sucesso!", 'success');
@@ -113,26 +86,16 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     } catch (error) {
       console.error("TTS Generation Error:", error);
       
-      // Tratamento de erro seguro para evitar recursão
       let errorMessage = "Erro desconhecido ao processar áudio.";
       if (error instanceof Error) {
           errorMessage = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error) {
-          // Tenta extrair a mensagem de objetos que se parecem com Error
-          errorMessage = String((error as any).message);
       } else {
-          // Se for um objeto complexo, tenta stringify de forma segura
-          try {
-              errorMessage = JSON.stringify(error);
-          } catch (e) {
-              errorMessage = "Erro de serialização. Verifique o console.";
-          }
+          errorMessage = String(error);
       }
       
-      // Mensagem de erro atualizada para refletir a nova Voice ID padrão (Adam)
-      const userFriendlyError = errorMessage.includes('Voice ID') 
-        ? `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se a Voice ID configurada está disponível. Detalhe: ${errorMessage}`
-        : `Falha ao gerar áudio. Verifique a chave ELEVENLABS_API_KEY e se o serviço está ativo. Detalhe: ${errorMessage}`;
+      const userFriendlyError = errorMessage.includes('OPENAI_API_KEY') 
+        ? `Falha ao gerar áudio. Verifique se a chave OPENAI_API_KEY está configurada corretamente no Supabase Secrets.`
+        : `Falha ao gerar áudio. Detalhe: ${errorMessage}`;
         
       updateToast(loadingToast, userFriendlyError, 'error');
     } finally {

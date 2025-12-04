@@ -122,6 +122,32 @@ export const generateAdScript = async (products: Product[]): Promise<AdScript> =
 };
 
 /**
- * NOTA: A função generateProductImageAndUpload foi removida conforme solicitado.
- * O upload de imagens de produto agora deve ser feito manualmente pelo usuário.
+ * NOVO: Função para gerar áudio usando a Edge Function da OpenAI.
+ * Retorna um URL de objeto local (Blob URL) para reprodução.
  */
+export const generateAudioFromText = async (text: string): Promise<string> => {
+  // A Edge Function 'gerar-audio' retorna o ArrayBuffer do MP3 diretamente.
+  const { data, error } = await supabase.functions.invoke('gerar-audio', {
+    method: 'POST',
+    body: { text },
+    // O responseType deve ser 'arraybuffer' para lidar com o MP3 binário
+    options: { responseType: 'arraybuffer' } 
+  });
+
+  if (error) {
+    console.error("Error invoking 'gerar-audio' Edge Function:", error);
+    // Se o erro for um objeto, tentamos extrair a mensagem de erro da Edge Function
+    const errorDetails = (error as any).context?.body?.error || error.message;
+    throw new Error(`Falha na geração de áudio: ${errorDetails}`);
+  }
+  
+  if (!data) {
+      throw new Error("A Edge Function retornou dados vazios.");
+  }
+
+  // Cria um Blob a partir do ArrayBuffer retornado
+  const audioBlob = new Blob([data], { type: 'audio/mpeg' });
+  
+  // Cria um URL de objeto para o Blob
+  return URL.createObjectURL(audioBlob);
+};
