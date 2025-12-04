@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, Loader2, ExternalLink, AlertTriangle, Settings } from 'lucide-react';
 import { useWooCommerceProducts } from '../hooks/useWooCommerceProducts';
 import { WooProduct } from '../../types';
 
@@ -62,7 +62,10 @@ const WooCommerceBanner: React.FC = () => {
             <AlertTriangle className="w-5 h-5 text-red-600" />
             <p className="text-sm font-semibold text-red-800">Erro de Integração</p>
         </div>
-        <p className="text-xs text-red-700">{error}</p>
+        <p className="text-xs text-red-700 mb-2">{error}</p>
+        <a href="#" onClick={() => window.location.href = '#settings'} className="text-xs font-bold text-red-600 hover:text-red-800 flex items-center gap-1">
+            <Settings size={12} /> Configurar Chaves
+        </a>
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Settings, Key } from 'lucide-react';
+import WooCommerceSettingsInstructions from '../components/WooCommerceSettingsInstructions'; // NOVO IMPORT
 
 const SettingsPage: React.FC = () => {
   // A chave agora é um segredo do lado do servidor e não pode ser acessada aqui.
@@ -54,6 +55,11 @@ const SettingsPage: React.FC = () => {
             </ol>
         </div>
         
+        <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Integrações de E-commerce</h3>
+        
+        {/* WooCommerce Settings */}
+        <WooCommerceSettingsInstructions />
+
         <h3 className="text-xl font-semibold mt-8 mb-4 border-b pb-2">Outras Configurações</h3>
         <p className="text-gray-500">Em breve: Gerenciamento de usuários, faturamento e modelos personalizados.</p>
       </div>
