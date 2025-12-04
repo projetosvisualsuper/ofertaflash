@@ -1,5 +1,5 @@
 import React from 'react';
-import { PosterTheme, HeaderElement } from '../types';
+import { PosterTheme, HeaderElement, LogoLayout } from '../types';
 
 interface PosterHeaderProps {
   theme: PosterTheme;
@@ -11,6 +11,9 @@ interface PosterHeaderProps {
   minHeight?: string; // NOVO: Altura mínima opcional
 }
 
+// Layout padrão de fallback para a logo
+const DEFAULT_LOGO_LAYOUT: LogoLayout = { scale: 1, x: 0, y: 0 };
+
 const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerSubtitle, isLandscape, fontScale, isStory, minHeight }) => {
   const effectiveHeaderLayout = (theme.logo || theme.headerLayoutId === 'text-only') 
     ? theme.headerLayoutId 
@@ -19,7 +22,8 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   const isHeroImageMode = theme.headerImage && theme.headerImageMode === 'hero';
   const isBackgroundMode = theme.headerImage && theme.headerImageMode === 'background';
   
-  const currentLogoLayout = theme.logo?.layouts[theme.format.id];
+  // Usa o layout específico do formato ou o padrão de fallback
+  const currentLogoLayout = theme.logo?.layouts[theme.format.id] || DEFAULT_LOGO_LAYOUT;
   
   // Adiciona um timestamp para forçar o cache-busting
   const logoSrcWithCacheBust = theme.logo?.src 
@@ -65,7 +69,7 @@ const PosterHeader: React.FC<PosterHeaderProps> = ({ theme, headerTitle, headerS
   );
 
   const HeaderLogo = () => (
-    theme.logo && currentLogoLayout && logoSrcWithCacheBust ? (
+    theme.logo && logoSrcWithCacheBust ? (
       <div 
         style={{
           transform: `translateX(${currentLogoLayout.x}px) translateY(${currentLogoLayout.y}px) scale(${currentLogoLayout.scale})`,
