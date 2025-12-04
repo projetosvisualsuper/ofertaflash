@@ -86,6 +86,7 @@ const WooCommerceCarousel: React.FC = () => {
     );
   }
   
+  // Se houver erro, o carrossel deve mostrar a mensagem de "Sem produtos"
   if (error || totalProducts === 0) {
     return (
       <div className="p-4 bg-gray-50 rounded-xl shadow-inner text-center h-full flex items-center justify-center">

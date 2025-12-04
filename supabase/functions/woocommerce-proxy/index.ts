@@ -18,7 +18,11 @@ serve(async (req) => {
     const consumerSecret = Deno.env.get('WOOCOMMERCE_CONSUMER_SECRET');
     
     if (!WOOCOMMERCE_URL || !consumerKey || !consumerSecret) {
-      throw new Error("WooCommerce secrets (URL, KEY, or SECRET) are not configured.");
+      // Retorna um erro 400 com uma mensagem clara para o frontend
+      return new Response(JSON.stringify({ error: "WooCommerce secrets (URL, KEY, or SECRET) are not configured." }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
     
     // 1. Construir a URL de autenticação básica
@@ -37,7 +41,8 @@ serve(async (req) => {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error(`WooCommerce API Error:`, errorText);
+        console.error(`WooCommerce API Error:`, response.status, errorText);
+        // Lança um erro com o status e o corpo da resposta para ser capturado no frontend
         throw new Error(`WooCommerce API failed: ${response.status} - ${errorText}`);
     }
     
@@ -61,6 +66,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error in WooCommerce Edge Function:", error);
+    // Garante que o erro interno seja retornado como 500
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
