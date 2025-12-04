@@ -32,10 +32,15 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     
     if (error) {
       console.error('Logout Error:', error);
-      showError('Falha ao sair. Tente novamente.');
+      showError('Falha ao sair. Tentando forçar a limpeza da sessão...');
       
-      // Força a limpeza da sessão local e o reload para garantir o redirecionamento
+      // 1. Força a limpeza da sessão local (tokens)
       await supabase.auth.setSession({ access_token: '', refresh_token: '' });
+      
+      // 2. Limpa o armazenamento local do Supabase (chave de fallback)
+      localStorage.removeItem('supabase.auth.token');
+      
+      // 3. Recarrega a página para forçar o App.tsx a reavaliar a sessão nula
       window.location.reload();
       
     } else {
