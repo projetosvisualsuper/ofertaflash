@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
         <div className="w-full lg:w-1/2 p-12 flex flex-col justify-center">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mt-2">Criar Ofertas</h1>
-            <p className="text-gray-600">Entre com suas credenciais para acessar sua conta</p>
+            <p className="text-gray-600">Entre com suas credenciais para acessar o sistema</p>
           </div>
           <Auth
             supabaseClient={supabase}
