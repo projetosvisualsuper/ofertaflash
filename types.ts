@@ -167,7 +167,7 @@ export interface AdScript {
   };
 }
 
-// NOVO: Interface para o perfil do usuário
+// Interface para o perfil do usuário
 export interface Profile {
   id: string;
   username: string | null;
@@ -177,13 +177,13 @@ export interface Profile {
   deleted_at: string | null;
 }
 
-// NOVO: Interface para a visualização completa do admin
+// Interface para a visualização completa do admin
 export interface AdminProfileView extends Profile {
   email: string | null;
   created_at: string;
 }
 
-// NOVO: Interface para o produto simplificado do WooCommerce
+// Interface para o produto simplificado do WooCommerce
 export interface WooProduct {
   id: number;
   name: string;
@@ -192,4 +192,14 @@ export interface WooProduct {
   sale_price: string;
   permalink: string;
   image_url: string;
+}
+
+// NOVO: Interface para a conta de mídia social conectada
+export interface SocialMediaAccount {
+  id: string;
+  platform: 'meta' | 'twitter' | 'linkedin';
+  accessToken: string;
+  expiresAt: string;
+  accountId: string;
+  accountName: string;
 }
