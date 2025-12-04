@@ -33,13 +33,15 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
     if (error) {
       console.error('Logout Error:', error);
       showError('Falha ao sair. Tente novamente.');
-      // Em caso de falha, forçamos a limpeza da sessão local e o refresh
-      // Isso deve forçar o redirecionamento para a página de login no App.tsx
+      
+      // Força a limpeza da sessão local e o reload para garantir o redirecionamento
       await supabase.auth.setSession({ access_token: '', refresh_token: '' });
+      window.location.reload();
+      
     } else {
       showSuccess('Sessão encerrada com sucesso.');
+      // Se o logout for bem-sucedido, o onAuthStateChange no AuthContext deve lidar com o redirecionamento.
     }
-    // O App.tsx deve lidar com o redirecionamento quando a sessão for nula.
   };
   
   return (
