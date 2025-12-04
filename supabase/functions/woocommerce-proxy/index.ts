@@ -27,33 +27,45 @@ serve(async (req) => {
     const authQuery = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
     const productsEndpoint = `${WOOCOMMERCE_URL}/wp-json/wc/v3/products?per_page=10&status=publish&orderby=rand&${authQuery}`;
 
-    const response = await fetch(productsEndpoint, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
+    let response: Response;
+    
+    try {
+        // Tenta fazer a requisição ao WooCommerce
+        response = await fetch(productsEndpoint, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    } catch (fetchError) {
+        // Captura erros de rede, DNS ou SSL que impedem a conexão
+        console.error("WooCommerce Fetch Network Error:", fetchError);
+        return new Response(JSON.stringify({ 
+            error: `Network/DNS Error: Failed to connect to WooCommerce URL. Check if the URL is correct and publicly accessible. Details: ${fetchError.message}` 
+        }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
 
     if (!response.ok) {
         const errorStatus = response.status;
         let errorBody = `Status: ${errorStatus}`;
         
         try {
-            // Tenta ler o corpo da resposta para obter detalhes do erro do WooCommerce
             const errorJson = await response.json();
             errorBody = errorJson.message || JSON.stringify(errorJson);
         } catch (e) {
-            // Se não for JSON, usa o status
             errorBody = await response.text();
         }
         
         console.error(`WooCommerce API Error: ${errorStatus} - ${errorBody}`);
         
-        // Retorna o erro detalhado com status 500 para o frontend
         return new Response(JSON.stringify({ 
             error: `WooCommerce API returned status ${errorStatus}. Details: ${errorBody}` 
         }), {
-            status: 500, // Mantemos 500 para que o frontend saiba que a Edge Function falhou
+            status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
