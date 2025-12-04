@@ -19,7 +19,7 @@ serve(async (req) => {
     
     if (!WOOCOMMERCE_URL || !consumerKey || !consumerSecret) {
       // Retorna um erro 400 com uma mensagem clara para o frontend
-      return new Response(JSON.stringify({ error: "WooCommerce secrets (URL, KEY, or SECRET) are not configured." }), {
+      return new Response(JSON.stringify({ error: "WooCommerce secrets (URL, KEY, or SECRET) are not configured in Supabase Secrets." }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

@@ -55,7 +55,9 @@ export function useWooCommerceProducts() {
       console.error('WooCommerce Fetch Error:', errorMessage);
       
       let userMessage = 'Falha ao carregar produtos do WooCommerce.';
-      if (errorMessage.includes('not configured')) {
+      
+      // Tratamento de erros específicos
+      if (errorMessage.includes('not configured in Supabase Secrets')) {
           userMessage = 'Erro: Chaves de API do WooCommerce não configuradas no Supabase Secrets.';
       } else if (errorMessage.includes('WooCommerce API failed')) {
           userMessage = 'Erro de comunicação com a API do WooCommerce. Verifique a URL e as chaves.';
