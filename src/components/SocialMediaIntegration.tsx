@@ -13,22 +13,27 @@ const SocialMediaIntegration: React.FC = () => {
   const isMetaConnected = accounts.some(a => a.platform === 'meta');
   const metaAccount = accounts.find(a => a.platform === 'meta');
   
+  const [metaAppId, setMetaAppId] = useState<string | null>(null);
   const [metaAppIdStatus, setMetaAppIdStatus] = useState<'loading' | 'configured' | 'missing'>('loading');
 
   // Efeito para verificar erros de callback na URL e buscar status dos segredos
   useEffect(() => {
     const checkStatusAndErrors = async () => {
-        // 1. Verificar status dos segredos
+        // 1. Buscar o META_APP_ID real
         try {
-            const { data, error } = await supabase.functions.invoke('get-secrets-status', { method: 'GET' });
+            const { data, error } = await supabase.functions.invoke('get-meta-app-id', { method: 'GET' });
+            
             if (error || !data || data.error) {
                 setMetaAppIdStatus('missing');
+                setMetaAppId(null);
             } else {
-                setMetaAppIdStatus(data.META_APP_ID === 'CONFIGURED' ? 'configured' : 'missing');
+                setMetaAppId(data.metaAppId);
+                setMetaAppIdStatus('configured');
             }
         } catch (e) {
             console.error("Failed to check secrets status:", e);
             setMetaAppIdStatus('missing');
+            setMetaAppId(null);
         }
         
         // 2. Verificar erros de callback na URL
@@ -46,7 +51,7 @@ const SocialMediaIntegration: React.FC = () => {
             // Limpa os parâmetros para evitar loops
             url.searchParams.delete('code');
             url.searchParams.delete('state');
-            window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+            window.history.replaceState({}, document.title, url.pathname + window.location.hash);
             fetchAccounts();
         }
     };
@@ -61,8 +66,8 @@ const SocialMediaIntegration: React.FC = () => {
         return;
     }
     
-    if (metaAppIdStatus !== 'configured') {
-        showError("Erro: O segredo META_APP_ID não está configurado no Supabase Secrets. Consulte a página de Configurações.");
+    if (metaAppIdStatus !== 'configured' || !metaAppId) {
+        showError("Erro: O ID do Aplicativo Meta não está configurado corretamente no Supabase Secrets.");
         return;
     }
     
@@ -77,11 +82,8 @@ const SocialMediaIntegration: React.FC = () => {
         'pages_manage_posts'
     ].join(',');
 
-    // Usamos um valor de placeholder para o client_id na URL, pois o Meta exige.
-    // O valor real será usado na Edge Function para a troca de token.
-    const DUMMY_META_APP_ID = '1234567890123456'; 
-    
-    const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${DUMMY_META_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${userId}`;
+    // AGORA USAMOS O ID REAL DO APLICATIVO
+    const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${userId}`;
     
     // Redireciona o usuário para o Meta para iniciar o login
     window.location.href = authUrl;
@@ -93,7 +95,7 @@ const SocialMediaIntegration: React.FC = () => {
     }
   };
   
-  const metaButtonDisabled = loading || metaAppIdStatus === 'missing' || metaAppIdStatus === 'loading';
+  const metaButtonDisabled = loading || metaAppIdStatus !== 'configured';
 
   return (
     <div className="space-y-6">
