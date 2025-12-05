@@ -39,8 +39,13 @@ const SocialMediaIntegration: React.FC = () => {
         
         // 2. Verificar se estamos voltando de um callback
         const url = new URL(window.location.href);
-        const errorParam = url.searchParams.get('error');
-        const successParam = url.searchParams.get('meta_connect'); // NOVO PARÂMETRO
+        let errorParam = url.searchParams.get('error');
+        const successParam = url.searchParams.get('meta_connect'); 
+        
+        // Tratamento de erro específico para o erro 400 (falha na troca de token)
+        if (errorParam && errorParam.includes('Meta token exchange failed: 400')) {
+            errorParam = "Falha na troca de token (Erro 400). Verifique se o META_APP_SECRET está correto e se a URL de redirecionamento está configurada no Meta.";
+        }
         
         // Limpa os parâmetros de consulta da URL
         url.searchParams.delete('error');
