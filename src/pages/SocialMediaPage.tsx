@@ -15,7 +15,7 @@ interface SocialMediaPageProps {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   formats: PosterFormat[]; // Full list from App.tsx
   savedImages: SavedImage[];
-  deleteImage: (id: string) => Promise<void>;
+  deleteImage: (id: string) => Promise<void>; // CORREÇÃO: Apenas ID
 }
 
 // Filtra o formato 'tv' (que é para slides)
