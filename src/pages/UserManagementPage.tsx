@@ -67,8 +67,10 @@ const UserManagementPage: React.FC = () => {
   };
 
   const handleUserUpdated = () => {
-    // Força o recarregamento da lista
-    fetchProfiles();
+    // Adiciona um pequeno atraso para garantir que o DB tenha tempo de processar a alteração e o trigger.
+    setTimeout(() => {
+        fetchProfiles();
+    }, 500); 
   };
 
   // Abre o modal de confirmação
@@ -96,7 +98,7 @@ const UserManagementPage: React.FC = () => {
       showError("Falha ao desativar usuário.");
     } else {
       showSuccess("Usuário desativado.");
-      fetchProfiles();
+      handleUserUpdated(); // Usa o handler com delay
     }
   };
 
@@ -110,7 +112,7 @@ const UserManagementPage: React.FC = () => {
       showError("Falha ao ativar usuário.");
     } else {
       showSuccess("Usuário ativado com sucesso.");
-      fetchProfiles();
+      handleUserUpdated(); // Usa o handler com delay
     }
   };
 
