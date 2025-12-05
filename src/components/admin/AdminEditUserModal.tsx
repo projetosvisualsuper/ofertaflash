@@ -35,12 +35,13 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
       return;
     }
 
+    // 1. Atualiza o perfil com o novo role, novas permissões e força a atualização do timestamp
     const { error } = await supabase
       .from('profiles')
       .update({
         role: newRole,
         permissions: newPermissions,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(), // Força a atualização do timestamp
       })
       .eq('id', profile.id);
 
@@ -48,10 +49,10 @@ const AdminEditUserModal: React.FC<AdminEditUserModalProps> = ({ isOpen, onClose
 
     if (error) {
       console.error('Error updating user plan:', error);
-      showError(`Falha ao atualizar o plano de ${profile.username}.`);
+      showError(`Falha ao atualizar o plano de ${profile.username || profile.id}. Detalhe: ${error.message}`);
     } else {
-      showSuccess(`Plano de ${profile.username} atualizado para ${PLAN_NAMES[newRole]}.`);
-      onUserUpdated();
+      showSuccess(`Plano de ${profile.username || profile.id} atualizado para ${PLAN_NAMES[newRole]}.`);
+      onUserUpdated(); // Força o recarregamento da lista na página pai
       onClose();
     }
   };
