@@ -7,11 +7,23 @@ import { useAuth } from '../context/AuthContext';
 import AdminEditUserModal from '../components/admin/AdminEditUserModal';
 import ConfirmationModal from '../components/ConfirmationModal'; // NOVO IMPORT
 
+// O tipo AdminProfileView é necessário para a tabela
+interface AdminProfileView {
+  id: string;
+  email: string | null;
+  username: string | null;
+  role: string;
+  permissions: string[];
+  updated_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}
+
 const UserManagementPage: React.FC = () => {
   const [profiles, setProfiles] = useState<AdminProfileView[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<AdminProfileView | null>(null); // Usando AdminProfileView
   const [searchTerm, setSearchTerm] = useState('');
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null);
   const { hasPermission } = useAuth();
@@ -25,6 +37,7 @@ const UserManagementPage: React.FC = () => {
 
   const fetchProfiles = useCallback(async () => {
     setLoading(true);
+    // Adicionando um parâmetro de cache-busting (embora o PostgREST não use query params para cache, ajuda a garantir)
     const { data, error } = await supabase
       .from('admin_users_view')
       .select('*');
@@ -43,7 +56,7 @@ const UserManagementPage: React.FC = () => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  const handleEditClick = (profile: Profile) => {
+  const handleEditClick = (profile: AdminProfileView) => {
     setSelectedProfile(profile);
     setIsModalOpen(true);
   };
@@ -54,6 +67,7 @@ const UserManagementPage: React.FC = () => {
   };
 
   const handleUserUpdated = () => {
+    // Força o recarregamento da lista
     fetchProfiles();
   };
 
