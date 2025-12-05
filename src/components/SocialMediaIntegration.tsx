@@ -73,21 +73,18 @@ const SocialMediaIntegration: React.FC = () => {
     
     const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
     
-    // Escopos essenciais e modernos para postagem
+    // Força a URL de origem a ser a URL de produção configurada no Meta
+    const appOrigin = 'https://criarofertas.vercel.app';
+        
+    const statePayload = `${userId}|${appOrigin}`;
+
+    // AGORA USAMOS O ID REAL DO APLICATIVO
     const scopes = [
         'public_profile', 
         'pages_read_engagement', 
         'pages_manage_posts'
     ].join(',');
     
-    // CORREÇÃO: Se estiver em localhost, forçamos a URL de produção para o redirecionamento final.
-    const appOrigin = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
-        ? 'https://criarofertas.vercel.app' // URL de produção fornecida pelo usuário
-        : window.location.origin;
-        
-    const statePayload = `${userId}|${appOrigin}`;
-
-    // AGORA USAMOS O ID REAL DO APLICATIVO
     const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${encodeURIComponent(statePayload)}`;
     
     // Redireciona o usuário para o Meta para iniciar o login
