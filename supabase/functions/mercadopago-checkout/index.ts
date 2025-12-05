@@ -53,9 +53,11 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `Plan configuration not found for role: ${planRole}` }), { status: 404, headers: corsHeaders });
     }
     
-    // 3. Extrair o preço (removendo R$ e / mês para obter o valor numérico)
-    const priceMatch = planConfig.price.match(/[\d,.]+/);
+    // 3. Extrair o preço (removendo R$, espaços e substituindo vírgula por ponto)
+    const rawPriceString = planConfig.price.replace('R$', '').replace('/', '').replace('mês', '').trim();
+    const priceMatch = rawPriceString.match(/[\d,.]+/);
     let priceValue = 0;
+    
     if (priceMatch) {
         // Substitui vírgula por ponto e garante que seja um float
         priceValue = parseFloat(priceMatch[0].replace(',', '.'));
@@ -65,7 +67,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `Invalid price value found in DB for plan ${planRole}: ${planConfig.price}` }), { status: 400, headers: corsHeaders });
     }
     
-    // Garante que o valor tenha duas casas decimais (necessário para algumas APIs de pagamento)
+    // Garante que o valor tenha duas casas decimais
     const transactionAmount = parseFloat(priceValue.toFixed(2));
     
     // 4. Cria o payload da Preferência de Assinatura (Preapproval)
@@ -107,7 +109,7 @@ serve(async (req) => {
             errorBody = { message: await mpResponse.text() };
         }
         
-        console.error("Mercado Pago API Error:", errorBody);
+        console.error("Mercado Pago API Error:", mpResponse.status, errorBody);
         
         // Retorna o erro detalhado para o frontend
         return new Response(JSON.stringify({ 
