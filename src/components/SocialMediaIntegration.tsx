@@ -86,8 +86,8 @@ const SocialMediaIntegration: React.FC = () => {
     
     const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
     
-    // Força a URL de origem a ser a URL de produção configurada no Meta
-    const appOrigin = 'https://criarofertas.vercel.app';
+    // MUDANÇA AQUI: Usando a URL de origem dinâmica do navegador
+    const appOrigin = window.location.origin;
         
     const statePayload = `${userId}|${appOrigin}`;
 
