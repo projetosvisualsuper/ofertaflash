@@ -15,6 +15,7 @@ const SocialMediaIntegration: React.FC = () => {
   
   const [metaAppId, setMetaAppId] = useState<string | null>(null);
   const [metaAppIdStatus, setMetaAppIdStatus] = useState<'loading' | 'configured' | 'missing'>('loading');
+  const [isCheckingCallback, setIsCheckingCallback] = useState(false); // NOVO ESTADO
 
   // Efeito para verificar erros de callback na URL e buscar status dos segredos
   useEffect(() => {
@@ -36,9 +37,11 @@ const SocialMediaIntegration: React.FC = () => {
             setMetaAppId(null);
         }
         
-        // 2. Verificar erros de callback na URL
+        // 2. Verificar se estamos voltando de um callback
         const url = new URL(window.location.href);
         const errorParam = url.searchParams.get('error');
+        const hasCallbackParams = url.searchParams.has('code') && url.searchParams.has('state');
+        
         if (errorParam) {
           showError(`Erro de Conexão: ${decodeURIComponent(errorParam)}`);
           // Limpa o parâmetro de erro da URL
@@ -46,13 +49,19 @@ const SocialMediaIntegration: React.FC = () => {
           window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
         }
         
-        // 3. Forçar busca de contas se houver um callback bem-sucedido (sem erro)
-        if (url.searchParams.has('code') && url.searchParams.has('state')) {
+        if (hasCallbackParams) {
+            setIsCheckingCallback(true); // Ativa o carregamento
             // Limpa os parâmetros para evitar loops
             url.searchParams.delete('code');
             url.searchParams.delete('state');
             window.history.replaceState({}, document.title, url.pathname + window.location.hash);
-            fetchAccounts();
+            
+            // Força a busca de contas após um pequeno atraso para dar tempo ao DB
+            setTimeout(() => {
+                fetchAccounts().finally(() => {
+                    setIsCheckingCallback(false);
+                });
+            }, 500); // Atraso de 500ms
         }
     };
 
@@ -85,7 +94,7 @@ const SocialMediaIntegration: React.FC = () => {
         'pages_manage_posts'
     ].join(',');
     
-    const authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${encodeURIComponent(statePayload)}`;
+    const authUrl = `https://www.facebook.com/v24.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopes}&state=${encodeURIComponent(statePayload)}`;
     
     // Redireciona o usuário para o Meta para iniciar o login
     window.location.href = authUrl;
@@ -98,6 +107,9 @@ const SocialMediaIntegration: React.FC = () => {
   };
   
   const metaButtonDisabled = loading || metaAppIdStatus !== 'configured';
+  
+  // Se estiver carregando as contas OU verificando o callback, mostre o spinner
+  const isMetaLoading = loading || isCheckingCallback;
 
   return (
     <div className="space-y-6">
@@ -129,7 +141,11 @@ const SocialMediaIntegration: React.FC = () => {
                 </div>
             )}
             
-            {isMetaConnected && metaAccount ? (
+            {isMetaLoading ? (
+                <div className="flex items-center justify-center p-3 bg-gray-100 rounded-lg">
+                    <Loader2 size={16} className="animate-spin mr-2" /> {isCheckingCallback ? 'Finalizando conexão...' : 'Carregando status...'}
+                </div>
+            ) : isMetaConnected && metaAccount ? (
                 <div className="flex items-center justify-between p-3 bg-green-100 rounded-lg border border-green-400">
                     <p className="text-sm font-bold text-green-800 flex items-center gap-2">
                         <Check size={16} /> Conectado: {metaAccount.accountName}
