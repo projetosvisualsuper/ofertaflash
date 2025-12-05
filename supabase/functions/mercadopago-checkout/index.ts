@@ -7,6 +7,8 @@ const corsHeaders = {
 };
 
 const MERCADOPAGO_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,6 +26,20 @@ serve(async (req) => {
       });
     }
     
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        console.error("MP Checkout Error: Supabase Admin secrets are missing.");
+        return new Response(JSON.stringify({ error: "Supabase URL or Service Role Key is missing in Edge Function environment." }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+    
+    // 1. Criar cliente Admin para buscar dados da tabela plan_configurations
+    const supabaseAdmin = createClient(
+        SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY
+    );
+    
     let planRole, userId;
     try {
         const body = await req.json();
@@ -39,12 +55,6 @@ serve(async (req) => {
         console.error("MP Checkout Error: Missing planRole or userId.");
         return new Response(JSON.stringify({ error: 'Missing planRole or userId in request body' }), { status: 400, headers: corsHeaders });
     }
-    
-    // 1. Criar cliente Admin para buscar dados da tabela plan_configurations
-    const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
     
     // 2. Buscar detalhes do plano no DB
     const { data: planConfig, error: planError } = await supabaseAdmin
