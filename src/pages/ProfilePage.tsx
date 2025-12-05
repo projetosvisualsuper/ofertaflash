@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserCircle, Mail, Key, Zap, Save, Loader2, ArrowDownCircle, AlertTriangle } from 'lucide-react';
+import { UserCircle, Mail, Key, Zap, Save, Loader2, ArrowDownCircle, AlertTriangle, DollarSign, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
@@ -7,9 +7,12 @@ import { PLAN_NAMES, DEFAULT_PERMISSIONS_BY_ROLE, Permission } from '../config/c
 import PlanUpgradeModal from '../components/PlanUpgradeModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SocialMediaIntegration from '../components/SocialMediaIntegration';
+import { useUserCredits } from '../hooks/useUserCredits'; // NOVO IMPORT
 
 const ProfilePage: React.FC = () => {
   const { profile, session, refreshProfile } = useAuth();
+  const { credits, loading: loadingCredits, fetchCredits } = useUserCredits(session?.user?.id); // Usando o hook de créditos
+  
   const [username, setUsername] = useState(profile?.username || '');
   const [newPassword, setNewPassword] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -108,6 +111,11 @@ const ProfilePage: React.FC = () => {
       refreshProfile(); // Atualiza o estado global
     }
   };
+  
+  const handleBuyCredits = () => {
+      showSuccess("Funcionalidade de compra de créditos em desenvolvimento. No futuro, você será redirecionado para o checkout.");
+      // Aqui seria a lógica para iniciar o checkout de créditos avulsos
+  };
 
   // --- Componentes de Seção ---
 
@@ -152,6 +160,44 @@ const ProfilePage: React.FC = () => {
       )}
     </div>
   );
+  
+  const CreditsSection = () => (
+    <div className="p-6 bg-white rounded-xl shadow-md space-y-4">
+      <h3 className="text-xl font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
+        <DollarSign size={20} className="text-green-600" /> Créditos de IA
+      </h3>
+      
+      {loadingCredits ? (
+        <div className="flex items-center justify-center p-4">
+          <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-sm font-medium text-green-800">Saldo Atual:</p>
+            <span className="text-2xl font-black text-green-600">
+              {credits.balance.toLocaleString('pt-BR')}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Clock size={16} className="text-gray-500 shrink-0" />
+            <span className="font-medium">Última Recarga:</span> 
+            <span>{new Date(credits.lastRefillAt).toLocaleDateString()}</span>
+          </div>
+          
+          <div className="border-t pt-4">
+            <button
+              onClick={handleBuyCredits}
+              className="w-full flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 rounded-lg transition-colors"
+            >
+              <Plus size={16} /> Comprar Créditos Adicionais
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <div className="flex-1 flex flex-col p-8 bg-gray-100 h-full overflow-y-auto">
@@ -161,8 +207,9 @@ const ProfilePage: React.FC = () => {
       </h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl w-full mx-auto">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
             <PlanSection />
+            <CreditsSection />
         </div>
         <div className="lg:col-span-2 space-y-6">
             {/* NOVO CARD COMBINADO: Detalhes do Perfil e Senha */}

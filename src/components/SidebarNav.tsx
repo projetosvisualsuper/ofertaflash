@@ -1,11 +1,12 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield, BarChart3 } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield, BarChart3, DollarSign } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
 import { Permission } from '../../types';
 import { PLAN_NAMES } from '../config/constants';
 import PlanStatus from './PlanStatus';
+import { useUserCredits } from '../hooks/useUserCredits'; // NOVO IMPORT
 
 interface SidebarNavProps {
   activeModule: string;
@@ -25,7 +26,8 @@ const MODULES: { id: string; name: string; icon: React.ElementType; description:
 ];
 
 const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }) => {
-  const { profile, hasPermission, refreshProfile } = useAuth();
+  const { profile, hasPermission, refreshProfile, session } = useAuth();
+  const { credits, loading: loadingCredits } = useUserCredits(session?.user?.id); // Usando o hook de créditos
   
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -59,6 +61,14 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
       {profile && (
         <div className="p-4 border-b border-gray-700 text-xs text-gray-400">
           <p className="font-semibold text-white">Olá, {profile.username || 'Usuário'}</p>
+          <div className="flex items-center justify-between mt-1">
+            <span className="flex items-center gap-1 text-yellow-400">
+                <DollarSign size={14} /> Créditos IA:
+            </span>
+            <span className="font-bold text-lg text-white">
+                {loadingCredits ? <Loader2 size={14} className="animate-spin" /> : credits.balance.toLocaleString('pt-BR')}
+            </span>
+          </div>
         </div>
       )}
       
@@ -112,7 +122,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
         )}
         <button
           onClick={handleLogout}
-          className="w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 text-red-400 hover:bg-red-700 hover:text-white"
+          className="w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 text-red-400 hover:bg-gray-700 hover:text-white"
         >
           <LogOut size={20} />
           <span className="text-sm font-semibold">Sair (Logout)</span>

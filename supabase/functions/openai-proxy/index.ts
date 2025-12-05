@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,6 +7,10 @@ const corsHeaders = {
 };
 
 const OPENAI_API_URL = "https://api.openai.com/v1";
+
+// Custo das operações
+const COST_TEXT = 1;
+const COST_IMAGE = 10;
 
 async function callOpenAI(endpoint: string, apiKey: string, payload: any) {
     const response = await fetch(`${OPENAI_API_URL}/${endpoint}`, {
@@ -29,6 +34,11 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+  
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "Unauthorized: Missing Authorization header" }), { status: 401, headers: corsHeaders });
+  }
 
   try {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
@@ -38,7 +48,51 @@ serve(async (req) => {
 
     const { task, data } = await req.json();
     let result;
+    let creditCost = 0;
+    let description = '';
+    
+    switch (task) {
+      case 'generateMarketingCopy':
+      case 'parseProductsFromText':
+      case 'generateAdScript':
+        creditCost = COST_TEXT;
+        description = `Consumo de ${COST_TEXT} crédito para Geração de Texto/Roteiro (GPT-4o-mini)`;
+        break;
+      case 'generateBackgroundImage':
+      case 'generateProductImage':
+        creditCost = COST_IMAGE;
+        description = `Consumo de ${COST_IMAGE} créditos para Geração de Imagem (DALL-E 3)`;
+        break;
+      default:
+        return new Response(JSON.stringify({ error: 'Invalid task' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+    
+    // --- 1. CONSUMIR CRÉDITOS ---
+    const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { 'Authorization': authHeader } } }
+    );
+    
+    const { data: creditData, error: creditError } = await supabase.functions.invoke('credit-consumer', {
+        method: 'POST',
+        body: { amount: creditCost, description: description },
+        headers: { 'Authorization': authHeader }
+    });
 
+    if (creditError || creditData.error) {
+        const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
+        console.error("Credit Consumption Failed:", errorMessage);
+        // Retorna 402 se for erro de saldo insuficiente
+        const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
+        return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    // --- FIM CONSUMO DE CRÉDITOS ---
+
+    // --- 2. EXECUTAR TAREFA DE IA ---
     switch (task) {
       case 'generateMarketingCopy': {
         const { topic } = data;
@@ -75,22 +129,16 @@ serve(async (req) => {
             temperature: 0.1,
         });
         
-        // O GPT retorna um objeto JSON que contém o array, precisamos extrair o texto.
         const jsonContent = chatResponse.choices[0].message.content;
         
-        // Como o GPT retorna um objeto JSON, precisamos garantir que ele seja um array de produtos.
-        // O prompt pede um array, mas o response_format é 'json_object'. Vamos tentar parsear.
         try {
             const parsed = JSON.parse(jsonContent);
-            // Se o GPT retornou um objeto com uma chave principal (ex: {"products": [...]}), tentamos extrair.
-            // Caso contrário, assumimos que o conteúdo é o array.
             if (parsed.products && Array.isArray(parsed.products)) {
                 result = { text: JSON.stringify(parsed.products) };
             } else {
                 result = { text: jsonContent };
             }
         } catch (e) {
-            // Se falhar, retornamos o texto bruto para o frontend tentar lidar.
             result = { text: jsonContent };
         }
         break;
@@ -114,10 +162,9 @@ serve(async (req) => {
         
         const imageBase64 = imageResponse.data[0].b64_json;
         
-        // Retorna o Base64 e o MIME type diretamente
         return new Response(JSON.stringify({ 
             imageBase64: imageBase64,
-            mimeType: 'image/png', // DALL-E 3 sempre retorna PNG
+            mimeType: 'image/png',
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
@@ -153,14 +200,15 @@ serve(async (req) => {
             temperature: 0.5,
         });
         
-        result = { text: chatResponse.choices[0].message.content };
+        const jsonContent = chatResponse.choices[0].message.content;
+        
+        try {
+            result = { text: jsonContent };
+        } catch (e) {
+            result = { text: jsonContent };
+        }
         break;
       }
-      default:
-        return new Response(JSON.stringify({ error: 'Invalid task' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
     }
     
     // Retorna o resultado do chat/imagem
