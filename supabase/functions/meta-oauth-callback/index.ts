@@ -11,6 +11,9 @@ const META_APP_ID = Deno.env.get('META_APP_ID');
 const META_APP_SECRET = Deno.env.get('META_APP_SECRET');
 const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
 
+// ATUALIZANDO A VERSÃO DA API PARA V24.0
+const API_VERSION = 'v24.0';
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -58,7 +61,7 @@ serve(async (req) => {
 
   try {
     // 1. Trocar o código de autorização por um token de acesso de curta duração
-    const tokenUrl = `https://graph.facebook.com/v20.0/oauth/access_token?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_secret=${META_APP_SECRET}&code=${code}`;
+    const tokenUrl = `https://graph.facebook.com/${API_VERSION}/oauth/access_token?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_secret=${META_APP_SECRET}&code=${code}`;
     
     const tokenResponse = await fetch(tokenUrl);
     if (!tokenResponse.ok) {
@@ -70,7 +73,7 @@ serve(async (req) => {
     const shortLivedToken = tokenData.access_token;
     
     // 2. Trocar o token de curta duração por um token de longa duração
-    const longLivedTokenUrl = `https://graph.facebook.com/v20.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${META_APP_ID}&client_secret=${META_APP_SECRET}&fb_exchange_token=${shortLivedToken}`;
+    const longLivedTokenUrl = `https://graph.facebook.com/${API_VERSION}/oauth/access_token?grant_type=fb_exchange_token&client_id=${META_APP_ID}&client_secret=${META_APP_SECRET}&fb_exchange_token=${shortLivedToken}`;
     
     const longLivedResponse = await fetch(longLivedTokenUrl);
     if (!longLivedResponse.ok) {
@@ -85,7 +88,7 @@ serve(async (req) => {
     const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString();
 
     // 3. Obter a lista de Páginas do usuário usando o token de longa duração
-    const pagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${longLivedUserToken}`;
+    const pagesUrl = `https://graph.facebook.com/${API_VERSION}/me/accounts?access_token=${longLivedUserToken}`;
     const pagesResponse = await fetch(pagesUrl);
     const pagesData = await pagesResponse.json();
     
