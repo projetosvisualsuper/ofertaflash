@@ -37,17 +37,18 @@ serve(async (req) => {
     }
   } catch (e) {
     console.error("Failed to decode state:", e);
-    // Se a decodificação falhar, tentamos usar um fallback
-    finalRedirect = `https://ofertaflash.vercel.app/#profile`;
   }
   
+  // Se o state for inválido ou não existir, usamos a URL de origem da Edge Function como fallback,
+  // mas isso geralmente falha no AI Studio. O ideal é que o state seja sempre válido.
   if (!finalRedirect) {
-      // Fallback se o state for inválido
-      finalRedirect = `https://ofertaflash.vercel.app/#profile`;
+      // Fallback para a URL de origem do Supabase (que não é o que queremos, mas é o que temos)
+      finalRedirect = `${url.origin.replace('/functions/v1/meta-oauth-callback', '')}/#profile`;
   }
   
   if (!code || !userId) {
-    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Missing code or state parameter.")}`, 302);
+    // Se o código ou userId estiver faltando, redireciona com erro.
+    return Response.redirect(`${finalRedirect}?error=${encodeURIComponent("Missing code or user ID in callback.")}`, 302);
   }
   
   if (!META_APP_ID || !META_APP_SECRET) {
