@@ -20,17 +20,19 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!MERCADOPAGO_ACCESS_TOKEN) {
-      console.error("MP Checkout Error: MERCADOPAGO_ACCESS_TOKEN is missing.");
-      return new Response(JSON.stringify({ error: "MERCADOPAGO_ACCESS_TOKEN is not configured in Supabase Secrets." }), {
-        status: 400,
+      const errorMsg = "MERCADOPAGO_ACCESS_TOKEN is not configured in Supabase Secrets.";
+      console.error("MP Checkout Error:", errorMsg);
+      return new Response(JSON.stringify({ error: errorMsg }), {
+        status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
     
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-        console.error("MP Checkout Error: Supabase Admin secrets are missing.");
-        return new Response(JSON.stringify({ error: "Supabase URL or Service Role Key is missing in Edge Function environment." }), {
-            status: 500,
+        const errorMsg = "Supabase URL or Service Role Key is missing in Edge Function environment.";
+        console.error("MP Checkout Error:", errorMsg);
+        return new Response(JSON.stringify({ error: errorMsg }), {
+            status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
@@ -49,12 +51,13 @@ serve(async (req) => {
         console.log(`MP Checkout: Received body - planRole: ${planRole}, userId: ${userId}`);
     } catch (e) {
         console.error("MP Checkout Error: Failed to parse request body.", e);
-        return new Response(JSON.stringify({ error: 'Invalid JSON body received.' }), { status: 400, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: 'Invalid JSON body received.' }), { status: 200, headers: corsHeaders });
     }
     
     if (!planRole || !userId) {
-        console.error("MP Checkout Error: Missing planRole or userId.");
-        return new Response(JSON.stringify({ error: 'Missing planRole or userId in request body' }), { status: 400, headers: corsHeaders });
+        const errorMsg = 'Missing planRole or userId in request body';
+        console.error("MP Checkout Error:", errorMsg);
+        return new Response(JSON.stringify({ error: errorMsg }), { status: 200, headers: corsHeaders });
     }
     
     // 2. Buscar detalhes do plano no DB
@@ -65,8 +68,9 @@ serve(async (req) => {
         .single();
         
     if (planError || !planConfig) {
-        console.error("MP Checkout Error: Error fetching plan configuration:", planError);
-        return new Response(JSON.stringify({ error: `Plan configuration not found for role: ${planRole}` }), { status: 404, headers: corsHeaders });
+        const errorMsg = `Plan configuration not found for role: ${planRole}`;
+        console.error("MP Checkout Error:", errorMsg, planError);
+        return new Response(JSON.stringify({ error: errorMsg }), { status: 200, headers: corsHeaders });
     }
     
     // 3. Extrair o preço (removendo R$, espaços e substituindo vírgula por ponto)
@@ -80,8 +84,9 @@ serve(async (req) => {
     }
     
     if (isNaN(priceValue) || priceValue <= 0) {
-        console.error(`MP Checkout Error: Invalid price value found: ${planConfig.price}`);
-        return new Response(JSON.stringify({ error: `Invalid price value found in DB for plan ${planRole}: ${planConfig.price}` }), { status: 400, headers: corsHeaders });
+        const errorMsg = `Invalid price value found: ${planConfig.price}`;
+        console.error("MP Checkout Error:", errorMsg);
+        return new Response(JSON.stringify({ error: errorMsg }), { status: 200, headers: corsHeaders });
     }
     
     // Garante que o valor tenha duas casas decimais
@@ -92,7 +97,7 @@ serve(async (req) => {
     const externalReference = `${userId}_${planRole}`;
     
     // URLs de retorno e notificação
-    const backUrl = "https://ofertaflash.vercel.app/#profile"; // Usando hash para garantir que o App React lide com o redirecionamento
+    const backUrl = "https://criarofertas.vercel.app/#profile"; // Usando hash para garantir que o App React lide com o redirecionamento
     const notificationUrl = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/mercadopago-webhook-handler`;
     
     const preapprovalPayload = {
@@ -129,13 +134,15 @@ serve(async (req) => {
             errorBody = { message: await mpResponse.text() };
         }
         
-        console.error("MP Checkout Error: Mercado Pago API failed:", mpResponse.status, errorBody);
+        const errorMsg = `Mercado Pago API failed (${mpResponse.status}): ${errorBody.message || 'Unknown error'}. Verifique o Access Token e as permissões.`;
+        console.error("MP Checkout Error:", errorMsg);
         
         // Retorna o erro detalhado para o frontend
         return new Response(JSON.stringify({ 
-            error: `Mercado Pago API failed (${mpResponse.status}): ${errorBody.message || 'Unknown error'}. Verifique o Access Token e as permissões.` 
+            error: errorMsg,
+            mpStatus: mpResponse.status, // Inclui o status do MP para debug
         }), {
-            status: mpResponse.status, // Retorna o status code real do MP
+            status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
@@ -155,7 +162,7 @@ serve(async (req) => {
     // Captura qualquer erro de tempo de execução (ex: erro de rede, erro de sintaxe)
     console.error("MP Checkout Error: Internal Edge Function error:", error);
     return new Response(JSON.stringify({ error: `Internal Edge Function Error: ${error.message}` }), {
-      status: 500,
+      status: 200, // Retorna 200 para que o frontend possa ler o corpo do erro
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
