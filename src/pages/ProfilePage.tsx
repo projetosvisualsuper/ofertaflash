@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserCircle, Mail, Key, Zap, Save, Loader2, ArrowDownCircle, AlertTriangle, DollarSign, Clock } from 'lucide-react';
+import { UserCircle, Mail, Key, Zap, Save, Loader2, ArrowDownCircle, AlertTriangle, DollarSign, Clock, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../utils/toast';
