@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield, BarChart3, DollarSign } from 'lucide-react';
+import { LayoutTemplate, Monitor, Clapperboard, Image, Settings, Zap, Database, Building, LogOut, Users, Lock, UserCircle, Shield, BarChart3, DollarSign, Loader2 } from 'lucide-react';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showError, showSuccess } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
