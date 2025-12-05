@@ -74,7 +74,9 @@ const SocialMediaIntegration: React.FC = () => {
     const REDIRECT_URI = `https://cdktwczejznbqfzmizpu.supabase.co/functions/v1/meta-oauth-callback`;
     
     // Escopos essenciais e modernos para postagem
+    // Adicionando 'public_profile' que é frequentemente exigido
     const scopes = [
+        'public_profile', // Necessário para o fluxo de login
         'instagram_basic', 
         'pages_read_engagement', 
         'pages_manage_posts'
