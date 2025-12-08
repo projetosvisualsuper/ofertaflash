@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
-import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX } from 'lucide-react';
+import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX, DollarSign } from 'lucide-react';
 import { generateAdScript, generateAudioFromText } from '../../services/openAiService';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { supabase } from '@/src/integrations/supabase/client';
+import { useAICosts } from '../hooks/useAICosts';
+import { useAuth } from '../context/AuthContext';
 
 interface AdScriptGeneratorProps {
   products: Product[];
@@ -11,6 +13,9 @@ interface AdScriptGeneratorProps {
 }
 
 const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
+  const { profile } = useAuth();
+  const { costMap } = useAICosts();
+  
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(products.length > 0 ? [products[0].id] : []);
   const [adScript, setAdScript] = useState<AdScript | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +27,9 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     products.filter(p => selectedProductIds.includes(p.id)), 
     [products, selectedProductIds]
   );
+  
+  const scriptCost = profile?.role === 'admin' ? 0 : costMap.generate_ad_script;
+  const audioCost = profile?.role === 'admin' ? 0 : costMap.generate_audio;
 
   const handleProductSelection = (productId: string, isChecked: boolean) => {
     if (isChecked) {
@@ -41,7 +49,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     setAdScript(null);
     setAudioUrl(null); // Limpa o áudio anterior
     
-    const loadingToast = showLoading("Gerando roteiro com IA...");
+    const loadingToast = showLoading(`Gerando roteiro com IA (Custo: ${scriptCost} créditos)...`);
     
     try {
       const generatedScript = await generateAdScript(selectedProducts);
@@ -74,7 +82,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading("Gerando áudio com OpenAI TTS...");
+    const loadingToast = showLoading(`Gerando áudio com OpenAI TTS (Custo: ${audioCost} créditos)...`);
 
     try {
       // Chamada da nova função de serviço
@@ -200,7 +208,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
           ) : (
             <Zap size={20} />
           )}
-          {isLoading ? 'Gerando Roteiro...' : 'Gerar Roteiro de Anúncio'}
+          {isLoading ? 'Gerando Roteiro...' : `Gerar Roteiro (Custo: ${scriptCost} créditos)`}
         </button>
         
         {adScript && (
@@ -228,7 +236,7 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
                 ) : (
                   <Volume2 size={20} />
                 )}
-                {isGeneratingAudio ? 'Gerando Áudio...' : 'Gerar Locução (MP3)'}
+                {isGeneratingAudio ? 'Gerando Áudio...' : `Gerar Locução (Custo: ${audioCost} créditos)`}
               </button>
               
               {audioUrl && (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { PlanConfiguration } from '../../hooks/usePlanConfigurations';
 import { PERMISSIONS, PLAN_NAMES } from '../../config/constants';
-import { Loader2, Save, Check, X } from 'lucide-react';
+import { Loader2, Save, Check, X, DollarSign } from 'lucide-react';
 import { showSuccess, showError } from '../../utils/toast';
 
 interface AdminEditPlanModalProps {
@@ -44,6 +44,12 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
       return;
     }
     
+    const aiCredits = parseInt(localPlan.ai_credits as any, 10);
+    if (isNaN(aiCredits) || aiCredits < 0) {
+        showError("Créditos de IA devem ser um número positivo.");
+        return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -51,6 +57,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           name: localPlan.name,
           price: localPlan.price,
           permissions: localPlan.permissions,
+          ai_credits: aiCredits, // Salvando créditos
         });
         // Se onSave for bem-sucedido (o hook usePlanConfigurations deve mostrar o toast de sucesso)
         onClose();
@@ -68,7 +75,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
         <DialogHeader>
           <DialogTitle>Editar Plano: {PLAN_NAMES[localPlan.role] || localPlan.name}</DialogTitle>
           <DialogDescription>
-            Ajuste o nome, preço e as permissões concedidas por este plano.
+            Ajuste o nome, preço, créditos de IA e as permissões concedidas por este plano.
           </DialogDescription>
         </DialogHeader>
         
@@ -92,6 +99,26 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
                 onChange={(e) => setLocalPlan(prev => prev ? { ...prev, price: e.target.value } : null)}
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />
+            </div>
+          </div>
+          
+          {/* Créditos de IA */}
+          <div className="space-y-2 border-t pt-4">
+            <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <DollarSign size={20} className="text-green-600" /> Créditos de IA (Recarga Mensal)
+            </h4>
+            <p className="text-sm text-gray-600">
+                Defina o saldo de créditos que o usuário receberá ao entrar ou fazer upgrade para este plano.
+            </p>
+            <div className="relative">
+                <input
+                    type="number"
+                    min="0"
+                    value={localPlan.ai_credits}
+                    onChange={(e) => setLocalPlan(prev => prev ? { ...prev, ai_credits: parseInt(e.target.value, 10) } : null)}
+                    className="w-full border rounded-lg px-3 py-2 text-lg font-bold focus:ring-2 focus:ring-indigo-500 outline-none pr-10"
+                />
+                <Zap size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-500" />
             </div>
           </div>
 

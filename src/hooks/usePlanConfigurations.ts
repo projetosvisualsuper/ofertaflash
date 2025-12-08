@@ -8,6 +8,7 @@ export interface PlanConfiguration {
   name: string;
   price: string;
   permissions: Permission[];
+  ai_credits: number; // NOVO CAMPO
 }
 
 export function usePlanConfigurations(isAdmin: boolean = false) {

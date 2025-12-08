@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Permission } from '../../types';
 import { PLAN_NAMES } from '../config/constants';
 import PlanStatus from './PlanStatus';
-import { useUserCredits } from '../hooks/useUserCredits'; // NOVO IMPORT
+import { useUserCredits } from '../hooks/useUserCredits';
 
 interface SidebarNavProps {
   activeModule: string;
@@ -27,8 +27,10 @@ const MODULES: { id: string; name: string; icon: React.ElementType; description:
 
 const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }) => {
   const { profile, hasPermission, refreshProfile, session } = useAuth();
-  const { credits, loading: loadingCredits } = useUserCredits(session?.user?.id); // Usando o hook de créditos
+  const { credits, loading: loadingCredits } = useUserCredits(session?.user?.id);
   
+  const isFreePlan = profile?.role === 'free'; // NOVO: Verifica se é plano grátis
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     
@@ -58,7 +60,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
         <h1 className="text-xl font-bold tracking-wider">Criar Ofertas</h1>
       </div>
       
-      {profile && (
+      {profile && !isFreePlan && ( // Oculta para plano 'free'
         <div className="p-4 border-b border-gray-700 text-xs text-gray-400">
           <p className="font-semibold text-white">Olá, {profile.username || 'Usuário'}</p>
           <div className="flex items-center justify-between mt-1">

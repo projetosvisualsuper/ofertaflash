@@ -8,10 +8,6 @@ const corsHeaders = {
 
 const OPENAI_API_URL = "https://api.openai.com/v1";
 
-// Custo das operações
-const COST_TEXT = 1;
-const COST_IMAGE = 10;
-
 async function callOpenAI(endpoint: string, apiKey: string, payload: any) {
     const response = await fetch(`${OPENAI_API_URL}/${endpoint}`, {
         method: 'POST',
@@ -48,20 +44,21 @@ serve(async (req) => {
 
     const { task, data } = await req.json();
     let result;
-    let creditCost = 0;
-    let description = '';
+    let serviceKey = '';
     
     switch (task) {
       case 'generateMarketingCopy':
+        serviceKey = 'generate_copy';
+        break;
       case 'parseProductsFromText':
+        serviceKey = 'parse_products';
+        break;
       case 'generateAdScript':
-        creditCost = COST_TEXT;
-        description = `Consumo de ${COST_TEXT} crédito para Geração de Texto/Roteiro (GPT-4o-mini)`;
+        serviceKey = 'generate_ad_script';
         break;
       case 'generateBackgroundImage':
       case 'generateProductImage':
-        creditCost = COST_IMAGE;
-        description = `Consumo de ${COST_IMAGE} créditos para Geração de Imagem (DALL-E 3)`;
+        serviceKey = 'generate_image';
         break;
       default:
         return new Response(JSON.stringify({ error: 'Invalid task' }), {
@@ -70,29 +67,67 @@ serve(async (req) => {
         });
     }
     
-    // --- 1. CONSUMIR CRÉDITOS ---
-    const supabase = createClient(
+    // --- 1. BUSCAR CUSTO E VERIFICAR ADMIN ---
+    const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    
+    // 1a. Obter o ID do usuário logado
+    const supabaseAnon = createClient(
         Deno.env.get('SUPABASE_URL')!,
         Deno.env.get('SUPABASE_ANON_KEY')!,
         { global: { headers: { 'Authorization': authHeader } } }
     );
+    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
+    if (userError || !user) throw new Error("User not authenticated.");
     
-    const { data: creditData, error: creditError } = await supabase.functions.invoke('credit-consumer', {
-        method: 'POST',
-        body: { amount: creditCost, description: description },
-        headers: { 'Authorization': authHeader }
-    });
+    // 1b. Verificar o role do usuário (usando a função de segurança)
+    const { data: roleData } = await supabaseAdmin.rpc('get_my_role', {
+        // Não precisa de argumentos, mas a função precisa ser chamada
+    }).auth.session({ access_token: authHeader.replace('Bearer ', '') });
+    
+    const userRole = roleData || 'free';
+    
+    let creditCost = 0;
+    let description = '';
+    
+    if (userRole !== 'admin') {
+        // 1c. Buscar o custo dinamicamente
+        const { data: costData, error: costError } = await supabaseAdmin
+            .from('ai_costs')
+            .select('cost, description')
+            .eq('service_key', serviceKey)
+            .single();
+            
+        if (costError || !costData) {
+            console.warn(`AI Cost not found for ${serviceKey}. Using default 1.`);
+            creditCost = 1; // Fallback
+            description = `Consumo de 1 crédito (Fallback)`;
+        } else {
+            creditCost = costData.cost;
+            description = costData.description;
+        }
+    }
+    
+    // --- 2. CONSUMIR CRÉDITOS (SE NÃO FOR ADMIN E O CUSTO FOR > 0) ---
+    if (userRole !== 'admin' && creditCost > 0) {
+        const { data: creditData, error: creditError } = await supabaseAnon.functions.invoke('credit-consumer', {
+            method: 'POST',
+            body: { amount: creditCost, description: description },
+            headers: { 'Authorization': authHeader }
+        });
 
-    if (creditError || creditData.error) {
-        const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
-        console.error("Credit Consumption Failed:", errorMessage);
-        // Retorna 402 se for erro de saldo insuficiente
-        const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
-        return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        if (creditError || creditData.error) {
+            const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
+            console.error("Credit Consumption Failed:", errorMessage);
+            const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
+            return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
     }
     // --- FIM CONSUMO DE CRÉDITOS ---
 
-    // --- 2. EXECUTAR TAREFA DE IA ---
+    // --- 3. EXECUTAR TAREFA DE IA ---
     switch (task) {
       case 'generateMarketingCopy': {
         const { topic } = data;

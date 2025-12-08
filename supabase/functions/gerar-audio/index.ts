@@ -7,9 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Custo da operação
-const CREDIT_COST = 5; 
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -27,28 +24,65 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Texto não enviado" }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     
-    // --- 1. CONSUMIR CRÉDITOS ---
-    const supabase = createClient(
+    const serviceKey = 'generate_audio';
+    
+    // --- 1. BUSCAR CUSTO E VERIFICAR ADMIN ---
+    const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    
+    // 1a. Obter o ID do usuário logado
+    const supabaseAnon = createClient(
         Deno.env.get('SUPABASE_URL')!,
         Deno.env.get('SUPABASE_ANON_KEY')!,
         { global: { headers: { 'Authorization': authHeader } } }
     );
+    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
+    if (userError || !user) throw new Error("User not authenticated.");
     
-    const { data: creditData, error: creditError } = await supabase.functions.invoke('credit-consumer', {
-        method: 'POST',
-        body: { 
-            amount: CREDIT_COST, 
-            description: `Consumo de ${CREDIT_COST} créditos para Geração de Áudio (TTS)` 
-        },
-        headers: { 'Authorization': authHeader }
-    });
+    // 1b. Verificar o role do usuário (usando a função de segurança)
+    const { data: roleData } = await supabaseAdmin.rpc('get_my_role', {
+        // Não precisa de argumentos, mas a função precisa ser chamada
+    }).auth.session({ access_token: authHeader.replace('Bearer ', '') });
+    
+    const userRole = roleData || 'free';
+    
+    let creditCost = 0;
+    let description = '';
+    
+    if (userRole !== 'admin') {
+        // 1c. Buscar o custo dinamicamente
+        const { data: costData, error: costError } = await supabaseAdmin
+            .from('ai_costs')
+            .select('cost, description')
+            .eq('service_key', serviceKey)
+            .single();
+            
+        if (costError || !costData) {
+            console.warn(`AI Cost not found for ${serviceKey}. Using default 5.`);
+            creditCost = 5; // Fallback
+            description = `Consumo de 5 créditos (Fallback)`;
+        } else {
+            creditCost = costData.cost;
+            description = costData.description;
+        }
+    }
+    
+    // --- 2. CONSUMIR CRÉDITOS (SE NÃO FOR ADMIN E O CUSTO FOR > 0) ---
+    if (userRole !== 'admin' && creditCost > 0) {
+        const { data: creditData, error: creditError } = await supabaseAnon.functions.invoke('credit-consumer', {
+            method: 'POST',
+            body: { amount: creditCost, description: description },
+            headers: { 'Authorization': authHeader }
+        });
 
-    if (creditError || creditData.error) {
-        const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
-        console.error("Credit Consumption Failed:", errorMessage);
-        // Retorna 402 se for erro de saldo insuficiente
-        const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
-        return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        if (creditError || creditData.error) {
+            const errorMessage = creditData?.error || creditError?.message || "Erro desconhecido ao consumir créditos.";
+            console.error("Credit Consumption Failed:", errorMessage);
+            const status = errorMessage.includes('Saldo insuficiente') ? 402 : 500;
+            return new Response(JSON.stringify({ error: errorMessage }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
     }
     // --- FIM CONSUMO DE CRÉDITOS ---
 
