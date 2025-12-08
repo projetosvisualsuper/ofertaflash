@@ -276,8 +276,9 @@ const UserManagementPage: React.FC = () => {
       </div>
       
       {selectedProfile && (
+        // Adicionando a chave para forçar a remontagem
         <AdminEditUserModal
-          key={selectedProfile.id} {/* Adicionando a chave para forçar a remontagem */}
+          key={selectedProfile.id} 
           isOpen={isModalOpen}
           onClose={handleModalClose}
           profile={selectedProfile}
