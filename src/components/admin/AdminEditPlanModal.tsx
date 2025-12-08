@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { PlanConfiguration } from '../../hooks/usePlanConfigurations';
 import { PERMISSIONS, PLAN_NAMES } from '../../config/constants';
-import { Loader2, Save, Check, X, DollarSign } from 'lucide-react';
+import { Loader2, Save, Check, X, DollarSign, Zap } from 'lucide-react'; // Adicionando Zap
 import { showSuccess, showError } from '../../utils/toast';
 
 interface AdminEditPlanModalProps {
@@ -105,7 +105,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           {/* Créditos de IA */}
           <div className="space-y-2 border-t pt-4">
             <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <DollarSign size={20} className="text-green-600" /> Créditos de IA (Recarga Mensal)
+                <Zap size={20} className="text-yellow-500" /> Créditos de IA (Recarga Mensal)
             </h4>
             <p className="text-sm text-gray-600">
                 Defina o saldo de créditos que o usuário receberá ao entrar ou fazer upgrade para este plano.

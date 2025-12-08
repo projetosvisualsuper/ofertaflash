@@ -30,6 +30,7 @@ const ProfilePage: React.FC = () => {
   
   const currentPlan = profile.role;
   const planName = PLAN_NAMES[currentPlan] || 'Desconhecido';
+  const isFreePlan = currentPlan === 'free'; // Adicionando verificação de plano grátis
 
   // --- Handlers de Ação ---
 
@@ -209,7 +210,8 @@ const ProfilePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl w-full mx-auto">
         <div className="lg:col-span-1 space-y-6">
             <PlanSection />
-            <CreditsSection />
+            {/* Condicional para exibir a seção de créditos */}
+            {!isFreePlan && <CreditsSection />}
         </div>
         <div className="lg:col-span-2 space-y-6">
             {/* NOVO CARD COMBINADO: Detalhes do Perfil e Senha */}
