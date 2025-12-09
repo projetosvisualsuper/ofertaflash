@@ -13,6 +13,7 @@ const AdminAICostsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    // Inicializa o estado local com os custos carregados
     setLocalCosts(costs);
   }, [costs]);
 
@@ -39,6 +40,8 @@ const AdminAICostsPage: React.FC = () => {
     setIsSaving(true);
     try {
         await updateCost(cost.service_key, newCost, cost.description);
+        // Atualiza o estado local após o sucesso para refletir a mudança
+        setLocalCosts(prev => prev.map(c => c.service_key === cost.service_key ? { ...c, cost: newCost, description: cost.description } : c));
     } catch (e) {
         // Erro já tratado no hook
     } finally {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, ListOrdered, Image, LayoutTemplate, LogIn, DollarSign } from 'lucide-react';
+import { Home, Users, Zap, Settings, ArrowLeft, BarChart3, Image, LayoutTemplate, LogIn, DollarSign } from 'lucide-react';
 import AdminDashboardPage from './AdminDashboardPage';
 import AdminUserManagementPage from './AdminUserManagementPage';
 import AdminPlanManagementPage from './AdminPlanManagementPage';
@@ -8,9 +8,9 @@ import AdminReportsPage from './AdminReportsPage';
 import AdminImageUploadPage from './AdminImageUploadPage';
 import AdminGlobalTemplatesPage from './AdminGlobalTemplatesPage';
 import AdminLoginBannerSettingsPage from './AdminLoginBannerSettingsPage';
-import AdminAICostsPage from './AdminAICostsPage'; // NOVO IMPORT
+import AdminAICostsPage from './AdminAICostsPage'; // Importação garantida
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner' | 'ai-costs'; // NOVO MÓDULO
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner' | 'ai-costs';
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -36,7 +36,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
-      case 'ai-costs': return <AdminAICostsPage />; // RENDERIZAÇÃO DO COMPONENTE
+      case 'ai-costs': return <AdminAICostsPage />;
       case 'images': return <AdminImageUploadPage />;
       case 'global-templates': return <AdminGlobalTemplatesPage />;
       case 'reports': return <AdminReportsPage />;
