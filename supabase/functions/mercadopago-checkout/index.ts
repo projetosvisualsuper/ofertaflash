@@ -43,19 +43,20 @@ serve(async (req) => {
         SUPABASE_SERVICE_ROLE_KEY
     );
     
-    let planRole, userId;
+    let planRole, userId, userEmail;
     try {
         const body = await req.json();
         planRole = body.planRole;
         userId = body.userId;
-        console.log(`MP Checkout: Received body - planRole: ${planRole}, userId: ${userId}`);
+        userEmail = body.userEmail; // <-- LENDO O EMAIL DO USUÁRIO
+        console.log(`MP Checkout: Received body - planRole: ${planRole}, userId: ${userId}, userEmail: ${userEmail}`);
     } catch (e) {
         console.error("MP Checkout Error: Failed to parse request body.", e);
         return new Response(JSON.stringify({ error: 'Invalid JSON body received.' }), { status: 200, headers: corsHeaders });
     }
     
-    if (!planRole || !userId) {
-        const errorMsg = 'Missing planRole or userId in request body';
+    if (!planRole || !userId || !userEmail) {
+        const errorMsg = 'Missing planRole, userId, or userEmail in request body';
         console.error("MP Checkout Error:", errorMsg);
         return new Response(JSON.stringify({ error: errorMsg }), { status: 200, headers: corsHeaders });
     }
@@ -108,6 +109,7 @@ serve(async (req) => {
             transaction_amount: transactionAmount, // Usando o valor formatado
             currency_id: "BRL",
         },
+        payer_email: userEmail, // <-- ADICIONADO O EMAIL DO PAGADOR
         back_url: backUrl,
         external_reference: externalReference, 
         notification_url: notificationUrl,

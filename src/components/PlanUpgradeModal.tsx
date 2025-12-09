@@ -89,6 +89,7 @@ const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({ profile, trigger, o
             body: { 
                 planRole: planRole,
                 userId: profile.id,
+                userEmail: session?.user?.email, // <-- ENVIANDO O EMAIL DO USUÁRIO
             },
             // Adicionando o access_token da sessão
             headers: {
