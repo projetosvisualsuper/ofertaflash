@@ -18,7 +18,7 @@ const AdminSettingsPage: React.FC = () => {
   const [loadingAnnouncement, setLoadingAnnouncement] = useState(true);
   
   const [localCosts, setLocalCosts] = useState<AICost[]>([]);
-  const [isSavingCost, setIsSavingCost] = useState<string | null>(null); // Agora armazena a chave do serviço sendo salvo
+  const [isSavingCost, setIsSavingCost] = useState<string | null>(null);
 
   const isMaintenanceEnabled = settings.maintenance_mode.enabled;
 
@@ -31,7 +31,7 @@ const AdminSettingsPage: React.FC = () => {
     updateMaintenanceMode(!isMaintenanceEnabled);
   };
   
-  // --- Lógica de Anúncios Globais (Mantida) ---
+  // --- Lógica de Anúncios Globais ---
   
   const fetchActiveAnnouncement = async () => {
     setLoadingAnnouncement(true);
@@ -157,14 +157,13 @@ const AdminSettingsPage: React.FC = () => {
         return;
     }
     
-    setIsSavingCost(cost.service_key); // Define qual serviço está salvando
+    setIsSavingCost(cost.service_key);
     try {
         await updateCost(cost.service_key, newCost, cost.description);
-        // O hook já chama fetchCosts, que atualiza o estado 'costs' e, por sua vez, 'localCosts' via useEffect.
     } catch (e) {
         // Erro já tratado no hook
     } finally {
-        setIsSavingCost(null); // Limpa o estado de salvamento
+        setIsSavingCost(null);
     }
   };
 
@@ -269,7 +268,7 @@ const AdminSettingsPage: React.FC = () => {
           </div>
         </div>
         
-        {/* Configuração de Custos de IA (SEÇÃO AJUSTADA) */}
+        {/* Configuração de Custos de IA */}
         <div className="border-b pb-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                 <Zap size={20} className="text-purple-600" /> Configuração de Custos de IA
@@ -319,13 +318,11 @@ const AdminSettingsPage: React.FC = () => {
                                         <input
                                             type="number"
                                             min="0"
-                                            // Garante que o valor seja tratado como string para o input
                                             value={String(cost.cost)} 
                                             onChange={(e) => handleCostChange(cost.service_key, 'cost', parseInt(e.target.value, 10))}
                                             className="w-full border rounded-lg px-3 py-2 text-lg font-bold focus:ring-2 focus:ring-indigo-500 outline-none pr-10"
                                             disabled={isSavingCurrent}
                                         />
-                                        {/* Ajuste de posição do ícone */}
                                         <DollarSign size={16} className="absolute right-3 text-gray-400" />
                                     </div>
                                 </div>
