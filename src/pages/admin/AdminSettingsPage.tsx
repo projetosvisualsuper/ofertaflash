@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, ToggleLeft, ToggleRight, Loader2, Bell, Save, XCircle, Trash2 } from 'lucide-react';
+import { Settings, Key, ToggleLeft, ToggleRight, Loader2, Bell, Save, XCircle, Trash2, DollarSign } from 'lucide-react';
 import { useGlobalSettings } from '../../hooks/useGlobalSettings';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../../utils/toast';
+import AdminAICostsPage from './AdminAICostsPage'; // RE-IMPORTANDO
 
 const AdminSettingsPage: React.FC = () => {
   const { profile } = useAuth();
@@ -223,6 +224,17 @@ const AdminSettingsPage: React.FC = () => {
               Publicar Novo Anúncio
             </button>
           </div>
+        </div>
+        
+        {/* Gerenciamento de Custos de IA (Reintegrado) */}
+        <div className="border-b pb-6">
+            <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                <DollarSign size={20} className="text-purple-600" /> Gerenciamento de Custos de IA
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+                Defina quantos créditos de IA cada serviço consome.
+            </p>
+            <AdminAICostsPage />
         </div>
         
         {/* Integrações de Pagamento (Mantido) */}
