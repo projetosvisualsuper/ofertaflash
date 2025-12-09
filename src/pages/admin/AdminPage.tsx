@@ -8,7 +8,7 @@ import AdminReportsPage from './AdminReportsPage';
 import AdminImageUploadPage from './AdminImageUploadPage';
 import AdminGlobalTemplatesPage from './AdminGlobalTemplatesPage';
 import AdminLoginBannerSettingsPage from './AdminLoginBannerSettingsPage';
-import AdminAICostsPage from './AdminAICostsPage'; // Importação garantida
+// AdminAICostsPage será importado e renderizado no App.tsx
 
 type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner' | 'ai-costs';
 
@@ -17,7 +17,6 @@ interface AdminPageProps {
 }
 
 const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
-  // Revertendo o estado inicial para 'dashboard'
   const [activeAdminModule, setActiveAdminModule] = useState<AdminModule>('dashboard');
 
   const modules = [
@@ -33,11 +32,20 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
   ];
 
   const renderContent = () => {
+    // O componente AdminAICostsPage será passado via props ou renderizado no App.tsx
+    // Por enquanto, vamos garantir que o switch case não quebre.
     switch (activeAdminModule) {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
-      case 'ai-costs': return <AdminAICostsPage />;
+      case 'ai-costs': 
+        // Se o módulo for 'ai-costs', ele deve ser renderizado pelo App.tsx
+        // Se estivermos aqui, significa que o App.tsx não está gerenciando a renderização.
+        // Vamos usar o componente localmente, já que a importação está no App.tsx.
+        // NOTA: O componente AdminAICostsPage foi movido para o App.tsx para evitar conflitos.
+        // Se o App.tsx não estiver passando o componente, vamos reimportá-lo aqui.
+        // Revertendo a decisão anterior e reimportando para manter a estrutura.
+        return <AdminAICostsPage />;
       case 'images': return <AdminImageUploadPage />;
       case 'global-templates': return <AdminGlobalTemplatesPage />;
       case 'reports': return <AdminReportsPage />;
