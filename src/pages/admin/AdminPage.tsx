@@ -23,7 +23,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
-    { id: 'ai-costs', name: 'Custos de IA', icon: Zap }, // Usando Zap temporariamente
+    { id: 'ai-costs', name: 'Custos de IA', icon: DollarSign }, // Usando DollarSign
     { id: 'images', name: 'Banco de Imagens', icon: Image },
     { id: 'global-templates', name: 'Templates Globais', icon: LayoutTemplate },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
