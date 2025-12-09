@@ -1,31 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, ToggleLeft, ToggleRight, Loader2, Bell, Save, XCircle, Trash2, Zap, DollarSign } from 'lucide-react';
+import { Settings, Key, ToggleLeft, ToggleRight, Loader2, Bell, Save, XCircle, Trash2 } from 'lucide-react';
 import { useGlobalSettings } from '../../hooks/useGlobalSettings';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '@/src/integrations/supabase/client';
 import { showSuccess, showError } from '../../utils/toast';
-import { useAICosts, AICost } from '../../hooks/useAICosts';
 
 const AdminSettingsPage: React.FC = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
   const { settings, loading: loadingGlobalSettings, updateMaintenanceMode } = useGlobalSettings(isAdmin);
-  const { costs, loading: loadingAICosts, updateCost } = useAICosts(isAdmin);
 
   const [announcementMessage, setAnnouncementMessage] = useState('');
   const [activeAnnouncement, setActiveAnnouncement] = useState<{ id: string; message: string | string[] } | null>(null);
   const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false);
   const [loadingAnnouncement, setLoadingAnnouncement] = useState(true);
   
-  const [localCosts, setLocalCosts] = useState<AICost[]>([]);
-  const [isSavingCost, setIsSavingCost] = useState<string | null>(null);
-
   const isMaintenanceEnabled = settings.maintenance_mode.enabled;
-
-  // Sincroniza os custos de IA carregados com o estado local
-  useEffect(() => {
-    setLocalCosts(costs);
-  }, [costs]);
 
   const handleToggleMaintenance = () => {
     updateMaintenanceMode(!isMaintenanceEnabled);
@@ -134,39 +124,6 @@ const AdminSettingsPage: React.FC = () => {
       setIsSavingAnnouncement(false);
     }
   };
-  
-  // --- Lógica de Custos de IA ---
-  
-  const handleCostChange = (serviceKey: string, field: 'cost' | 'description', value: string | number) => {
-    setLocalCosts(prev => prev.map(cost => 
-      cost.service_key === serviceKey 
-        ? { ...cost, [field]: value } 
-        : cost
-    ));
-  };
-
-  const handleSaveCost = async (cost: AICost) => {
-    if (!isAdmin) {
-      showError("Apenas administradores podem salvar estas configurações.");
-      return;
-    }
-    
-    const newCost = typeof cost.cost === 'string' ? parseInt(cost.cost, 10) : cost.cost;
-    if (isNaN(newCost) || newCost < 0) {
-        showError("O custo deve ser um número positivo.");
-        return;
-    }
-    
-    setIsSavingCost(cost.service_key);
-    try {
-        await updateCost(cost.service_key, newCost, cost.description);
-    } catch (e) {
-        // Erro já tratado no hook
-    } finally {
-        setIsSavingCost(null);
-    }
-  };
-
 
   if (!isAdmin) {
     return (
@@ -266,72 +223,6 @@ const AdminSettingsPage: React.FC = () => {
               Publicar Novo Anúncio
             </button>
           </div>
-        </div>
-        
-        {/* Configuração de Custos de IA */}
-        <div className="border-b pb-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Zap size={20} className="text-purple-600" /> Configuração de Custos de IA
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-                Defina quantos créditos de IA cada serviço consome. Estes custos são aplicados a todos os usuários, exceto administradores.
-            </p>
-            
-            {loadingAICosts ? (
-                <div className="flex items-center justify-center p-8">
-                    <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
-                    <p className="ml-4 text-gray-600">Carregando custos...</p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {localCosts.map(cost => {
-                        const isSavingCurrent = isSavingCost === cost.service_key;
-                        return (
-                        <div key={cost.service_key} className="p-4 border rounded-lg bg-gray-50 space-y-3">
-                            <div className="flex justify-between items-center">
-                                <h4 className="font-bold text-gray-800">{cost.service_key.replace(/_/g, ' ').toUpperCase()}</h4>
-                                <button
-                                    onClick={() => handleSaveCost(cost)}
-                                    disabled={isSavingCurrent}
-                                    className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
-                                >
-                                    {isSavingCurrent ? <Loader2 className="animate-spin" size={12} /> : <Save size={12} />}
-                                    {isSavingCurrent ? 'Salvando...' : 'Salvar'}
-                                </button>
-                            </div>
-                            
-                            <div>
-                                <label className="text-xs font-medium text-gray-700 block mb-1">Descrição do Serviço</label>
-                                <input
-                                    type="text"
-                                    value={cost.description}
-                                    onChange={(e) => handleCostChange(cost.service_key, 'description', e.target.value)}
-                                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    disabled={isSavingCurrent}
-                                />
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-medium text-gray-700 block mb-1">Custo em Créditos</label>
-                                    <div className="relative flex items-center">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={String(cost.cost)} 
-                                            onChange={(e) => handleCostChange(cost.service_key, 'cost', parseInt(e.target.value, 10))}
-                                            className="w-full border rounded-lg px-3 py-2 text-lg font-bold focus:ring-2 focus:ring-indigo-500 outline-none pr-10"
-                                            disabled={isSavingCurrent}
-                                        />
-                                        <DollarSign size={16} className="absolute right-3 text-gray-400" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-                </div>
-            )}
         </div>
         
         {/* Integrações de Pagamento (Mantido) */}

@@ -8,9 +8,9 @@ import AdminReportsPage from './AdminReportsPage';
 import AdminImageUploadPage from './AdminImageUploadPage';
 import AdminGlobalTemplatesPage from './AdminGlobalTemplatesPage';
 import AdminLoginBannerSettingsPage from './AdminLoginBannerSettingsPage';
-// import AdminAICostsPage from './AdminAICostsPage'; // Removido
+import AdminAICostsPage from './AdminAICostsPage'; // NOVO IMPORT
 
-type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner'; // 'ai-costs' removido
+type AdminModule = 'dashboard' | 'users' | 'plans' | 'reports' | 'settings' | 'images' | 'global-templates' | 'login-banner' | 'ai-costs'; // NOVO MÓDULO
 
 interface AdminPageProps {
   setActiveHubModule: (module: string) => void;
@@ -23,7 +23,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'users', name: 'Clientes', icon: Users },
     { id: 'plans', name: 'Planos', icon: Zap },
-    // { id: 'ai-costs', name: 'Custos de IA', icon: DollarSign }, // Removido
+    { id: 'ai-costs', name: 'Custos de IA', icon: DollarSign }, // NOVO ITEM DE MENU
     { id: 'images', name: 'Banco de Imagens', icon: Image },
     { id: 'global-templates', name: 'Templates Globais', icon: LayoutTemplate },
     { id: 'reports', name: 'Relatórios SaaS', icon: BarChart3 },
@@ -36,7 +36,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ setActiveHubModule }) => {
       case 'dashboard': return <AdminDashboardPage setActiveAdminModule={setActiveAdminModule} />;
       case 'users': return <AdminUserManagementPage />;
       case 'plans': return <AdminPlanManagementPage />;
-      // case 'ai-costs': return <AdminAICostsPage />; // Removido
+      case 'ai-costs': return <AdminAICostsPage />; // NOVO RENDER
       case 'images': return <AdminImageUploadPage />;
       case 'global-templates': return <AdminGlobalTemplatesPage />;
       case 'reports': return <AdminReportsPage />;

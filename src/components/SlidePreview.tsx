@@ -26,10 +26,11 @@ const SlidePreview = React.forwardRef<HTMLDivElement, SlidePreviewProps>(({ prod
   const transitionPreset = SLIDE_TRANSITION_PRESETS.find(p => p.id === theme.slideTransitionId);
   const transitionClass = transitionPreset ? transitionPreset.className : 'animate-slide-in';
   
-  // Se for uma transição escalonada, não aplicamos a classe de animação ao contêiner principal,
-  // mas sim a classe de ativação para que os filhos sejam animados.
+  // Se for uma transição escalonada, aplicamos a classe de ativação ao contêiner principal.
   const isStaggered = theme.slideTransitionId === 'stagger-fade';
   const containerClass = isStaggered ? transitionClass : '';
+  
+  // Se NÃO for escalonada, a classe de animação vai para o SlideContent.
   const contentClass = isStaggered ? '' : transitionClass;
 
 
