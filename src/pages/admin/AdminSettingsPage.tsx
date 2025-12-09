@@ -328,7 +328,8 @@ const AdminSettingsPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    );
+                })}
                 </div>
             )}
         </div>
