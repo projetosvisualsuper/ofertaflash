@@ -73,8 +73,8 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           <DialogDescription>
             Ajuste o nome, preço, créditos de IA e as permissões concedidas por este plano.
           </DialogDescription>
-        </DialogHeader>
-        <div className="py-4 space-y-4">
+          </DialogHeader>
+          <div className="py-4 space-y-4">
           {/* Detalhes Básicos */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -154,4 +154,4 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
   );
 };
 
-export default AdminEditUserModal;
+export default AdminEditPlanModal;
