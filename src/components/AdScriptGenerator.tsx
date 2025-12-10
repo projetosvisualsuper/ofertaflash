@@ -5,7 +5,7 @@ import { generateAdScript, generateAudioFromText } from '../../services/openAiSe
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { supabase } from '@/src/integrations/supabase/client';
 import { useAICosts } from '../hooks/useAICosts';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 interface AdScriptGeneratorProps {
   products: Product[];
@@ -96,7 +96,8 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
     
     setIsGeneratingAudio(true);
     setAudioUrl(null);
-    const loadingToast = showLoading(`Gerando áudio com OpenAI TTS (Custo: ${audioCost} créditos)...`);
+    // MENSAGEM ATUALIZADA PARA ELEVENLABS
+    const loadingToast = showLoading(`Gerando áudio com ElevenLabs TTS (Custo: ${audioCost} créditos)...`);
 
     try {
       // Chamada da nova função de serviço
@@ -117,8 +118,8 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       
       const userFriendlyError = errorMessage.includes('Saldo insuficiente') 
         ? `Saldo insuficiente. Você precisa de ${audioCost} créditos para esta operação.`
-        : errorMessage.includes('OPENAI_API_KEY') 
-        ? `Falha ao gerar áudio. Verifique se a chave OPENAI_API_KEY está configurada corretamente no Supabase Secrets.`
+        : errorMessage.includes('ELEVENLABS_API_KEY') 
+        ? `Falha ao gerar áudio. Verifique se a chave ELEVENLABS_API_KEY está configurada corretamente no Supabase Secrets.`
         : `Falha ao gerar áudio. Detalhe: ${errorMessage}`;
         
       updateToast(loadingToast, userFriendlyError, 'error');
