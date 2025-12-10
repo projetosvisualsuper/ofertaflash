@@ -185,9 +185,11 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
       // Tenta pausar e resetar antes de tocar, para garantir que comece do início
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      
+      // Tenta reproduzir e captura o erro de permissão
       audioRef.current.play().catch(e => {
         console.error("Failed to play audio:", e);
-        showError("Falha ao reproduzir áudio. Verifique as configurações do navegador.");
+        showError("Falha ao reproduzir áudio. O navegador pode ter bloqueado a reprodução automática. Tente usar o controle nativo.");
       });
     }
   };
@@ -275,7 +277,15 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
               {audioUrl && (
                 <div className="mt-3 space-y-2">
                   {/* Elemento de Áudio para Reprodução Direta */}
-                  <audio ref={audioRef} src={audioUrl} controls className="w-full h-10 rounded-lg" />
+                  <audio 
+                    ref={audioRef} 
+                    src={audioUrl} 
+                    controls 
+                    className="w-full h-10 rounded-lg" 
+                    // Adicionando type para ajudar o navegador a identificar o formato
+                    // O navegador deve ser capaz de inferir, mas isso ajuda
+                    type="audio/mpeg" 
+                  />
                   
                   <div className="flex gap-2">
                     <button 
