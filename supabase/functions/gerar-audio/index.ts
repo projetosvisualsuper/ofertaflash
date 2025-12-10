@@ -99,13 +99,24 @@ serve(async (req) => {
       input: text,
       format: "mp3",
     });
+    
+    // NOVO: Verifica se a resposta da API da OpenAI foi bem-sucedida
+    if (!result.ok) {
+        let errorDetails = "Falha na API de TTS da OpenAI.";
+        try {
+            const errorJson = await result.json();
+            errorDetails = errorJson.error?.message || errorDetails;
+        } catch (e) {
+            // Ignora se não for JSON
+        }
+        console.error("OpenAI TTS API Error:", result.status, errorDetails);
+        throw new Error(`Falha na geração de áudio (Status ${result.status}): ${errorDetails}`);
+    }
 
     const arrayBuffer = await result.arrayBuffer();
 
     if (!arrayBuffer || arrayBuffer.byteLength < 100) {
       console.error("TTS Generation failed: Empty or too small buffer.");
-      // NOTA: Em caso de falha APÓS o consumo, o crédito deve ser reembolsado.
-      // Por simplicidade, não implementaremos o reembolso aqui, mas é uma consideração de produção.
       return new Response(JSON.stringify({ error: "Falha ao gerar áudio: Buffer vazio ou corrompido." }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
