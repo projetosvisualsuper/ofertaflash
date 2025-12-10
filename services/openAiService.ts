@@ -157,27 +157,27 @@ export const generateAudioFromText = async (text: string): Promise<string> => {
       throw new Error("A Edge Function retornou dados vazios.");
   }
   
-  // NOVO LOG DE DEBUG
-  console.log("Received audio data size:", data.byteLength, "bytes.");
-  if (data.byteLength < 100) {
-      console.warn("Audio data is suspiciously small. Attempting to decode as error message.");
+  // CRITICAL CHECK: Se o ArrayBuffer for muito pequeno (ex: < 10KB), é um erro.
+  const MIN_AUDIO_SIZE_BYTES = 10000; 
+  if (data.byteLength < MIN_AUDIO_SIZE_BYTES) {
+      console.warn(`Audio data is too small (${data.byteLength} bytes). Assuming API key or voice ID error.`);
+      
+      // Tenta decodificar como erro JSON antes de lançar o erro de tamanho
+      try {
+        const decoder = new TextDecoder('utf-8');
+        const textData = decoder.decode(data);
+        const errorJson = JSON.parse(textData);
+        
+        if (errorJson.error) {
+            throw new Error(errorJson.error);
+        }
+      } catch (e) {
+        // Se falhar a decodificação, lança o erro de tamanho
+      }
+      
+      throw new Error(`Falha na geração de áudio. O arquivo retornado é muito pequeno (${data.byteLength} bytes). Verifique se a ELEVENLABS_API_KEY e a ELEVENLABS_VOICE_ID estão corretas e se a voz suporta Português.`);
   }
   
-  // NOVO TRATAMENTO DE ERRO: Verifica se o ArrayBuffer é, na verdade, um erro JSON
-  try {
-    const decoder = new TextDecoder('utf-8');
-    const textData = decoder.decode(data);
-    const errorJson = JSON.parse(textData);
-    
-    if (errorJson.error) {
-        // Se conseguirmos decodificar e encontrar um campo 'error', lançamos o erro.
-        throw new Error(errorJson.error);
-    }
-    // Se não for um erro, mas for JSON, algo está errado, mas continuamos.
-  } catch (e) {
-    // Se a decodificação falhar, é provável que seja um ArrayBuffer binário (o MP3), o que é bom.
-  }
-
   // Cria um Blob a partir do ArrayBuffer retornado
   const audioBlob = new Blob([data], { type: 'audio/mpeg' });
   
