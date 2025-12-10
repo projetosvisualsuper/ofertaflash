@@ -19,14 +19,30 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
   const { profile: adminProfile } = useAuth(); // Obtém o perfil do administrador logado
   const [newRole, setNewRole] = useState(profile?.role || 'free');
   const [isLoading, setIsLoading] = useState(false);
+  const [localPlan, setLocalPlan] = useState<PlanConfiguration | null>(plan);
 
   useEffect(() => {
-    if (profile) {
-      setNewRole(profile.role);
+    if (plan) {
+      setLocalPlan(plan);
     }
-  }, [profile]);
+  }, [plan]);
 
-  if (!profile) return null;
+  const allPermissions = useMemo(() => {
+    return PERMISSIONS;
+  }, []);
+
+  const handlePermissionToggle = (permission: string) => {
+    setLocalPlan(prev => {
+      if (!prev) return null;
+      const hasPermission = prev.permissions.includes(permission);
+      const newPermissions = hasPermission
+        ? prev.permissions.filter(p => p !== permission)
+        : [...prev.permissions, permission];
+      return { ...prev, permissions: newPermissions };
+    });
+  };
+
+  if (!localPlan) return null;
   
   const selectedPlanConfig = useMemo(() => {
       return plans.find(p => p.role === newRole);
@@ -73,8 +89,8 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           <DialogDescription>
             Ajuste o nome, preço, créditos de IA e as permissões concedidas por este plano.
           </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
+        </DialogHeader>
+        <div className="py-4 space-y-4">
           {/* Detalhes Básicos */}
           <div className="grid grid-cols-2 gap-4">
             <div>
