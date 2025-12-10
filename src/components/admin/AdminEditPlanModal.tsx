@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { PlanConfiguration } from '../../hooks/usePlanConfigurations';
 import { PERMISSIONS, PLAN_NAMES } from '../../config/constants';
-import { Loader2, Save, Check, X, DollarSign, Zap } from 'lucide-react'; // Adicionando Zap
+import { Loader2, Save, Check, X, DollarSign, Zap } from 'lucide-react';
 import { showSuccess, showError } from '../../utils/toast';
-import { usePlanConfigurations } from '../../hooks/usePlanConfigurations'; // Importando hook de planos
-import { useAuth } from '../../context/AuthContext'; // Importando useAuth para obter o perfil do admin
+import { usePlanConfigurations } from '../../hooks/usePlanConfigurations';
+import { useAuth } from '../../context/AuthContext';
 
 interface AdminEditPlanModalProps {
   isOpen: boolean;
@@ -15,9 +15,8 @@ interface AdminEditPlanModalProps {
 }
 
 const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose, plan, onSave }) => {
-  const { plans, loading: loadingPlans } = usePlanConfigurations(true); // Busca todos os planos
-  const { profile: adminProfile } = useAuth(); // Obtém o perfil do administrador logado
-  const [newRole, setNewRole] = useState(profile?.role || 'free');
+  const { plans, loading: loadingPlans } = usePlanConfigurations(true);
+  const { profile: adminProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [localPlan, setLocalPlan] = useState<PlanConfiguration | null>(plan);
 
@@ -44,13 +43,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
 
   if (!localPlan) return null;
   
-  const selectedPlanConfig = useMemo(() => {
-      return plans.find(p => p.role === newRole);
-  }, [plans, newRole]);
-
   const handleSave = async () => {
-    console.log("Attempting to save plan:", localPlan); // Log de execução
-    
     if (!localPlan.name.trim() || !localPlan.price.trim()) {
       showError("Nome e Preço são obrigatórios.");
       return;
@@ -69,12 +62,10 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
           name: localPlan.name,
           price: localPlan.price,
           permissions: localPlan.permissions,
-          ai_credits: aiCredits, // Salvando créditos
+          ai_credits: aiCredits,
         });
-        // Se onSave for bem-sucedido (o hook usePlanConfigurations deve mostrar o toast de sucesso)
         onClose();
     } catch (error) {
-        // O erro já deve ser tratado e exibido pelo hook usePlanConfigurations
         console.error("Error during plan save process:", error);
     } finally {
         setIsLoading(false);
@@ -158,7 +149,7 @@ const AdminEditPlanModal: React.FC<AdminEditPlanModalProps> = ({ isOpen, onClose
         <div className="flex justify-end pt-4 border-t">
           <button
             onClick={handleSave}
-            disabled={isLoading || newRole === profile.role || loadingPlans}
+            disabled={isLoading || loadingPlans}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
           >
             {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
