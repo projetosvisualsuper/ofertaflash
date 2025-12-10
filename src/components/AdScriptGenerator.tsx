@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX, DollarSign } from 'lucide-react';
 import { generateAdScript, generateAudioFromText } from '../../services/openAiService';
@@ -24,6 +24,15 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   const [isCopied, setIsCopied] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null); // Referência para o elemento de áudio
+
+  // Efeito para limpar o Blob URL quando o componente é desmontado ou o URL muda
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   const selectedProducts = useMemo(() => 
     products.filter(p => selectedProductIds.includes(p.id)), 
