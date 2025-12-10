@@ -3,7 +3,7 @@ import { Product, PosterTheme, AdScript } from '../../types';
 import { Wand2, Loader2, Zap, Clipboard, Check, Download, Music, Mic, Volume2, VolumeX, DollarSign } from 'lucide-react';
 import { generateAdScript, generateAudioFromText } from '../../services/openAiService';
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
-import { supabase } from '@/src/integrations/supabase/client';
+import { supabase } => '@/src/integrations/supabase/client';
 import { useAICosts } from '../hooks/useAICosts';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,6 +30,10 @@ const AdScriptGenerator: React.FC<AdScriptGeneratorProps> = ({ products }) => {
   
   const scriptCost = profile?.role === 'admin' ? 0 : costMap.generate_ad_script;
   const audioCost = profile?.role === 'admin' ? 0 : costMap.generate_audio;
+  
+  // NOVO LOG PARA DEBUG
+  console.log("AI Costs Map:", costMap);
+  console.log("Script Cost:", scriptCost);
 
   const handleProductSelection = (productId: string, isChecked: boolean) => {
     if (isChecked) {
