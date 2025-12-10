@@ -5,7 +5,7 @@ import { generateAdScript, generateAudioFromText } from '../../services/openAiSe
 import { showSuccess, showError, showLoading, updateToast } from '../utils/toast';
 import { supabase } from '@/src/integrations/supabase/client';
 import { useAICosts } from '../hooks/useAICosts';
-import { useAuth } from '../context/useAuth';
+import { useAuth } from '../context/AuthContext';
 
 interface AdScriptGeneratorProps {
   products: Product[];
