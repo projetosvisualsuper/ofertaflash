@@ -33,6 +33,7 @@ serve(async (req) => {
         headers: {
             'Content-Type': 'application/json',
             'xi-api-key': ELEVENLABS_API_KEY,
+            "Accept": "audio/mpeg", // Adicionado para garantir que a API retorne o formato correto
         },
         body: JSON.stringify({
             text: text,
