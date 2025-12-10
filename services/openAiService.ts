@@ -157,8 +157,13 @@ export const generateAudioFromText = async (text: string): Promise<string> => {
       throw new Error("A Edge Function retornou dados vazios.");
   }
   
+  // NOVO LOG DE DEBUG
+  console.log("Received audio data size:", data.byteLength, "bytes.");
+  if (data.byteLength < 100) {
+      console.warn("Audio data is suspiciously small. Attempting to decode as error message.");
+  }
+  
   // NOVO TRATAMENTO DE ERRO: Verifica se o ArrayBuffer é, na verdade, um erro JSON
-  // Isso acontece se a Edge Function retornar um erro 500 com corpo JSON.
   try {
     const decoder = new TextDecoder('utf-8');
     const textData = decoder.decode(data);

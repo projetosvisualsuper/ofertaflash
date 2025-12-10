@@ -14,10 +14,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
   
-  // 1. Autenticação (usando o token do usuário)
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "Unauthorized: Missing Authorization header" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  // A autenticação é feita na função chamadora (gerar-audio), mas verificamos a chave aqui.
+  if (!ELEVENLABS_API_KEY) {
+    console.error("ElevenLabs Error: API Key not configured.");
+    return new Response(JSON.stringify({ error: "ELEVENLABS_API_KEY não configurada." }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
   try {
@@ -27,12 +27,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Texto não enviado" }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     
-    // --- 2. CHAMADA À API ELEVENLABS ---
+    // --- CHAMADA À API ELEVENLABS ---
     
-    if (!ELEVENLABS_API_KEY) {
-        throw new Error("ELEVENLABS_API_KEY não configurada no Supabase Secrets.");
-    }
-
     const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, {
         method: 'POST',
         headers: {
@@ -58,7 +54,11 @@ serve(async (req) => {
             // Ignora se não for JSON
         }
         console.error("ElevenLabs TTS API Error:", ttsResponse.status, errorDetails);
-        throw new Error(`Falha na geração de áudio (Status ${ttsResponse.status}): ${errorDetails}`);
+        // Retorna o erro como JSON para que a função chamadora possa capturá-lo
+        return new Response(JSON.stringify({ error: `Falha na geração de áudio (Status ${ttsResponse.status}): ${errorDetails}` }), { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
     }
 
     // Retorna o ArrayBuffer diretamente para o cliente
@@ -67,7 +67,7 @@ serve(async (req) => {
     return new Response(audioBuffer, {
       headers: {
         ...corsHeaders,
-        "Content-Type": "audio/mpeg",
+        "Content-Type": "audio/mpeg", // Garante o tipo correto
         "Content-Length": audioBuffer.byteLength.toString(),
         "Cache-Control": "no-cache",
       },

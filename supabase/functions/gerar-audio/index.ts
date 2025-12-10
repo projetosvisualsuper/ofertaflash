@@ -84,29 +84,33 @@ serve(async (req) => {
     // --- FIM CONSUMO DE CRÉDITOS ---
 
     // --- 3. CHAMAR A EDGE FUNCTION DA ELEVENLABS INTERNAMENTE ---
-    // Usamos a URL interna do Supabase para chamar a outra Edge Function
     const elevenLabsUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/elevenlabs-tts`;
     
     const ttsResponse = await fetch(elevenLabsUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            // Passamos o token do usuário para a função interna para que ela possa autenticar
             'Authorization': authHeader, 
         },
         body: JSON.stringify({ text }),
     });
     
+    // Se a chamada interna falhar (ex: 500), tentamos ler o corpo do erro JSON
     if (!ttsResponse.ok) {
         let errorDetails = "Falha na chamada interna para ElevenLabs TTS.";
         try {
             const errorJson = await ttsResponse.json();
             errorDetails = errorJson.error || errorDetails;
         } catch (e) {
-            // Ignora se não for JSON
+            // Se não for JSON, apenas usa o status
+            errorDetails = `Erro de rede ou Edge Function interna falhou (Status ${ttsResponse.status}).`;
         }
         console.error("Internal TTS Call Failed:", ttsResponse.status, errorDetails);
-        throw new Error(`Falha na geração de áudio: ${errorDetails}`);
+        // Retorna o erro para o frontend
+        return new Response(JSON.stringify({ error: `Falha na geração de áudio: ${errorDetails}` }), { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
     }
 
     // Retorna o ArrayBuffer (MP3) da ElevenLabs diretamente para o cliente
