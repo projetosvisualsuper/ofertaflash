@@ -28,8 +28,8 @@ const ProductCard: React.FC<{ product: WooProduct }> = React.memo(({ product }) 
                 )}
             </div>
             <div className="flex-1 min-w-0">
-                {/* Aumentando o tamanho da fonte para text-xs (12px) */}
-                <p className="text-xs font-semibold text-gray-800 truncate leading-tight">{product.name}</p>
+                {/* Aumentando o tamanho da fonte para text-sm (14px) e adicionando font-bold */}
+                <p className="text-sm font-bold text-gray-800 truncate leading-tight">{product.name}</p>
                 <div className="flex items-center mt-0.5 leading-none">
                     {isSale && (
                         <span className="text-[10px] text-red-500 line-through mr-1">R$ {regularPriceFormatted}</span>
@@ -94,7 +94,7 @@ const WooCommerceBanner: React.FC = () => {
   return (
     <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2">
       <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
-        <ShoppingCart size={14} /> Oportunidades Recentes
+        <ShoppingCart size={14} /> Oportunidades
       </h3>
       {/* Texto alterado e simplificado */}
       <p className="text-xs font-bold text-indigo-700 text-center px-2">
