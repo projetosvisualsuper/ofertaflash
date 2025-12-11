@@ -36,8 +36,8 @@ serve(async (req) => {
     }
     
     const authQuery = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
-    // ALTERAÇÃO AQUI: Removendo orderby=rand e usando orderby=date&order=desc
-    const productsEndpoint = `${baseUrl}products?per_page=10&status=publish&orderby=date&order=desc&${authQuery}`;
+    // ALTERAÇÃO AQUI: Aumentando o limite de produtos para 100
+    const productsEndpoint = `${baseUrl}products?per_page=100&status=publish&orderby=date&order=desc&${authQuery}`;
 
     let response: Response;
     
