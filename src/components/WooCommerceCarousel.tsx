@@ -5,6 +5,15 @@ import { WooProduct } from '../../types';
 
 const ROTATION_INTERVAL_MS = 5000; // 5 segundos por produto
 
+// Função auxiliar para randomizar um array
+const shuffleArray = (array: WooProduct[]) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
 const CarouselCard: React.FC<{ product: WooProduct }> = ({ product }) => {
     // Garante que o preço seja um número e formatado para 2 casas decimais
     const rawPrice = parseFloat(product.sale_price || product.regular_price || product.price);
@@ -52,11 +61,12 @@ const WooCommerceCarousel: React.FC = () => {
   const { products, loading, error } = useWooCommerceProducts();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Filtra produtos que têm preço e nome para exibição no carrossel
-  const carouselProducts = useMemo(() => 
-    products.filter(p => p.price && p.name), 
-    [products]
-  );
+  // 1. Filtra produtos válidos e randomiza a lista
+  const carouselProducts = useMemo(() => {
+    const validProducts = products.filter(p => p.price && p.name);
+    // Randomiza a lista de produtos válidos
+    return shuffleArray([...validProducts]); 
+  }, [products]);
   
   const totalProducts = carouselProducts.length;
 
@@ -89,7 +99,7 @@ const WooCommerceCarousel: React.FC = () => {
   // Se houver erro, o carrossel deve mostrar a mensagem de "Sem produtos"
   if (error || totalProducts === 0) {
     return (
-      <div className="p-4 bg-gray-50 rounded-xl shadow-inner text-center h-full flex items-center justify-center">
+      <div className="p-4 bg-gray-50 rounded-xl shadow-inner text-center h-full flex items-center justify-center flex-col">
         <Zap className="w-6 h-6 text-yellow-500 mx-auto mb-1" />
         <p className="text-xs text-gray-500">Sem produtos em destaque.</p>
       </div>
@@ -101,11 +111,11 @@ const WooCommerceCarousel: React.FC = () => {
   return (
     <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2 flex flex-col h-full">
       <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
-        <Zap size={14} /> Destaques da Loja
+        <Zap size={14} /> Destaques Aleatórios
       </h3>
       
       <div className="flex-1 relative min-h-[150px]">
-        {/* O Card do Produto */}
+        {/* O Card do Produto - Usando a chave do produto para forçar a animação de transição */}
         <CarouselCard key={currentProduct.id} product={currentProduct} />
       </div>
       
