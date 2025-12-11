@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { PosterTheme, Product, PosterFormat, HeaderElement, HeaderImageMode, ProductLayout, HeaderAndFooterElements, LogoLayout, RegisteredProduct } from '../types';
 import { Plus, Trash2, Wand2, Loader2, List, Settings, Palette, Image as ImageIcon, LayoutTemplate, SlidersHorizontal, Tag, Type, Brush, Frame, CaseUpper, CaseLower, Save, XCircle, Grid, GalleryThumbnails, Search, Database, RotateCcw, Lock, Copy } from 'lucide-react';
 import { generateMarketingCopy, parseProductsFromText, generateBackgroundImage } from '../../services/openAiService'; // ATUALIZADO
@@ -873,28 +873,34 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                             className="w-full border rounded-lg px-10 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
                         />
                     </div>
-                    <div className="max-h-40 overflow-y-auto space-y-2">
+                    <div className="max-h-60 overflow-y-auto space-y-2">
                         {filteredRegisteredProducts.length > 0 ? (
                             filteredRegisteredProducts.map(p => (
                                 <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
-                                    <div className="flex items-center gap-2">
-                                        {p.image && <img src={p.image} alt={p.name} className="w-8 h-8 object-contain rounded" />}
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden">
+                                            {p.image ? (
+                                                <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
+                                            ) : (
+                                                <ImageIcon size={16} className="text-gray-400" />
+                                            )}
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-800 leading-tight">{p.name}</p>
-                                            <p className="text-xs text-gray-500 leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
+                                            <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
+                                            <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
                                         </div>
                                     </div>
                                     <button 
                                         onClick={() => addProduct(p)}
                                         className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
                                     >
-                                        <Plus size={12} /> Add
+                                        <Plus size={12} /> Adicionar
                                     </button>
                                 </div>
                             ))
                         ) : (
-                            <p className="text-xs text-gray-500 text-center">
-                                {searchTerm ? 'Nenhum resultado encontrado.' : 'Comece a digitar para buscar.'}
+                            <p className="text-xs text-gray-500 text-center p-4">
+                                {searchTerm ? 'Nenhum resultado encontrado.' : 'Comece a digitar para buscar produtos cadastrados.'}
                             </p>
                         )}
                     </div>
@@ -906,7 +912,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             
             <div className="flex items-end gap-2 p-3 bg-gray-50 rounded-lg border">
               <div className="flex-1">
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Quantidade de Produtos</label>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Quantidade de Produtos no Cartaz</label>
                 <input type="number" min="0" value={products.length} onChange={handleProductCountChange} className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"/>
               </div>
               <button onClick={() => addProduct()} className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm font-medium flex items-center justify-center gap-1 transition-colors"><Plus size={16} /> Adicionar 1</button>
