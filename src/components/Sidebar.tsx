@@ -93,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   
   const { registeredProducts, loading: loadingRegisteredProducts } = useProductDatabase(session?.user?.id);
   
-  const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design'>('products'); // 'ai' removido
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
@@ -831,43 +831,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     );
   };
 
-  const renderAITab = () => (
-    <div className="space-y-6">
-      <div className={`p-3 bg-purple-50 rounded-lg border border-purple-200 space-y-3 ${isFreePlan ? 'opacity-50 pointer-events-none' : ''}`}>
-        <h3 className="text-sm font-semibold text-purple-800 flex items-center gap-2">
-            <Wand2 size={16}/> Assistentes de IA
-            {isFreePlan && <Lock size={14} className="text-red-500" title="Recurso Premium" />}
-        </h3>
-        <div>
-          <label className="text-xs font-semibold text-gray-700 block mb-1">Gerar Título com IA</label>
-          <p className="text-xs text-gray-500 mb-2">Use o subtítulo como base para gerar um título principal criativo.</p>
-          <button onClick={handleGenerateHeadline} disabled={isGenerating || isFreePlan} className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
-            {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
-            {isGenerating ? 'Gerando...' : 'Gerar Título'}
-          </button>
-        </div>
-        <div className="border-t pt-3">
-          <label className="text-xs font-semibold text-gray-700 block mb-1">Adicionar Produtos em Massa</label>
-          <p className="text-xs text-gray-500 mb-2">Cole uma lista de produtos (ex: "Arroz 5kg por 22,90") e a IA irá extrair os dados.</p>
-          <textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)} rows={4} className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ex: Picanha Friboi por 69,90/kg (de 89,90)&#10;Cerveja Heineken 350ml por 4,50/un" disabled={isFreePlan}/>
-          <button onClick={handleBulkParse} disabled={isGenerating || !bulkText.trim() || isFreePlan} className="w-full mt-2 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
-            {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
-            {isGenerating ? 'Analisando...' : 'Analisar e Adicionar'}
-          </button>
-        </div>
-         <div className="border-t pt-3">
-          <label className="text-xs font-semibold text-gray-700 block mb-1">Gerar Fundo com IA</label>
-          <p className="text-xs text-gray-500 mb-2">Descreva o fundo que você quer (ex: "madeira rústica", "frutas e vegetais").</p>
-          <input value={bgPrompt} onChange={(e) => setBgPrompt(e.target.value)} className="w-full border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ex: fundo de supermercado desfocado" disabled={isFreePlan}/>
-          <button onClick={handleGenerateBg} disabled={isGenerating || !bgPrompt.trim() || isFreePlan} className="w-full mt-2 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors disabled:opacity-50">
-            {isGenerating ? <Loader2 className="animate-spin" size={16} /> : <ImageIcon size={16} />}
-            {isGenerating ? 'Criando Imagem...' : 'Gerar Fundo'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="w-full md:w-[400px] h-full bg-white border-r flex flex-col shadow-xl z-20 relative">
       <div className="p-4 border-b bg-gray-50 flex-shrink-0">
@@ -881,7 +844,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         <button onClick={() => setActiveTab('products')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'products' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><List size={16} /> Produtos</button>
         <button onClick={() => setActiveTab('templates')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'templates' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><GalleryThumbnails size={16} /> Templates</button>
         <button onClick={() => setActiveTab('design')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'design' ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-700'}`}><Palette size={16} /> Design</button>
-        <button onClick={() => setActiveTab('ai')} className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 ${activeTab === 'ai' ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-700'}`}><Wand2 size={16} /> IA</button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -944,7 +906,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                                                         <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
                                                         <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
                                                     </div>
-                                                </div>
                                                 <button 
                                                     onClick={() => addProduct(p)}
                                                     className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
@@ -1041,10 +1002,6 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
 
         {activeTab === 'design' && (
           renderDesignTab()
-        )}
-        
-        {activeTab === 'ai' && (
-          renderAITab()
         )}
       </div>
       <div className="p-4 border-t bg-gray-50 text-xs text-gray-500 text-center flex-shrink-0">Powered by OpenAI</div>
