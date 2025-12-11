@@ -860,7 +860,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             
             <details className="p-3 bg-green-50 rounded-lg border border-green-200" open>
                 <summary className="text-sm font-semibold text-green-800 cursor-pointer flex items-center gap-2">
-                    <Database size={16} /> Adicionar do Banco de Produtos
+                    <Database size={16} /> Adicionar do Banco de Produtos (Próprios e Compartilhados)
                 </summary>
                 <div className="mt-3 space-y-3">
                     <div className="relative">
