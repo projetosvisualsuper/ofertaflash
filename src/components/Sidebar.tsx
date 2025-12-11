@@ -90,13 +90,14 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
   
-  const { registeredProducts } = useProductDatabase(session?.user?.id); // <-- CORREÇÃO AQUI
+  const { registeredProducts } = useProductDatabase(session?.user?.id);
   
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bgPrompt, setBgPrompt] = useState("");
-  const [searchTerm, setSearchTerm] = useState(''); // <-- ESTADO DE BUSCA AQUI
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchScope, setSearchScope] = useState<'my' | 'shared'>('my'); // NOVO ESTADO: 'my' ou 'shared'
   
   const { customThemes, addCustomTheme, deleteCustomTheme } = useCustomThemes(session?.user?.id);
   const [newThemeName, setNewThemeName] = useState('');
@@ -505,10 +506,30 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
   }
   
-  const filteredRegisteredProducts = registeredProducts.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Lógica de Filtragem com Escopo
+  const filteredRegisteredProducts = useMemo(() => {
+    const userId = session?.user?.id;
+    
+    let filteredByScope = registeredProducts;
+    
+    if (searchScope === 'my' && userId) {
+        // Filtra apenas produtos do usuário logado
+        filteredByScope = registeredProducts.filter(p => p.user_id === userId);
+    } else if (searchScope === 'shared') {
+        // Filtra apenas produtos compartilhados (user_id nulo)
+        filteredByScope = registeredProducts.filter(p => p.user_id === null);
+    }
+    
+    // Aplica o filtro de busca por termo
+    if (!searchTerm) return filteredByScope;
+    
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    return filteredByScope.filter(p =>
+      p.name.toLowerCase().includes(lowerCaseSearchTerm) || 
+      p.description?.toLowerCase().includes(lowerCaseSearchTerm)
+    );
+  }, [registeredProducts, searchTerm, searchScope, session?.user?.id]);
+
 
   const renderTemplatesTab = () => (
     <HeaderTemplatesTab theme={theme} setTheme={setTheme} />
@@ -860,9 +881,26 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
             
             <details className="p-3 bg-green-50 rounded-lg border border-green-200" open>
                 <summary className="text-sm font-semibold text-green-800 cursor-pointer flex items-center gap-2">
-                    <Database size={16} /> Adicionar do Banco de Produtos (Próprios e Compartilhados)
+                    <Database size={16} /> Adicionar do Banco de Produtos
                 </summary>
                 <div className="mt-3 space-y-3">
+                    
+                    {/* NOVO SELETOR DE ESCOPO */}
+                    <div className="flex border rounded-lg overflow-hidden">
+                        <button
+                            onClick={() => setSearchScope('my')}
+                            className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1 ${searchScope === 'my' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            <List size={14} /> Meus Produtos
+                        </button>
+                        <button
+                            onClick={() => setSearchScope('shared')}
+                            className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1 ${searchScope === 'shared' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            <GalleryThumbnails size={14} /> Banco Compartilhado
+                        </button>
+                    </div>
+                    
                     <div className="relative">
                         <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                         <input
@@ -900,7 +938,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                             ))
                         ) : (
                             <p className="text-xs text-gray-500 text-center p-4">
-                                {searchTerm ? 'Nenhum resultado encontrado.' : 'Comece a digitar para buscar produtos cadastrados.'}
+                                {searchTerm ? 'Nenhum resultado encontrado.' : `Nenhum produto encontrado no escopo "${searchScope === 'my' ? 'Meus Produtos' : 'Banco Compartilhado'}".`}
                             </p>
                         )}
                     </div>
