@@ -906,7 +906,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                             onClick={() => { setSearchScope('shared'); setSearchTerm(''); }}
                             className={`flex-1 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1 ${searchScope === 'shared' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
                         >
-                            <GalleryThumbnails size={14} /> Banco Compartilhado
+                            <GalleryThumbnails size={14} /> Banco de Imagens
                         </button>
                     </div>
                     
