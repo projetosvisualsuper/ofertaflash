@@ -90,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
   const { profile, session } = useAuth();
   const isFreePlan = profile?.role === 'free';
   
-  const { registeredProducts } = useProductDatabase(session?.user?.id);
+  const { registeredProducts, loading: loadingRegisteredProducts } = useProductDatabase(session?.user?.id);
   
   const [activeTab, setActiveTab] = useState<'products' | 'templates' | 'design' | 'ai'>('products');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -442,15 +442,15 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
     if (!bulkText.trim()) return;
     setIsGenerating(true);
-    const loadingToast = showSuccess('Analisando texto e extraindo produtos...');
+    const loadingToast = showLoading('Analisando texto e extraindo produtos...');
     try {
         const newProducts = await parseProductsFromText(bulkText);
         const productsWithLayout = newProducts.map(p => ({...p, layouts: createNewProduct(0).layouts}));
         setProducts(prev => [...prev, ...productsWithLayout]);
         setBulkText("");
-        showSuccess(`${newProducts.length} produtos adicionados!`);
+        updateToast(loadingToast, `${newProducts.length} produtos adicionados!`, 'success');
     } catch (error) {
-        showError('Erro ao analisar texto. Verifique o formato ou a chave API.');
+        updateToast(loadingToast, 'Erro ao analisar texto. Verifique o formato ou a chave API.', 'error');
     } finally {
         setIsGenerating(false);
     }
@@ -463,7 +463,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
     }
     if(!bgPrompt.trim()) return;
     setIsGenerating(true);
-    const loadingToast = showSuccess('Criando imagem de fundo com IA...');
+    const loadingToast = showLoading('Criando imagem de fundo com IA...');
     try {
         const bgImageBase64 = await generateBackgroundImage(bgPrompt);
         if(bgImageBase64) {
@@ -494,13 +494,13 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
 
             // 4. Atualizar o tema com o URL
             setTheme(prev => ({ ...prev, backgroundImage: urlData.publicUrl }));
-            showSuccess('Fundo gerado e aplicado!');
+            updateToast(loadingToast, 'Fundo gerado e aplicado!', 'success');
         } else {
-            showError('A IA não conseguiu gerar a imagem. Tente um prompt diferente.');
+            updateToast(loadingToast, 'A IA não conseguiu gerar a imagem. Tente um prompt diferente.', 'error');
         }
     } catch (error) {
         console.error("Erro ao gerar e salvar imagem de fundo:", error);
-        showError('Erro ao gerar imagem. Verifique sua chave API e permissões do Storage.');
+        updateToast(loadingToast, 'Erro ao gerar imagem. Verifique sua chave API e permissões do Storage.', 'error');
     } finally {
         setIsGenerating(false);
     }
@@ -885,7 +885,7 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                 </summary>
                 <div className="mt-3 space-y-3">
                     
-                    {/* NOVO SELETOR DE ESCOPO */}
+                    {/* SELETOR DE ESCOPO */}
                     <div className="flex border rounded-lg overflow-hidden">
                         <button
                             onClick={() => setSearchScope('my')}
@@ -911,37 +911,47 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                             className="w-full border rounded-lg px-10 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
                         />
                     </div>
-                    <div className="max-h-60 overflow-y-auto space-y-2">
-                        {filteredRegisteredProducts.length > 0 ? (
-                            filteredRegisteredProducts.map(p => (
-                                <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden">
-                                            {p.image ? (
-                                                <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
-                                            ) : (
-                                                <ImageIcon size={16} className="text-gray-400" />
-                                            )}
+                    
+                    {loadingRegisteredProducts ? (
+                        <div className="flex justify-center items-center p-4">
+                            <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+                        </div>
+                    ) : (
+                        <div className="max-h-60 overflow-y-auto space-y-2">
+                            {filteredRegisteredProducts.length > 0 ? (
+                                filteredRegisteredProducts.map(p => (
+                                    <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-md border shadow-sm">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center shrink-0 overflow-hidden">
+                                                {p.image ? (
+                                                    <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
+                                                ) : (
+                                                    <ImageIcon size={16} className="text-gray-400" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
+                                                <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800 leading-tight truncate max-w-[120px]">{p.name}</p>
-                                            <p className="text-xs text-green-600 font-bold leading-tight">R$ {p.defaultPrice} / {p.defaultUnit}</p>
-                                        </div>
+                                        <button 
+                                            onClick={() => addProduct(p)}
+                                            className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
+                                        >
+                                            <Plus size={12} /> Adicionar
+                                        </button>
                                     </div>
-                                    <button 
-                                        onClick={() => addProduct(p)}
-                                        className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full transition-colors"
-                                    >
-                                        <Plus size={12} /> Adicionar
-                                    </button>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-xs text-gray-500 text-center p-4">
-                                {searchTerm ? 'Nenhum resultado encontrado.' : `Nenhum produto encontrado no escopo "${searchScope === 'my' ? 'Meus Produtos' : 'Banco Compartilhado'}".`}
-                            </p>
-                        )}
-                    </div>
+                                ))
+                            ) : (
+                                <p className="text-xs text-gray-500 text-center p-4">
+                                    {searchTerm 
+                                        ? 'Nenhum resultado encontrado para sua busca.' 
+                                        : `Nenhum produto cadastrado no escopo "${searchScope === 'my' ? 'Meus Produtos' : 'Banco Compartilhado'}".`}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    
                     <p className="text-xs text-gray-600 text-center border-t pt-2">
                         Gerencie seus produtos na aba "Banco de Produtos".
                     </p>
