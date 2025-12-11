@@ -423,13 +423,13 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
         return;
     }
     setIsGenerating(true);
-    const loadingToast = showSuccess('Gerando título com IA...');
+    const loadingToast = showLoading('Gerando título com IA...');
     try {
         const headline = await generateMarketingCopy(currentHeaderElements.headerSubtitle.text || "ofertas");
         handleHeaderElementChange('headerTitle', 'text', headline);
-        showSuccess('Título gerado com sucesso!');
+        updateToast(loadingToast, 'Título gerado com sucesso!', 'success');
     } catch (error) {
-        showError('Erro ao gerar título. Verifique sua chave API.');
+        updateToast(loadingToast, 'Erro ao gerar título. Verifique sua chave API.', 'error');
     } finally {
         setIsGenerating(false);
     }
@@ -946,7 +946,9 @@ const Sidebar: React.FC<SidebarProps> = ({ theme, setTheme, products, setProduct
                                 <p className="text-xs text-gray-500 text-center p-4">
                                     {searchTerm 
                                         ? 'Nenhum resultado encontrado para sua busca.' 
-                                        : `Nenhum produto cadastrado no escopo "${searchScope === 'my' ? 'Meus Produtos' : 'Banco Compartilhado'}".`}
+                                        : searchScope === 'my' 
+                                            ? 'Nenhum produto cadastrado por você. Use o módulo "Banco de Produtos" para cadastrar.'
+                                            : 'Nenhum produto compartilhado encontrado. Peça ao administrador para cadastrar produtos públicos.'}
                                 </p>
                             )}
                         </div>
