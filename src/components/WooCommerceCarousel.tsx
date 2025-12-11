@@ -26,7 +26,7 @@ const CarouselCard: React.FC<{ product: WooProduct }> = ({ product }) => {
     
     return (
         <div className="p-3 bg-white rounded-xl shadow-lg border-2 border-indigo-500/50 flex flex-col items-center text-center h-full transition-all duration-500 animate-fade-in">
-            <div className="w-full h-20 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shrink-0 mb-2 relative">
+            <div className="w-full h-20 bg-white rounded-lg overflow-hidden flex items-center justify-center shrink-0 mb-2 relative">
                 {product.image_url ? (
                     <img 
                         src={product.image_url} 
@@ -111,7 +111,7 @@ const WooCommerceCarousel: React.FC = () => {
   return (
     <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2 flex flex-col h-full">
       <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
-        <Zap size={14} /> Destaques Aleatórios
+        <Zap size={14} /> Destaques
       </h3>
       
       <div className="flex-1 relative min-h-[150px]">
