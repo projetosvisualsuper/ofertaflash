@@ -120,7 +120,8 @@ const WooCommerceCarousel: React.FC<WooCommerceCarouselProps> = ({ setActiveModu
 
   return (
     <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2 flex flex-col h-full">
-      <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
+      {/* Aumentando o título do painel para text-sm e font-bold */}
+      <h3 className="text-sm font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
         <Zap size={14} /> Destaques
       </h3>
       

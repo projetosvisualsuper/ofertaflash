@@ -28,14 +28,14 @@ const ProductCard: React.FC<{ product: WooProduct }> = React.memo(({ product }) 
                 )}
             </div>
             <div className="flex-1 min-w-0">
-                {/* Revertendo para text-xs (12px) e removendo font-bold extra */}
+                {/* Revertido para text-xs (12px) e font-medium */}
                 <p className="text-xs font-medium text-gray-800 truncate leading-tight">{product.name}</p>
                 <div className="flex items-center mt-0.5 leading-none">
                     {isSale && (
                         <span className="text-[10px] text-red-500 line-through mr-1">R$ {regularPriceFormatted}</span>
                     )}
-                    {/* Aumentando o preço principal para text-lg (18px) */}
-                    <span className="text-lg font-black text-green-600 whitespace-nowrap">R$ {priceFormatted}</span>
+                    {/* Revertido para text-sm (14px) e font-bold */}
+                    <span className="text-sm font-bold text-green-600 whitespace-nowrap">R$ {priceFormatted}</span>
                 </div>
             </div>
             <ExternalLink size={12} className="text-gray-400 ml-1 shrink-0" />
@@ -93,7 +93,8 @@ const WooCommerceBanner: React.FC = () => {
 
   return (
     <div className="p-2 bg-indigo-50 rounded-xl shadow-lg space-y-2">
-      <h3 className="text-xs font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
+      {/* Aumentando o título do painel para text-sm e font-bold */}
+      <h3 className="text-sm font-bold text-indigo-800 flex items-center gap-1 px-2 pt-1">
         <ShoppingCart size={14} /> Oportunidades
       </h3>
       {/* Texto alterado e simplificado */}
