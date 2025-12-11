@@ -36,7 +36,8 @@ serve(async (req) => {
     }
     
     const authQuery = `consumer_key=${consumerKey}&consumer_secret=${consumerSecret}`;
-    const productsEndpoint = `${baseUrl}products?per_page=10&status=publish&orderby=rand&${authQuery}`;
+    // ALTERAÇÃO AQUI: Removendo orderby=rand e usando orderby=date&order=desc
+    const productsEndpoint = `${baseUrl}products?per_page=10&status=publish&orderby=date&order=desc&${authQuery}`;
 
     let response: Response;
     
