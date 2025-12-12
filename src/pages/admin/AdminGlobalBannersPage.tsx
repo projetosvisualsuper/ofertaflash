@@ -212,7 +212,6 @@ const AdminGlobalBannersPage: React.FC = () => {
                 {localBanners.map(pkg => {
                     const isSaving = isSavingId === pkg.id;
                     const isNew = !banners.find(p => p.id === pkg.id);
-                    // O modo imagem é ativo se image_url não for null E não for string vazia
                     const isImageMode = pkg.image_url !== null; 
                     
                     return (
@@ -305,9 +304,9 @@ const AdminGlobalBannersPage: React.FC = () => {
                                             />
                                             <label htmlFor={`banner-img-upload-${pkg.id}`} className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors flex items-center justify-center gap-2 ${isSaving || isUploading ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
                                                 <Upload size={16} />
-                                                {isUploading ? 'Enviando...' : pkg.image_url && pkg.image_url !== '' ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                                                {isUploading ? 'Enviando...' : pkg.image_url ? 'Trocar Imagem' : 'Selecionar Imagem'}
                                             </label>
-                                            {pkg.image_url && pkg.image_url !== '' && (
+                                            {pkg.image_url && (
                                                 <button 
                                                     onClick={() => handleFieldChange(pkg.id, 'image_url', null)}
                                                     className="p-2 text-red-500 hover:bg-red-100 rounded-full"
@@ -317,7 +316,8 @@ const AdminGlobalBannersPage: React.FC = () => {
                                                 </button>
                                             )}
                                         </div>
-                                        {pkg.image_url && pkg.image_url !== '' && (
+                                        <p className="text-xs text-gray-500">Recomendado: 1920px de largura por 128px de altura (15:1).</p>
+                                        {pkg.image_url && (
                                             <div className="mt-2 relative w-full h-24 rounded-md overflow-hidden border flex items-center justify-center bg-gray-100">
                                                 <img src={pkg.image_url} alt="Preview" className="max-w-full max-h-full object-contain" />
                                             </div>
