@@ -139,7 +139,7 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
     } finally {
       setIsUploadingHeaderImage(false);
     }
-  };
+    }
   
   const handleRemoveHeaderImage = () => {
     setTheme(prev => {
@@ -305,8 +305,8 @@ const DigitalSignagePage: React.FC<DigitalSignagePageProps> = ({ theme, setTheme
                 banners.slice(0, 3).map((banner) => (
                     <div 
                         key={banner.id} 
-                        // Aumentando a altura para h-32 (128px)
-                        className="rounded-xl shadow-md flex items-center justify-center text-center h-32 overflow-hidden"
+                        // Aumentando a altura para h-48 (192px) para dar mais destaque
+                        className="rounded-xl shadow-md flex items-center justify-center text-center h-48 overflow-hidden"
                         style={{ backgroundColor: banner.background_color, color: banner.text_color }}
                     >
                         {banner.image_url ? (

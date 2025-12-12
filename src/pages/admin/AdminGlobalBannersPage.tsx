@@ -316,7 +316,7 @@ const AdminGlobalBannersPage: React.FC = () => {
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-xs text-gray-500">Recomendado: 1920px de largura por 128px de altura (15:1).</p>
+                                        <p className="text-xs text-gray-500">Recomendado: 1920px de largura por 850px de altura.</p>
                                         {pkg.image_url && (
                                             <div className="mt-2 relative w-full h-24 rounded-md overflow-hidden border flex items-center justify-center bg-gray-100">
                                                 <img src={pkg.image_url} alt="Preview" className="max-w-full max-h-full object-contain" />
