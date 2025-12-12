@@ -270,7 +270,7 @@ const AdminGlobalBannersPage: React.FC = () => {
                                             onClick={() => {
                                                 // Se já estiver em modo imagem, não faz nada. Se não, limpa o conteúdo de texto.
                                                 if (!isImageMode) {
-                                                    setLocalBanners(prev => prev.map(b => b.id === pkg.id ? { ...b, content: '' } : b));
+                                                    setLocalBanners(prev => prev.map(b => b.id === pkg.id ? { ...b, content: '', background_color: '#000000', text_color: '#ffffff' } : b));
                                                 }
                                             }}
                                             className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-colors ${isImageMode ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
