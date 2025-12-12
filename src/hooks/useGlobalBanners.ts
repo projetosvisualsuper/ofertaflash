@@ -10,6 +10,7 @@ export interface GlobalBanner {
   text_color: string;
   is_active: boolean;
   order_index: number;
+  image_url: string | null; // NOVO CAMPO
 }
 
 export function useGlobalBanners(isAdmin: boolean = false) {
