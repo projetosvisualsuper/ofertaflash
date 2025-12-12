@@ -129,7 +129,9 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ activeModule, setActiveModule }
           <LogOut size={20} />
           <span className="text-sm font-semibold">Sair (Logout)</span>
         </button>
-        <p className="text-xs text-gray-500">Powered by OpenAI</p>
+        <p className="text-xs text-gray-500">
+          Desenvolvido por <a href="https://ciasuper.com.br/" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 font-semibold">Cia Super</a>
+        </p>
       </div>
     </div>
   );
