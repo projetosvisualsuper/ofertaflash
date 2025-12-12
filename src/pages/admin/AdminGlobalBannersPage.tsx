@@ -109,8 +109,15 @@ const AdminGlobalBannersPage: React.FC = () => {
         return;
     }
     
-    if (!pkg.image_url && !pkg.content.trim()) {
-        showError("O banner deve ter conteúdo de texto ou uma imagem.");
+    // Se estiver no modo imagem, mas não tiver URL, é um erro.
+    if (pkg.image_url !== null && pkg.image_url !== '' && !pkg.image_url.startsWith('http')) {
+        showError("Por favor, selecione e envie uma imagem antes de salvar.");
+        return;
+    }
+    
+    // Se estiver no modo texto e o conteúdo estiver vazio, é um erro.
+    if (pkg.image_url === null && !pkg.content.trim()) {
+        showError("O banner de texto deve ter conteúdo.");
         return;
     }
     
@@ -124,7 +131,8 @@ const AdminGlobalBannersPage: React.FC = () => {
             text_color: pkg.text_color,
             is_active: pkg.is_active,
             order_index: pkg.order_index,
-            image_url: pkg.image_url,
+            // Se image_url for string vazia (modo imagem selecionado, mas sem upload), salva como null
+            image_url: pkg.image_url === '' ? null : pkg.image_url, 
         };
         
         const originalBanner = banners.find(p => p.id === pkg.id);
@@ -204,7 +212,8 @@ const AdminGlobalBannersPage: React.FC = () => {
                 {localBanners.map(pkg => {
                     const isSaving = isSavingId === pkg.id;
                     const isNew = !banners.find(p => p.id === pkg.id);
-                    const isImageMode = !!pkg.image_url;
+                    // O modo imagem é ativo se image_url não for null E não for string vazia
+                    const isImageMode = pkg.image_url !== null; 
                     
                     return (
                         <div key={pkg.id} className={`p-4 border rounded-lg space-y-3 ${pkg.is_active ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-100 border-gray-300'}`}>
@@ -268,10 +277,8 @@ const AdminGlobalBannersPage: React.FC = () => {
                                         </button>
                                         <button
                                             onClick={() => {
-                                                // Se já estiver em modo imagem, não faz nada. Se não, limpa o conteúdo de texto.
-                                                if (!isImageMode) {
-                                                    setLocalBanners(prev => prev.map(b => b.id === pkg.id ? { ...b, content: '', background_color: '#000000', text_color: '#ffffff' } : b));
-                                                }
+                                                // Ao clicar em Imagem, define image_url como string vazia para forçar o modo imagem
+                                                handleFieldChange(pkg.id, 'image_url', pkg.image_url === null ? '' : pkg.image_url);
                                             }}
                                             className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-colors ${isImageMode ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                                             disabled={isSaving}
@@ -298,9 +305,9 @@ const AdminGlobalBannersPage: React.FC = () => {
                                             />
                                             <label htmlFor={`banner-img-upload-${pkg.id}`} className={`flex-1 text-center text-xs py-2 px-3 border rounded cursor-pointer transition-colors flex items-center justify-center gap-2 ${isSaving || isUploading ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50'}`}>
                                                 <Upload size={16} />
-                                                {isUploading ? 'Enviando...' : pkg.image_url ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                                                {isUploading ? 'Enviando...' : pkg.image_url && pkg.image_url !== '' ? 'Trocar Imagem' : 'Selecionar Imagem'}
                                             </label>
-                                            {pkg.image_url && (
+                                            {pkg.image_url && pkg.image_url !== '' && (
                                                 <button 
                                                     onClick={() => handleFieldChange(pkg.id, 'image_url', null)}
                                                     className="p-2 text-red-500 hover:bg-red-100 rounded-full"
@@ -310,7 +317,7 @@ const AdminGlobalBannersPage: React.FC = () => {
                                                 </button>
                                             )}
                                         </div>
-                                        {pkg.image_url && (
+                                        {pkg.image_url && pkg.image_url !== '' && (
                                             <div className="mt-2 relative w-full h-24 rounded-md overflow-hidden border flex items-center justify-center bg-gray-100">
                                                 <img src={pkg.image_url} alt="Preview" className="max-w-full max-h-full object-contain" />
                                             </div>
